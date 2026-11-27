@@ -21,7 +21,7 @@ Kelola pencatatan penjualan harian usaha kecil Anda dengan aplikasi kasir sederh
 - **Ringkasan usaha:** pantau penjualan hari ini, jumlah transaksi, jumlah produk, dan stok rendah.
 - **Riwayat dan struk:** lihat rincian transaksi dan bagikan struk melalui aplikasi yang Anda pilih.
 - **Profil toko:** atur nama toko, pemilik, alamat, nomor telepon, dan catatan struk.
-- **Backup dan pemulihan:** ekspor atau pulihkan data POS melalui file JSON yang Anda pilih sendiri.
+- **Backup dan pemulihan:** ekspor atau pulihkan profil, produk, stok, transaksi, struk, dan ambang stok rendah melalui file JSON yang Anda pilih sendiri.
 
 **Privasi dan penggunaan**
 - Tidak memerlukan akun.
