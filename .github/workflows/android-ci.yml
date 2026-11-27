@@ -7,6 +7,7 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "scripts/**"
       - "docs/store-assets/**"
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
@@ -107,6 +108,14 @@ jobs:
       - name: Bootstrap dependency hashes and run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: ./gradlew --no-daemon --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug
+
+      - name: Verify debug APK 16 KB page-size alignment
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 "$APK"
+          bash scripts/check-native-libraries-16kb.sh "$APK"
 
       - name: Capture release manifest and runtime dependency inventory
         run: |
@@ -274,6 +283,12 @@ jobs:
             "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
             --output "$RUNNER_TEMP/bundletool.jar"
           java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
+          grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
+            echo "Release AAB does not request 16 KB native-library ZIP alignment."
+            exit 1
+          }
+          bash scripts/check-native-libraries-16kb.sh "$AAB"
           jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/signature-check.txt"
           grep -q "jar verified." "$RUNNER_TEMP/signature-check.txt"
           keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/upload-certificate.txt"
