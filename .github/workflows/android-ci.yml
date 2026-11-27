@@ -33,7 +33,7 @@ on:
         type: boolean
         default: false
       commit_dependency_baseline:
-        description: Commit the reviewed dependency baseline on the development branch and run its strict verification workflow
+        description: Commit the reviewed SHA-256 dependency baseline on feat/basic-pos-mvp, then run a clean strict verification build
         required: true
         type: boolean
         default: false
