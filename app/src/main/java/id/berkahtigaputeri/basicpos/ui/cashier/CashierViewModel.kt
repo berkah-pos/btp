@@ -8,7 +8,6 @@ import id.berkahtigaputeri.basicpos.domain.model.CheckoutLine
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
 import id.berkahtigaputeri.basicpos.domain.model.Product
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
-import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
