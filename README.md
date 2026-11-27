@@ -4,7 +4,9 @@ Aplikasi Basic POS offline-first untuk UMKM Indonesia, dikembangkan oleh **BERKA
 
 ## Status implementasi sumber
 
-Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
+Implementasi MVP POS telah digabungkan ke branch `main` melalui [PR #1](https://github.com/berkah-pos/btp/pull/1) pada 27 November 2026.
+
+Source code saat ini mencakup:
 - Dashboard penjualan harian, jumlah transaksi, produk, dan stok rendah yang dibaca dari Room.
 - Profil usaha dan preferensi ambang stok rendah melalui DataStore.
 - CRUD produk, pencarian nama/SKU, kategori, dan stok.
@@ -14,7 +16,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 - Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
 - Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
 
-**Penting:** implementasi sumber belum sama dengan hasil yang teruji. Sampai 27 November 2026 belum ada GitHub Actions run/check yang dapat diverifikasi, jadi kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB masih berstatus **NOT TESTED**.
+**Status validasi (27 November 2026):** PR #3 telah digabungkan ke `main` setelah workflow cloud berhasil pada commit PR `b0c9d1988d39209b29cfcaee3f03923a47b834dc`. Run [45969254895](https://github.com/berkah-pos/btp/actions/runs/45969254895) menjalankan `testDebugUnitTest` (16 test, 0 gagal, 0 error, 0 skipped), `lintDebug` (0 error, 8 warning), dan `assembleDebug` (berhasil); artifact APK debug serta laporan lint/test berhasil diunggah. Delapan warning lint mencakup target API yang belum setinggi compile SDK, versi Gradle/AGP/dependency yang memiliki rilis lebih baru, konfigurasi backup Android 12+, resource launcher yang tidak dipakai, serta resource shrinking. Warning tersebut bukan error build, tetapi harus ditinjau sebelum rilis. Job signed release AAB dilewati karena run berasal dari pull request; AAB hanya dibuat melalui `workflow_dispatch` pada `main` setelah identitas aplikasi, baseline dependency verification, dan signing secrets tersedia. Belum ada uji startup pada perangkat fisik/emulator, UI automation, internal testing, atau Pre-launch Report. Room schema v2 dan dependency verification metadata telah dihasilkan sebagai artifact CI, tetapi belum menjadi file yang dikomit pada branch kanonis; strict dependency verification baru dianggap aktif setelah metadata tersebut direview dan dikomit.
 
 ## Keputusan teknis
 
@@ -26,7 +28,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 - Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan.
 - Android minSdk 24, compileSdk 37, targetSdk 36.
-- AGP 9.6.0, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
+- AGP 9.5.1, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
 
 ## Identitas aplikasi
 
@@ -34,13 +36,14 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan
 
 ## Branch dan review
 
-- `main`: workflow CI dan baseline repository.
-- `feat/basic-pos-mvp`: implementasi aktif.
-- Draft PR: [#1 — Android foundation](https://github.com/berkah-pos/btp/pull/1).
+- `main`: baseline kanonis yang berisi implementasi MVP hasil merge PR #1 dan koreksi CI PR #3.
+- Perubahan lanjutan dilakukan pada branch kerja terpisah dan diajukan melalui pull request.
+- [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1) telah **merged** menggunakan Squash and merge pada 27 November 2026.
+- [PR #3 — perbaikan Android SDK dan CI](https://github.com/berkah-pos/btp/pull/3) telah **merged** setelah quality workflow berhasil pada 27 November 2026.
 
 ## Cloud build
 
-Workflow ada di `.github/workflows/android-ci.yml` dan hanya menggunakan GitHub-hosted `ubuntu-24.04`. Workflow menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
+Workflow berada di `.github/workflows/android-ci.yml` dan menggunakan GitHub-hosted `ubuntu-24.04`. Workflow dirancang untuk menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
 
 Untuk bootstrap Gradle Wrapper di runner, workflow memasang Gradle 9.8.2 lalu membangkitkan wrapper di workspace runner sebelum menjalankan `./gradlew`. Tidak ada wrapper JAR yang dikomit pada baseline ini.
 
