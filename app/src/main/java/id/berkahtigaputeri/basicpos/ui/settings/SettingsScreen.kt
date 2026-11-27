@@ -30,6 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import id.berkahtigaputeri.basicpos.BuildConfig
 import androidx.compose.ui.unit.dp
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 
@@ -44,6 +46,7 @@ fun SettingsScreen(
     val message by viewModel.message.collectAsState()
     val saving by viewModel.isSaving.collectAsState()
     val backupBusy by viewModel.isBackupBusy.collectAsState()
+    val uriHandler = LocalUriHandler.current
 
     var showRestoreConfirmation by remember { mutableStateOf(false) }
     val exportBackupLauncher = rememberLauncherForActivityResult(
@@ -173,11 +176,28 @@ fun SettingsScreen(
                 "Layanan SaaS perusahaan dapat membantu pengelolaan operasional usaha. BERKAH POS Basic pada tahap ini tetap berjalan secara lokal, gratis, dan tanpa akun.",
                 style = MaterialTheme.typography.bodyMedium
             )
-            Text(
-                "Kontak dan tautan resmi perusahaan belum dikonfigurasi.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (BuildConfig.SAAS_URL.isNotBlank()) {
+                TextButton(onClick = { uriHandler.openUri(BuildConfig.SAAS_URL) }) {
+                    Text("Kunjungi layanan SaaS")
+                }
+            } else {
+                Text(
+                    "Tautan layanan SaaS belum dikonfigurasi.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (BuildConfig.SUPPORT_EMAIL.isNotBlank()) {
+                TextButton(onClick = { uriHandler.openUri("mailto:" + BuildConfig.SUPPORT_EMAIL) }) {
+                    Text("Email dukungan: ${BuildConfig.SUPPORT_EMAIL}")
+                }
+            } else {
+                Text(
+                    "Email dukungan resmi belum dikonfigurasi.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Text("Backup dan pemulihan", style = MaterialTheme.typography.titleLarge)
             Text(
