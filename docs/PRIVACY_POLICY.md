@@ -23,7 +23,7 @@ Fitur backup manual JSON tersedia melalui Android Storage Access Framework. File
 
 Pemulihan mengganti data POS lokal dengan isi file setelah validasi, dalam satu transaksi database. File yang tidak sesuai format atau tidak konsisten ditolak dan tidak diterapkan sebagian.
 
-Automatic Android application backup dinonaktifkan pada konfigurasi saat ini.
+Automatic Android application backup dinonaktifkan dengan `android:allowBackup=false` dan aturan XML legacy/Android 12+ yang mengecualikan domain root, file, database, shared preferences, external, serta domain device-protected yang didukung. Aturan Android 12+ dipisahkan untuk cloud backup, device-to-device transfer, dan cross-platform transfer. Konfigurasi ini dibuat karena pada sebagian perangkat, `allowBackup=false` tidak selalu menonaktifkan transfer perangkat-ke-perangkat. Backup POS yang didukung aplikasi tetap ekspor JSON manual yang dipilih pengguna.
 
 ## SDK dan pihak ketiga
 Aplikasi menggunakan Jetpack Compose, AndroidX, Room/SQLite, Kotlin Coroutines, dan Preferences DataStore untuk fungsi lokal. Tidak ada SDK iklan, analytics, Firebase, crash reporting, atau SDK pengumpulan data pihak ketiga yang direncanakan. Daftar dependency dan semua SDK transitif tetap harus diverifikasi dari dependency graph release sebelum publikasi.
