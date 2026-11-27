@@ -2,12 +2,12 @@
 
 ## Versi toolchain yang dipatok
 
-- Android Gradle Plugin: 9.5.1
-- Gradle: 9.8.2
+- Android Gradle Plugin: 9.5.3
+- Gradle: 9.9.2
 - JDK: 17
-- Built-in Kotlin / Compose Compiler plugin: 2.4.20
+- Built-in Kotlin / Compose Compiler plugin: 2.4.21
 - Kotlin Symbol Processing: 2.3.14
-- Compose BOM: 2026.09.00
+- Compose BOM: 2026.11.01
 - Kotlin Coroutines: 1.11.0
 - AndroidX Activity Compose: 1.13.0
 - Navigation Compose: 2.10.2
@@ -20,7 +20,7 @@ Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk komp
 
 ## Android compatibility
 
-Google Play currently requires new Android apps and updates to target at least API 36 from 31 August 2026. Project baseline uses `targetSdk=36`; re-check the policy immediately before submission. Compile SDK is 37 because the selected Compose stable BOM requires the newer SDK level.
+Google Play currently requires new Android apps and updates to target at least API 36 from 31 August 2026. Project baseline uses `targetSdk=36`; re-check the policy immediately before submission. Compile SDK is 37 because the selected Compose stable BOM 2026.11.01 requires the newer SDK level.
 
 ## Prinsip
 - Local-first / offline-first: SQLite melalui Room menjadi sumber data utama.
