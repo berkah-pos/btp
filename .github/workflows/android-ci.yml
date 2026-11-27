@@ -19,8 +19,8 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "scripts/**"
       - "docs/store-assets/**"
-
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"

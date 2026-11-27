@@ -4,7 +4,7 @@ Status: **NOT SUBMITTED / NOT FINAL**. The evidence below is a source/build revi
 
 ## Latest release-variant evidence
 
-GitHub Actions [run #22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `eb8309247e76f2bc73faac6d67809ff65652fc61`, captured:
+GitHub Actions [run #26](https://github.com/berkah-pos/btp/actions/runs/45983299284), commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`, captured:
 - `release-audit/merged-release-manifest.xml`
 - `release-audit/release-runtime-dependencies.txt`
 - `release-audit/manifest-source-paths.txt`
@@ -55,4 +55,4 @@ Google Play's Data Safety rules distinguish data processed only on-device from d
 - Kontak privasi dan alamat resmi pengendali belum tersedia.
 - Data Safety and Ads declarations have not yet been submitted in Play Console.
 - Signed release AAB and device verification remain outstanding.
-- Dependency verification SHA-256 metadata is generated but not yet reviewed/committed as a trusted baseline.
+- Dependency verification metadata from successful runs #22 and #26 is byte-identical (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`): 462 components and 758 SHA-256 artifact entries. The graph resolves only from the configured Google, Maven Central, and Gradle Plugin Portal repositories, with no dynamic or SNAPSHOT versions observed. The file remains an uncommitted bootstrap artifact; strict dependency verification was skipped and signature verification is not enabled.

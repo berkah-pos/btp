@@ -1,6 +1,6 @@
 # Google Play release checklist
 
-Status: pre-release review remains **BLOCKED**. The latest technical evidence is GitHub Actions run [#22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `eb8309247e76f2bc73faac6d67809ff65652fc61`, on 27 November 2026. The owner has confirmed that submission will use a **Google Play Organization developer account**.
+Status: pre-release review remains **BLOCKED**. The latest fully verified technical evidence is GitHub Actions run [#26](https://github.com/berkah-pos/btp/actions/runs/45983299284), commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`, on 27 November 2026. The owner has confirmed that submission will use a **Google Play Organization developer account**.
 
 ## Latest verified CI evidence
 
@@ -15,8 +15,8 @@ Status: pre-release review remains **BLOCKED**. The latest technical evidence is
 - Strict dependency verification: **SKIPPED**. The generated SHA-256 metadata remains an unreviewed bootstrap baseline and is not committed.
 
 Artifacts:
-- [Debug APK, reports, Room schema v2, dependency metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/45981321510/artifacts/15189108166) — 14-day retention.
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/45981321510/artifacts/15188978482) — 90-day retention.
+- [Debug APK, reports, Room schema v2, dependency metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190830767) — 14-day retention.
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190362585) — 90-day retention.
 
 This is CI and source-level evidence. It is **not** evidence of signed AAB validity, installation/startup on physical devices, UI automation, Play Console submission, or Google Play approval.
 
@@ -56,7 +56,9 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [x] Jalankan lint debug (0 error; 1 warning OldTargetApi).
 - [x] Bangun debug APK pada GitHub-hosted runner.
 - [x] Capture merged release manifest dan release runtime dependency inventory.
-- [ ] Review dan commit `gradle/verification-metadata.xml`; jalankan ulang dengan strict dependency verification.
+- [ ] Review dan commit `gradle/verification-metadata.xml`; jalankan ulang dengan strict dependency verification. Runs #22 and #26 produced byte-identical bootstrap metadata (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`, 462 components, 758 SHA-256 entries), but it is not committed and strict verification remains skipped.
+- [ ] Verify the new debug APK 16 KB ZIP alignment and 64-bit ELF LOAD audit in the current PR run.
+- [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
 - [ ] Bangun release AAB dengan upload key yang disimpan hanya di GitHub Environment Secrets.
 - [ ] Validasi AAB dengan bundletool.
 - [ ] Verifikasi signature dan upload certificate fingerprint.

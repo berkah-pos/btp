@@ -11,7 +11,7 @@
 
 ## Latest audit checkpoint
 
-Run [#22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `eb8309247e76f2bc73faac6d67809ff65652fc61`, completed successfully:
+Run [#26](https://github.com/berkah-pos/btp/actions/runs/45983299284), commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`, completed successfully:
 - 24 debug unit tests, no failures/errors/skips.
 - Debug lint: 0 errors and 1 `OldTargetApi` warning at target API 36.
 - Debug APK built.
@@ -20,10 +20,14 @@ Run [#22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `e
 - Signed AAB job was skipped because this was a pull-request run.
 
 Artifacts:
-- [Debug APK, test/lint reports, schema v2, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45981321510/artifacts/15189108166), 14-day retention.
-- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45981321510/artifacts/15188978482), 90-day retention.
+- [Debug APK, test/lint reports, schema v2, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190830767), 14-day retention.
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190362585), 90-day retention.
 
 These artifacts are evidence for the exact commit above, not for later changes unless the workflow is rerun.
+
+## 16 KB page-size checks
+
+The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug check is awaiting its first cloud result on the current PR head; the signed AAB job has not run because PR workflows deliberately skip release signing.
 
 ## Organization Play Console account
 
@@ -64,6 +68,7 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 
 ## Dependency verification
 - `gradle/verification-metadata.xml` harus dihasilkan dari dependency resolution cloud pertama, ditinjau, lalu dikomit sebagai baseline tepercaya.
+- Runs #22 and #26 produced byte-identical bootstrap metadata (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`): 462 components and 758 SHA-256 artifact entries. This is reproducibility evidence, not independent authenticity proof; the file is still uncommitted and strict verification remains skipped.
 - Jangan menganggap metadata yang dibuat dan langsung diverifikasi dalam job yang sama sebagai baseline tepercaya; itu hanya bootstrap TOFU.
 - Setelah metadata disetujui dan dikomit, aktifkan `--dependency-verification=strict` untuk seluruh quality dan release build.
 - Setiap perubahan dependency harus melalui review metadata sebelum masuk branch utama.

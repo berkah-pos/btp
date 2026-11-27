@@ -32,7 +32,7 @@ Artifacts:
 
 **Dependency verification belum aktif dalam mode strict.** Run #26 menggunakan bootstrap `--write-verification-metadata sha256`; metadata diunggah untuk review, tetapi belum dikomit sebagai baseline tepercaya. Step strict verification dilewati karena file belum tersedia pada branch. Jangan menganggap hash bootstrap dalam satu run sebagai verifikasi independen.
 
-Hasil run #26 berlaku untuk commit yang disebutkan, bukan otomatis untuk commit berikutnya. Belum ada bukti startup pada perangkat fisik/emulator, UI automation, internal testing, atau Google Play Pre-launch Report.
+Hasil run #26 berlaku untuk commit yang disebutkan, bukan otomatis untuk commit berikutnya. Run #26 memvalidasi commit yang disebutkan di atas. Pemeriksaan 16 KB yang ditambahkan sesudahnya belum tercakup oleh run #26; hasil pertama menunggu run PR terbaru. Belum ada bukti startup pada perangkat fisik/emulator, UI automation, internal testing, atau Google Play Pre-launch Report.
 
 ## Keputusan teknis
 
@@ -58,7 +58,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 
 ## Cloud build
 
-Workflow `.github/workflows/android-ci.yml` memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Pull request menuju `main` serta push ke `main` menjalankan unit test, lint, dan debug build. Signed release AAB hanya melalui `workflow_dispatch` manual pada `main`, GitHub Environment `android-release`, dan upload-key secrets. Tidak ada self-hosted runner atau publikasi otomatis.
+Workflow `.github/workflows/android-ci.yml` memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Pull request menuju `main` serta push ke `main` menjalankan unit test, lint, debug build, pemeriksaan `zipalign -c -P 16 -v 4`, dan audit ELF LOAD 16 KB untuk library arm64-v8a/x86_64 bila ada. Signed release AAB hanya melalui `workflow_dispatch` manual pada `main`, GitHub Environment `android-release`, dan upload-key secrets; job release memeriksa `PAGE_ALIGNMENT_16K` dari bundletool serta ELF native library. Gate debug baru menunggu hasil CI pertama, sedangkan gate AAB belum dijalankan karena tidak ada release build. Tidak ada self-hosted runner atau publikasi otomatis.
 
 Runner membangkitkan Gradle Wrapper sementara dari Gradle 9.9.2 yang dipasang oleh action resmi. Distribution SHA-256 dan SHA-256 wrapper JAR diperiksa sebelum wrapper dipakai; wrapper JAR/scripts tidak dikomit. Perubahan dependency tetap harus diikuti review dan commit `gradle/verification-metadata.xml` sebelum strict dependency verification dapat menjadi gate permanen.
 
