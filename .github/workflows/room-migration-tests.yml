@@ -1,0 +1,112 @@
+name: Room Migration Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/src/main/java/id/berkahtigaputeri/basicpos/data/local/**"
+      - "app/src/androidTest/**"
+      - "app/schemas/**"
+      - "app/build.gradle.kts"
+      - "gradle/libs.versions.toml"
+      - ".github/workflows/room-migration-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: room-migration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  room-migration:
+    name: Room v1 to v2 instrumentation tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          cmdline-tools-version: 15859902
+          packages: "platform-tools build-tools;36.0.0"
+
+      - name: Install compile platform and API 36 emulator image
+        run: |
+          set -euo pipefail
+          sdkmanager --install \
+            "platforms;android-36" \
+            "platforms;android-37.1" \
+            "system-images;android-36;google_apis;x86_64" \
+            "build-tools;36.0.0" --channel=0
+          test -s "$ANDROID_SDK_ROOT/platforms/android-37.1/android.jar"
+          test -s "$ANDROID_SDK_ROOT/platforms/android-36/android.jar"
+
+      - name: Set up Gradle 9.9.2
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          gradle-version: "9.9.2"
+          cache-provider: basic
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Bootstrap verified Gradle wrapper
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
+              --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
+          test -s gradle/wrapper/gradle-wrapper.jar
+          echo "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
+
+      - name: Run Room migration tests on API 36 cloud emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 2
+          ram-size: 2048M
+          disk-size: 6G
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          disable-linux-hw-accel: auto
+          script: ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace --console=plain
+
+      - name: Upload Room migration test reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-room-migration-${{ github.run_number }}
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/connected/
+            app/build/test-results/
+            app/build/outputs/apk/androidTest/debug/
+            app/build/outputs/apk/debug/
+          if-no-files-found: warn
+          retention-days: 30
