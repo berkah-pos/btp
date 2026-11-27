@@ -20,11 +20,11 @@ Instrumentation test ada pada `app/src/androidTest/java/id/berkahtigaputeri/basi
 
 ## Verification status
 
-- Room Migration Tests [run #35](https://github.com/berkah-pos/btp/actions/runs/46019306650) completed **success** on the API 36 GitHub-hosted emulator.
+- Room Migration Tests [run #42](https://github.com/berkah-pos/btp/actions/runs/46026654721) completed **success** on the API 36 GitHub-hosted emulator.
 - JUnit XML confirms **2 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code 0.
 - `migratesOriginalKspVersionOneAndPreservesSalesAndReceiptItems` passed.
 - `migratesHistoricalVersionOneWithProductIdAndReceiptSnapshotsAlreadyPresent` passed.
 - Both tests open genuine SQLite v1 fixtures through production `MIGRATION_1_2`; Room validates the resulting v2 schema.
-- Earlier Run #41 only compiled the instrumentation source and did not execute emulator tests; that checkpoint is superseded by Run #35.
+- Earlier Room run #35 also passed both cases; run #42 is the latest successful migration evidence on the current verified branch head.
 
 Jangan membuat ulang atau mengubah schema v1 secara manual. Gunakan fixture KSP asli yang sudah dikomit.

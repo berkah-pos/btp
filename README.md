@@ -17,7 +17,7 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 
 ## Validasi cloud yang teramati
 
-**Android CI [run #80](https://github.com/berkah-pos/btp/actions/runs/46019306696)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk source head `5a96fc363e7dcdd4b765ac27b94274d9473c9e06`. Ini adalah workflow Android CI lengkap terakhir yang berkesimpulan success; perubahan workflow dan aksesibilitas setelah commit tersebut menunggu validasi ulang.
+**Android CI [run #89](https://github.com/berkah-pos/btp/actions/runs/46026654646)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk source head `b8bdd55c519efc081fa96f4ef5443482d86a3c14`.
 
 - `testDebugUnitTest`: **29 test, 0 failure, 0 error, 0 skipped**, diverifikasi dari lima JUnit XML.
 - `compileDebugAndroidTestKotlin`: **success**.
@@ -29,10 +29,10 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 - Signed release AAB **SKIPPED** pada pull-request run; tidak ada AAB bertanda tangan yang dihasilkan.
 
 Artifacts:
-- [Debug APK, JUnit/lint reports, Room schemas, dependency metadata, dan release audit](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15208022108) — retensi 14 hari.
-- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15207772322) — retensi 90 hari.
+- [Debug APK, JUnit/lint reports, Room schemas, dan release audit](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212576547) — retensi 14 hari.
+- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212238982) — retensi 90 hari.
 
-**Room Migration Tests [run #35](https://github.com/berkah-pos/btp/actions/runs/46019306650)** selesai **success** pada 27 November 2026 di GitHub-hosted `ubuntu-24.04` dengan Android API 36 emulator.
+**Room Migration Tests [run #42](https://github.com/berkah-pos/btp/actions/runs/46026654721)** selesai **success** pada 27 November 2026 di GitHub-hosted `ubuntu-24.04` dengan Android API 36 emulator.
 
 - `connectedDebugAndroidTest`: **2 test, 0 failure, 0 error, 0 skipped**; instrumentation exit code `0`.
 - Migrasi schema v1 asli dan bentuk v1 historis melalui `MIGRATION_1_2`: **PASS**.
@@ -40,7 +40,11 @@ Artifacts:
 - Room memvalidasi hasil schema v2.
 
 Artifact:
-- [Room migration JUnit report, APKs, dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46019306650/artifacts/15207827414).
+- [Room migration JUnit report, APKs, dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46026654721/artifacts/15211149424).
+
+**Perubahan setelah checkpoint yang telah diverifikasi**
+
+Commit `8269159635b6ebfc8ec1a45a1a35a9423f1e61cc` menserialisasi backup/export, restore, dan mutasi profil/pengaturan melalui satu operation gate aplikasi. Dua unit test baru memeriksa eksklusivitas operasi dan pelepasan lock saat cancellation. Perubahan ini lebih baru daripada run #89/#42 dan **menunggu CI baru**; tidak ada hasil build/test yang diklaim untuk commit tersebut.
 
 **Dependency verification — reviewed baseline provenance**
 
@@ -48,9 +52,7 @@ Artifact:
 - Canonical refreshed metadata SHA-256: `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba` (**455 components / 745 unique artifact hashes**).
 - Run #80's earlier cached metadata had SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6` (459 / 754). All 745 shared coordinates retained identical hashes; nine older entries disappeared after refreshed resolution. The reviewed baseline remains the exact Run #81/#82 file, not an automatically regenerated replacement.
 - Run #81's source artifact is pinned to artifact ID `15207933387` and archive SHA-256 `c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16`.
-- Before preparing the baseline artifact, the quality job now validates its current resolution against the reviewed XML SHA-256 and exact inventory. New dependency checksums are not approved automatically.
-- A read-only preparation job verifies the source workflow run, branch, commit SHA, successful quality job, artifact ID/digest, and XML SHA-256; it then uploads a dedicated baseline-only artifact with a provenance manifest. The commit job revalidates the current-run artifact digest, source provenance, and XML inventory before staging only `gradle/verification-metadata.xml`.
-- Metadata keeps `verify-metadata=true` and the existing `verify-signatures=false` setting. SHA-256 pinning is not publisher-signature authentication. The baseline is not committed yet, and clean `--dependency-verification=strict` remains **NOT PASS** until the guarded workflow completes.
+- The manual baseline commit and clean `--dependency-verification=strict` remain **NOT PASS**. On ordinary PR runs, the guarded baseline jobs are skipped; no `gradle/verification-metadata.xml` is present on this branch.
 
 **Status yang belum diverifikasi pada head terbaru:**
 - Clean Gradle dependency verification dengan `--dependency-verification=strict`.

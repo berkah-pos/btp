@@ -4,7 +4,7 @@ Status: **NOT SUBMITTED / NOT FINAL**. The evidence below is a source/build revi
 
 ## Latest release-variant evidence
 
-GitHub Actions [run #80](https://github.com/berkah-pos/btp/actions/runs/46019306696), source head `5a96fc363e7dcdd4b765ac27b94274d9473c9e06`, captured and uploaded:
+GitHub Actions [run #89](https://github.com/berkah-pos/btp/actions/runs/46026654646), source head `b8bdd55c519efc081fa96f4ef5443482d86a3c14`, captured and uploaded:
 - `release-audit/merged-release-manifest.xml`
 - `release-audit/release-runtime-dependencies.txt`
 - `release-audit/manifest-source-paths.txt`
@@ -14,13 +14,15 @@ The merged release manifest reports candidate package `id.berkahtigaputeri.basic
 
 The release manifest sets `android:allowBackup="false"`, uses explicit full-backup and data-extraction rule files, and sets `android:usesCleartextTraffic="false"`.
 
-The Run #80 `releaseRuntimeClasspath` inventory contains AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, Retrofit, or other HTTP client was identified in the captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
+The Run #89 `releaseRuntimeClasspath` inventory was captured from the PR head. It contains AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, Retrofit, or other HTTP client was identified in this captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
 
 Artifacts:
-- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15208022108).
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15207772322).
+- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212576547).
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212238982).
 
-This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #80 completed 29 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
+This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #89 completed 29 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
+
+Commit `8269159` adds only application-level serialization of backup/restore and SettingsScreen data mutations plus JVM gate tests. It is newer than Run #89 and has not yet been validated by a runner; rerun the release manifest/dependency capture for the eventual release commit.
 
 ## Observasi implementasi
 
