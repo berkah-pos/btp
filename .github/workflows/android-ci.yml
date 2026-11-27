@@ -33,6 +33,10 @@ on:
 permissions:
   contents: read
 
+env:
+  ORG_GRADLE_PROJECT_btpSaasUrl: ${{ vars.BTP_SAAS_URL }}
+  ORG_GRADLE_PROJECT_btpSupportEmail: ${{ vars.BTP_SUPPORT_EMAIL }}
+
 concurrency:
   group: android-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
