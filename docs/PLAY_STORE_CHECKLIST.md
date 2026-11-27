@@ -67,7 +67,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 ## Build dan signing
 - [x] Jalankan unit test debug variant: 34 lulus, 0 gagal pada Run #102.
 - [x] Jalankan lint debug (0 error; 2 warnings: OldTargetApi dan AndroidGradlePluginVersion) pada Run #102.
-- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #99.
+- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #102.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #102.
 - [x] Review metadata Run #96: 459 komponen / 754 artifact; archive SHA-256 fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947; XML SHA-256 b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6. Runs #98, #99, #100, dan #102 mereproduksi XML yang identik.
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.

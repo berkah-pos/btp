@@ -1,6 +1,8 @@
 package id.berkahtigaputeri.basicpos.data.backup
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -80,7 +82,7 @@ class PosBackupRestoreCoordinatorTest {
     }
 
     @Test
-    fun compensatesPreferenceWhenRoomRestoreIsCancelled() = runBlocking {
+    fun compensatesPreferenceWhenRoomRestoreThrowsCancellation() = runBlocking {
         val calls = mutableListOf<Long>()
         val cancellation = CancellationException("Restore cancelled")
 
@@ -99,6 +101,34 @@ class PosBackupRestoreCoordinatorTest {
 
         assertSame(cancellation, thrown)
         assertEquals(listOf(12L, 5L), calls)
+    }
+
+    @Test
+    fun callerCancellationCannotSplitPreferenceAndRoomRestore() = runBlocking {
+        val roomStarted = CompletableDeferred<Unit>()
+        val allowRoomCommit = CompletableDeferred<Unit>()
+        val preferenceWrites = mutableListOf<Long>()
+        var roomCommitted = false
+
+        val restoreJob = launch {
+            restoreWithLowStockPreferenceCompensation(
+                previousLowStockThreshold = 5,
+                restoredLowStockThreshold = 12,
+                updateLowStockThreshold = { preferenceWrites += it }
+            ) {
+                roomStarted.complete(Unit)
+                allowRoomCommit.await()
+                roomCommitted = true
+            }
+        }
+
+        roomStarted.await()
+        restoreJob.cancel()
+        allowRoomCommit.complete(Unit)
+        restoreJob.join()
+
+        assertTrue(roomCommitted)
+        assertEquals(listOf(12L), preferenceWrites)
     }
 
     @Test
