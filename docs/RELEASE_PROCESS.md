@@ -16,6 +16,10 @@ Optional repository Actions Variables:
 
 The Gradle build accepts these through `ORG_GRADLE_PROJECT_btpSaasUrl` and `ORG_GRADLE_PROJECT_btpSupportEmail`. Both default to empty; the app displays no external destination until real values are configured. The SaaS URL is restricted to HTTPS. Do not populate these variables with a placeholder or an unverified company address.
 
+## Permanent application ID
+
+Before a signed release, confirm the permanent application ID in Play Console and configure the repository Actions Variable `BTP_APPLICATION_ID`. The Gradle build defaults to the documented candidate for debug builds, but the signed release workflow fails when this variable is empty. The value becomes permanent after first publication; do not change it later.
+
 ## GitHub Environment `android-release`
 Buat dan konfigurasi environment melalui Settings → Environments → android-release:
 1. Batasi deployment branches/tags agar hanya branch `main` yang diizinkan.
