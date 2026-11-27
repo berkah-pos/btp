@@ -181,6 +181,16 @@ jobs:
           cp -R app/build/reports android-release/ 2>/dev/null || true
           cp -R app/build/test-results android-release/ 2>/dev/null || true
           cp docs/PLAY_STORE_CHECKLIST.md android-release/
+          cp gradle/verification-metadata.xml android-release/
+          {
+            echo "BERKAH POS release build report"
+            echo "Commit: $GITHUB_SHA"
+            echo "Workflow run: $GITHUB_RUN_ID"
+            echo
+            java -version 2>&1
+            echo
+            ./gradlew --no-daemon --version
+          } > android-release/build-report.txt
 
       - name: Upload signed release artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
