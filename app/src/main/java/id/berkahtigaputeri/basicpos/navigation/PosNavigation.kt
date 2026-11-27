@@ -109,7 +109,7 @@ fun PosNavigation() {
             }
             composable(PosRoute.SETTINGS) {
                 val settingsViewModel: SettingsViewModel = viewModel(
-                    factory = SettingsViewModel.Factory(application.container.posRepository)
+                    factory = SettingsViewModel.Factory(application.container.posRepository, application.container.backupService)
                 )
                 SettingsScreen(viewModel = settingsViewModel)
             }
