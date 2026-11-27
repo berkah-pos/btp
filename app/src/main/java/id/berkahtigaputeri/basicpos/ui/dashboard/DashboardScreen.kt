@@ -42,7 +42,7 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("BERKAH POS")
+                        Text("Basic POS")
                         Text(
                             text = "Ringkasan usaha",
                             style = MaterialTheme.typography.labelMedium,

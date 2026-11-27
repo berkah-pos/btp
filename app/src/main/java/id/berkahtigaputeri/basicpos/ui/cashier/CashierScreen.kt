@@ -275,7 +275,7 @@ fun CashierScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     val receiptProfile = saved.storeProfileSnapshot
-                    Text(receiptProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+                    Text(receiptProfile?.storeName ?: "Basic POS", style = MaterialTheme.typography.titleMedium)
                     receiptProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
                     receiptProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
                     Text(saved.sale.transactionNumber)

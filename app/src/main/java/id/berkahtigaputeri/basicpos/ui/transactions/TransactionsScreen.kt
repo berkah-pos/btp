@@ -175,7 +175,7 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(storeProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+        Text(storeProfile?.storeName ?: "Basic POS", style = MaterialTheme.typography.titleMedium)
         storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { Text("Pemilik: $it") }
         storeProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
         storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
@@ -220,7 +220,7 @@ private fun formatTransactionDate(epochMillis: Long): String =
 
 private fun buildReceiptText(receipt: SaleReceipt): String = buildString {
     val storeProfile = receipt.storeProfileSnapshot
-    appendLine(storeProfile?.storeName ?: "BERKAH POS")
+    appendLine(storeProfile?.storeName ?: "Basic POS")
     storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { appendLine("Pemilik: $it") }
     storeProfile?.address?.takeIf(String::isNotBlank)?.let { appendLine(it) }
     storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { appendLine(it) }

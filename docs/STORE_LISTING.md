@@ -1,9 +1,9 @@
-# Draft Google Play Store listing — BERKAH POS
+# Draft Google Play Store listing — Basic POS
 
 Status: DRAFT. Use only after the release build has passed functional testing and every claim below has been checked against the final binary.
 
 ## App identity
-- App name: **BERKAH POS - Kasir UMKM**
+- App name: **Basic POS - Kasir UMKM**
 - Owner-selected application ID for next build: `id.co.berkahtigaputeri.btp` (availability must be confirmed in Play Console before first publication) (derived from `berkahtigaputeri.co.id`; must be checked in Play Console before first publication)
 - Category proposal: Business
 - Developer/brand: BERKAH TIGA PUTERI
@@ -11,7 +11,7 @@ Status: DRAFT. Use only after the release build has passed functional testing an
 
 ## Full description draft
 
-**BERKAH POS — Kasir Offline untuk UMKM**
+**Basic POS — Kasir Offline untuk UMKM**
 
 Kelola pencatatan penjualan harian usaha kecil Anda dengan aplikasi kasir sederhana yang menyimpan data langsung di perangkat.
 
@@ -30,7 +30,7 @@ Kelola pencatatan penjualan harian usaha kecil Anda dengan aplikasi kasir sederh
 - Tidak menggunakan Firebase, analytics, crash reporting, atau SDK iklan pihak ketiga pada rancangan aplikasi ini.
 - File backup JSON tidak dienkripsi oleh aplikasi. Simpan file cadangan di tempat aman dan jangan membagikannya kepada orang yang tidak dipercaya.
 
-BERKAH POS Basic merupakan aplikasi pencatatan kasir lokal. Informasi layanan POS dan manajemen bisnis dari BERKAH TIGA PUTERI tersedia pada halaman informasi di dalam aplikasi. Tautan dan kontak resmi akan ditampilkan setelah dikonfigurasi.
+Basic POS merupakan aplikasi pencatatan kasir lokal. Informasi layanan POS dan manajemen bisnis dari BERKAH TIGA PUTERI tersedia pada halaman informasi di dalam aplikasi. Tautan dan kontak resmi akan ditampilkan setelah dikonfigurasi.
 
 ## App access instructions for reviewers
 No login, no registration, and no account credentials are required. Open the app and use its local features. Internet access is not required for POS workflows. To explore the cashier flow, add a product manually or use the clearly labelled optional sample products in the Products screen. Sample data adds products only; it does not create sample transactions or sales.
@@ -51,4 +51,4 @@ No login, no registration, and no account credentials are required. Open the app
 - Preview video: optional and not prepared.
 
 ## Release notes draft — initial release
-Rilis awal BERKAH POS Basic dengan kasir offline, katalog produk, pencatatan stok, riwayat transaksi, struk, profil toko, dan backup JSON. Finalize this text after the tested release binary is available.
+Rilis awal Basic POS dengan kasir offline, katalog produk, pencatatan stok, riwayat transaksi, struk, profil toko, dan backup JSON. Finalize this text after the tested release binary is available.

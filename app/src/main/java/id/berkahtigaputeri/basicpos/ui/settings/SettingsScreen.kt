@@ -204,7 +204,7 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                "Layanan SaaS perusahaan dapat membantu pengelolaan operasional usaha. BERKAH POS Basic pada tahap ini tetap berjalan secara lokal, gratis, dan tanpa akun.",
+                "Layanan SaaS perusahaan dapat membantu pengelolaan operasional usaha. Basic POS pada tahap ini tetap berjalan secara lokal, gratis, dan tanpa akun.",
                 style = MaterialTheme.typography.bodyMedium
             )
             if (BuildConfig.SAAS_URL.isNotBlank()) {
@@ -330,7 +330,7 @@ Email privasi/dukungan: belum disediakan.
 URL kebijakan publik HTTPS: belum tersedia.
 
 Data yang disimpan
-BERKAH POS menyimpan profil toko, nama pemilik, alamat, nomor telepon, catatan struk, kategori, produk, SKU, harga, stok, transaksi, rincian item, dan preferensi ambang stok rendah pada perangkat melalui SQLite/Room dan Preferences DataStore.
+Basic POS menyimpan profil toko, nama pemilik, alamat, nomor telepon, catatan struk, kategori, produk, SKU, harga, stok, transaksi, rincian item, dan preferensi ambang stok rendah pada perangkat melalui SQLite/Room dan Preferences DataStore.
 
 Pengiriman dan akun
 Fungsi POS inti tidak membutuhkan akun atau server. Source manifest tidak mendeklarasikan izin INTERNET. Tidak direncanakan Firebase, analytics, crash reporting, iklan pihak ketiga, atau SDK pengumpulan data. Dependency graph dan merged manifest release masih harus diperiksa.
@@ -369,7 +369,7 @@ Dokumen ini belum merupakan Privacy Policy publik dan tidak boleh dikirim sebaga
                         """Status: DRAF — perlu pemeriksaan dan persetujuan pengelola.
 
 1. Ruang lingkup
-BERKAH POS Basic adalah aplikasi pencatatan kasir lokal yang dapat digunakan tanpa akun atau server.
+Basic POS adalah aplikasi pencatatan kasir lokal yang dapat digunakan tanpa akun atau server.
 
 2. Tanggung jawab pengguna
 Pengguna bertanggung jawab atas ketepatan nama produk, harga, stok, pajak, diskon, dan nominal pembayaran yang dimasukkan.
