@@ -38,9 +38,13 @@ Google Play currently requires new Android apps and updates to target at least A
 5. `data/preferences`: preferensi ringan melalui DataStore.
 
 ## Data lokal
-Entity awal: profil toko, kategori, produk, transaksi, dan snapshot item transaksi. Item transaksi menyimpan nama/SKU/harga saat checkout agar struk lama tidak berubah saat master produk diedit.
+Room menyimpan profil toko, kategori, produk, penjualan, dan snapshot item transaksi. Snapshot item mempertahankan nama/SKU/harga saat checkout agar struk lama tidak berubah ketika master produk diedit atau dihapus.
 
-Automatic Android backup dinonaktifkan pada manifest. Backup manual JSON akan diimplementasikan pada tahap berikutnya dan hanya berjalan setelah pengguna memilih ekspor/impor.
+DAO menyediakan pencarian produk/nomor transaksi, ringkasan agregat penjualan harian, hitungan stok rendah, serta transaksi atomik untuk stok dan checkout. Penjualan harian menggunakan rentang kalender lokal dan dihitung ulang pada pergantian tengah malam.
+
+Preferences DataStore menyimpan ambang stok rendah pengguna (0–1.000.000 unit, default 5). Dashboard mengamati DataStore dan menjalankan query Room dengan ambang tersebut.
+
+Automatic Android backup dinonaktifkan pada manifest. Backup JSON manual tersedia melalui Android Storage Access Framework. Restore memvalidasi format, jumlah data, ID/referensi, SKU, nominal transaksi, dan subtotal item sebelum mengganti database dalam satu transaksi Room. Ukuran backup dibatasi 25 MB. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab menyimpannya secara aman.
 
 ## Dependency injection
 Fondasi menggunakan `AppContainer` manual. Tidak ada Hilt/Dagger untuk menghindari dependency dan plugin tambahan yang belum diperlukan.
