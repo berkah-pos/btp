@@ -76,7 +76,10 @@ class PosBackupService(
         require(root.getString("format") == FORMAT_NAME) {
             "Format file bukan cadangan BERKAH POS."
         }
-        require(root.getInt("schemaVersion") == SCHEMA_VERSION) {
+        val schemaVersionValue = root.get("schemaVersion")
+        require(schemaVersionValue is Number &&
+            schemaVersionValue.toString().toLongOrNull() == SCHEMA_VERSION.toLong()
+        ) {
             "Versi cadangan tidak didukung aplikasi ini."
         }
 
@@ -134,7 +137,7 @@ class PosBackupService(
         uniqueIds(items.map { it.id }, "item transaksi")
 
         require(categories.all { it.name.isNotBlank() && it.createdAtEpochMillis >= 0 } &&
-            categories.map { it.name.trim().lowercase(Locale.ROOT) }.toSet().size == categories.size
+            categories.map { it.name.trim() }.toSet().size == categories.size
         ) { "Nama kategori kosong atau ganda." }
 
         val categoryIds = categories.map { it.id }.toSet()
