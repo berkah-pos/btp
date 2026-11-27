@@ -8,6 +8,7 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle.properties"
@@ -17,6 +18,7 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle.properties"
@@ -172,7 +174,8 @@ jobs:
           EOF
           mkdir -p android-release
           cp app/build/outputs/bundle/release/app-release.aab android-release/berkah-pos-release.aab
-          cp SHA256SUMS release-metadata.json android-release/
+          cp release-metadata.json android-release/
+          (cd android-release && sha256sum berkah-pos-release.aab > SHA256SUMS)
           cp "$RUNNER_TEMP/signature-check.txt" android-release/
           cp "$RUNNER_TEMP/upload-certificate.txt" android-release/
           cp -R app/build/reports android-release/ 2>/dev/null || true
