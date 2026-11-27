@@ -3,7 +3,7 @@
 ## CI dan runner
 - Semua job memakai standard GitHub-hosted `ubuntu-24.04`; self-hosted runner dilarang.
 - Repository ini sengaja public. Standard runners public repository tidak dikenakan biaya per menit, tetapi artifact storage tetap berkuota.
-- Pull request dan push branch `main`/`feat/basic-pos-mvp` menjalankan unit test, lint, dan debug build.
+- Pull request menuju `main` menjalankan unit test, lint, dan debug build. Push langsung ke `main` juga menjalankan quality workflow; branch feature yang memiliki PR tidak menjalankan build push duplikat.
 - Release AAB hanya melalui `workflow_dispatch` di branch `main` dengan input `build_release=true`.
 - Workflow dibatasi permission `contents: read`; secret hanya tersedia di job release melalui Environment.
 - Build tidak pernah memublikasikan otomatis ke Google Play.
