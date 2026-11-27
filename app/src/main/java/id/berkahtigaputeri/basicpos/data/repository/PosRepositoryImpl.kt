@@ -19,7 +19,11 @@ import id.berkahtigaputeri.basicpos.domain.model.SaleSummary
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -53,40 +57,49 @@ class PosRepositoryImpl(
         dao.observeLowStockProducts(threshold.coerceAtLeast(0), limit.coerceIn(1, 100))
             .map { rows -> rows.map(::toDomain) }
 
-    override fun observeDashboardSummary(): Flow<DashboardSummary> {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val start = calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
-        val end = calendar.timeInMillis
+    override fun observeDashboardSummary(): Flow<DashboardSummary> =
+        currentLocalDayWindow().flatMapLatest { (start, end) ->
+            val salesSummary = combine(
+                dao.observeSalesBetween(start, end),
+                dao.observeTransactionCountBetween(start, end)
+            ) { sales, transactions -> sales to transactions }
 
-        val salesSummary = combine(
-            dao.observeSalesBetween(start, end),
-            dao.observeTransactionCountBetween(start, end)
-        ) { sales, transactions -> sales to transactions }
+            val lowStockSummary = combine(
+                dao.observeLowStockCount(DEFAULT_LOW_STOCK_THRESHOLD),
+                dao.observeLowStockProducts(threshold = DEFAULT_LOW_STOCK_THRESHOLD, limit = 5)
+            ) { count, preview -> count to preview }
 
-        val lowStockSummary = combine(
-            dao.observeLowStockCount(DEFAULT_LOW_STOCK_THRESHOLD),
-            dao.observeLowStockProducts(threshold = DEFAULT_LOW_STOCK_THRESHOLD, limit = 5)
-        ) { count, preview -> count to preview }
+            combine(
+                salesSummary,
+                dao.observeProductCount(),
+                lowStockSummary,
+                dao.observeRecentTransactions(limit = 5)
+            ) { sales, productCount, lowStock, recent ->
+                DashboardSummary(
+                    totalSalesTodayRupiah = sales.first,
+                    transactionCountToday = sales.second,
+                    productCount = productCount,
+                    lowStockCount = lowStock.first,
+                    lowStockProducts = lowStock.second.map(::toDomain),
+                    recentTransactions = recent.map(::toDomain)
+                )
+            }
+        }
 
-        return combine(
-            salesSummary,
-            dao.observeProductCount(),
-            lowStockSummary,
-            dao.observeRecentTransactions(limit = 5)
-        ) { sales, productCount, lowStock, recent ->
-            DashboardSummary(
-                totalSalesTodayRupiah = sales.first,
-                transactionCountToday = sales.second,
-                productCount = productCount,
-                lowStockCount = lowStock.first,
-                lowStockProducts = lowStock.second.map(::toDomain),
-                recentTransactions = recent.map(::toDomain)
-            )
+    private fun currentLocalDayWindow(): Flow<Pair<Long, Long>> = flow {
+        while (true) {
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val start = calendar.timeInMillis
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+            val end = calendar.timeInMillis
+            emit(start to end)
+
+            // Recreate the aggregate query at the next local midnight.
+            delay((end - System.currentTimeMillis()).coerceAtLeast(1_000L))
         }
     }
 
