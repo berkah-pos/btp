@@ -42,7 +42,11 @@ if (hasAnySigningValue && !hasCompleteSigningValues) {
 
 android {
     namespace = "id.berkahtigaputeri.basicpos"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         // Debug defaults to the candidate. Signed release requires BTP_APPLICATION_ID to be configured.
