@@ -2,7 +2,7 @@
 
 ## Versi toolchain yang dipatok
 
-- Android Gradle Plugin: 9.6.0
+- Android Gradle Plugin: 9.5.1
 - Gradle: 9.8.2
 - JDK: 17
 - Built-in Kotlin / Compose Compiler plugin: 2.4.20
@@ -16,7 +16,7 @@
 - Preferences DataStore: 1.3.0
 - Android `minSdk=24`, `compileSdk=37`, `targetSdk=36`
 
-Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk kompatibilitas Compose stabil; target SDK tetap 36 sesuai persyaratan Google Play minimum pada tanggal baseline ini. Paket Android 17 API 37 dipasang dari SDK Manager sebagai `platforms;android-37.0`; workflow CI memasangnya secara eksplisit, lalu membuat alias `platforms/android-37` untuk resolusi API level oleh Android Gradle Plugin. Build Tools 37.0.0 dipatok terpisah. Periksa kembali ketentuan Play sebelum setiap rilis.
+Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk kompatibilitas Compose stabil; target SDK tetap 36 sesuai persyaratan Google Play minimum pada tanggal baseline ini. Paket Android 17 API 37 dipasang dari SDK Manager sebagai `platforms;android-37.0`; workflow CI memasangnya secara eksplisit, lalu membuat alias `platforms/android-37` untuk resolusi API level oleh Android Gradle Plugin. Build Tools 36.0.0 dipatok terpisah. Periksa kembali ketentuan Play sebelum setiap rilis.
 
 ## Android compatibility
 
