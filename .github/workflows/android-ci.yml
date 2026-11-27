@@ -110,16 +110,13 @@ jobs:
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
         run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug
 
-      - name: Bootstrap SHA-256 dependency hashes, then run first quality gates
+      - name: Bootstrap SHA-256 dependency hashes from refreshed resolution, then run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: |
           set -euo pipefail
           for attempt in 1 2 3; do
             LOG_FILE="$RUNNER_TEMP/quality-gates-${attempt}.log"
-            EXTRA_ARGS=()
-            if [ "$attempt" -gt 1 ]; then
-              EXTRA_ARGS+=(--refresh-dependencies)
-            fi
+            EXTRA_ARGS=(--refresh-dependencies)
             if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
               exit 0
             fi
