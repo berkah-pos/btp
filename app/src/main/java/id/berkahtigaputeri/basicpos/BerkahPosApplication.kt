@@ -18,7 +18,9 @@ class BerkahPosApplication : Application() {
             applicationContext,
             BerkahPosDatabase::class.java,
             "berkah-pos.db"
-        ).build()
+        )
+            .addMigrations(BerkahPosDatabase.MIGRATION_1_2)
+            .build()
         val preferencesRepository = UserPreferencesRepository(applicationContext)
         container = AppContainer(
             posRepository = PosRepositoryImpl(database),
