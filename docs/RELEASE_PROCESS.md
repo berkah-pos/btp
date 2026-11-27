@@ -65,7 +65,7 @@ The Gradle build accepts these through `ORG_GRADLE_PROJECT_btpSaasUrl` and `ORG_
 
 ## Permanent application ID
 
-Before a signed release, confirm the permanent application ID in Play Console and configure the repository Actions Variable `BTP_APPLICATION_ID`. The Gradle build defaults to the documented candidate for debug builds, but the signed release workflow fails when this variable is empty. The value becomes permanent after first publication; do not change it later.
+The domain-derived candidate/permanent application ID is `id.co.berkahtigaputeri.basicpos` from `berkahtigaputeri.co.id`. The Kotlin source namespace remains `id.berkahtigaputeri.basicpos` to avoid an unnecessary package refactor. Confirm the candidate is available in Play Console and that no app has already been published under the previous ID. Configure repository Actions Variable `BTP_APPLICATION_ID` to exactly `id.co.berkahtigaputeri.basicpos`; Gradle fails closed on a mismatch and the signed release workflow also enforces the exact value. The value becomes permanent after first publication; do not change it later.
 
 ## GitHub Environment `android-release`
 
