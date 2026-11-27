@@ -248,7 +248,7 @@ fun SettingsScreen(
 
             Text("Backup dan pemulihan", style = MaterialTheme.typography.titleLarge)
             Text(
-                "Cadangan mencakup profil toko, kategori, produk, stok, transaksi, dan rincian struk. File disimpan di lokasi yang Anda pilih.",
+                "Cadangan mencakup profil toko, kategori, produk, stok, transaksi, rincian struk, dan ambang stok rendah. File JSON tidak dienkripsi oleh aplikasi; simpan di lokasi yang aman.",
                 style = MaterialTheme.typography.bodyMedium
             )
             Button(
