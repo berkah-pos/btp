@@ -1,47 +1,37 @@
 # Google Play release checklist
 
-Status: pre-release review remains **BLOCKED**. Latest fully successful Android quality workflow is [run #89](https://github.com/berkah-pos/btp/actions/runs/46026654646) for source head `b8bdd55c519efc081fa96f4ef5443482d86a3c14`; latest successful Room migration run is [#42](https://github.com/berkah-pos/btp/actions/runs/46026654721). Commit `8269159` adds backup/restore operation serialization and two JVM tests but is newer than those successful runs and is awaiting fresh CI. Submission remains planned for a **Google Play Organization developer account**.
+Status: pre-release review remains **BLOCKED**. Latest completed Android quality workflow is [run #98](https://github.com/berkah-pos/btp/actions/runs/46034740526) for source head `81b9cef36414019822ee1b2e42e31449fb43c229`; latest completed Room migration run is [#49](https://github.com/berkah-pos/btp/actions/runs/46034740545). Two new POS checkout instrumentation tests are being added and await fresh CI. Submission remains planned for a **Google Play Organization developer account**.
 
-## Latest verified Android CI evidence — Run #89
+## Latest verified Android CI evidence — Run #98
 
-- `testDebugUnitTest`: **29 tests, 0 failures, 0 errors, 0 skipped**, verified from five uploaded JUnit XML reports.
+- `testDebugUnitTest`: **31 tests, 0 failures, 0 errors, 0 skipped**, verified from six uploaded JUnit XML reports.
 - `compileDebugAndroidTestKotlin`: successful.
-- `lintDebug`: **0 errors, 1 warning** (`OldTargetApi` for `targetSdk=36`).
-- `assembleDebug`: **success**; debug APK uploaded.
-- Debug APK ZIP alignment and all four packaged 64-bit native-library 16 KiB ELF checks: **success**.
-- Merged release manifest and release runtime dependency inventory: **captured successfully**.
-- Play Store app icon 512×512 and feature graphic 1024×500: rendered and uploaded successfully.
-- Signed release AAB: **SKIPPED** because this was a pull-request run. No signed release AAB or upload-certificate evidence exists.
+- `lintDebug`: **0 errors, 2 warnings** (`OldTargetApi` at target API 36 and `AndroidGradlePluginVersion` for Gradle 9.9.2 vs 9.9.3).
+- `assembleDebug`: successful; debug APK uploaded.
+- APK ZIP alignment and all four packaged 64-bit native ELF 16 KiB checks passed.
+- Merged release manifest and release runtime dependency inventory captured.
+- Play Store icon and feature graphic rendered/uploaded.
+- Signed release AAB skipped on the PR event.
 
 Artifacts:
-- [Debug APK, unit-test/lint reports, Room schemas, and release audit](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212576547) — 14-day retention.
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46026654646/artifacts/15212238982) — 90-day retention.
+- [Debug APK, JUnit/lint reports, Room schemas, and release audit](https://github.com/berkah-pos/btp/actions/runs/46034740526/artifacts/15215569160).
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/46034740526/artifacts/15216955134).
 
-## Room migration instrumentation — Run #42
+## Room migration instrumentation — Run #49
 
-- `connectedDebugAndroidTest` executed on the API 36 cloud emulator and completed **success**.
-- JUnit XML confirms **2 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code is `0`.
-- Original Room v1 schema migration: **PASS**; sales and receipt item data were preserved.
-- Historical intermediate v1 migration: **PASS**; existing product ID and receipt snapshots were preserved.
-- Both real SQLite v1 fixtures were opened through production `MIGRATION_1_2`; Room validated the resulting v2 schema.
-
-Artifact:
-- [API 36 emulator JUnit report, APKs, and outputs](https://github.com/berkah-pos/btp/actions/runs/46026654721/artifacts/15211149424).
-
-
+- `connectedDebugAndroidTest`: **2 tests, 0 failures, 0 errors, 0 skipped**; API 36 emulator.
+- Original KSP v1 and historical intermediate v1 SQLite fixtures both migrated through production `MIGRATION_1_2`.
+- Existing transaction/receipt data and schema v2 validation passed.
+- [Room migration report](https://github.com/berkah-pos/btp/actions/runs/46034740545/artifacts/15215524359).
 
 ## Dependency verification review
 
-- Run #80's earlier cached metadata: SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, **459 components / 754 unique SHA-256 artifact entries**.
-- Reviewed refreshed metadata from Runs #81 and #82 is byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, **455 components / 745 unique SHA-256 artifact entries**. All 745 shared coordinate hashes match Run #80; nine older entries are absent after refreshed resolution.
-- Run #81 quality passed; its baseline gate failed because it still expected Run #80's older checksum. The debug artifact XML was the refreshed candidate, not a corrupt download.
-- The workflow now validates each new resolution against the reviewed hash, pins Run #81's source run/commit/artifact digest, and uploads a separate baseline-only artifact with provenance. The commit job checks the current-run artifact digest and source provenance again before staging only the XML.
-- Metadata retains `verify-metadata=true` and `verify-signatures=false`. This is checksum integrity pinning, **not publisher-signature verification**.
-- The reviewed baseline is not committed and clean `--dependency-verification=strict` has **not yet passed**. The guarded workflow must commit the validated file and complete its separate clean strict build.
-
-This is source/CI evidence only.
-
-This is source/CI evidence only. It is **not** evidence of physical-device startup, full UI automation, Play Console submission, Internal Testing, Pre-launch Report, or Google Play approval.
+- Pinned source: Android CI Run #96, commit `0739913749fa0783a9d6784ad7444bccbca3fa3f`, quality job successful.
+- Source artifact ID `15215416046`, archive SHA-256 `fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947`; downloaded archive digest verified.
+- Metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`: **459 components / 754 unique SHA-256 artifact entries**.
+- Run #98 independently regenerated byte-identical metadata after refreshed dependency resolution.
+- Manual dispatch #95 failed because its older guard expected `9adc4cac…` (455/745); the current workflow now pins the verified Run #96 candidate.
+- The baseline is not committed and clean strict dependency verification has **not passed**. `verify-signatures=false`; checksum pinning is not publisher-signature authentication.
 
 ## Identitas dan kompatibilitas
 - [ ] Konfirmasi applicationId candidate `id.berkahtigaputeri.basicpos` dan periksa keunikan di Play Console.
@@ -49,7 +39,7 @@ This is source/CI evidence only. It is **not** evidence of physical-device start
 - [x] Syarat closed testing khusus akun Personal baru (12 tester/14 hari): **NOT APPLICABLE** untuk submission melalui akun Organization ini. Persyaratan resmi 12/14 hari dibatasi pada akun Personal yang dibuat setelah 13 November 2023. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [x] `targetSdk=36`; memenuhi minimum API 36 yang berlaku pada tanggal pemeriksaan.
 - [x] Merged release manifest: `minSdk=24`, `targetSdk=36`; compile SDK 37.1 pada konfigurasi build.
-- [x] Jalankan dan periksa dua Room migration instrumentation test dengan `connectedDebugAndroidTest` pada API 36 cloud emulator: Run #42, 2/2 lulus.
+- [x] Jalankan dan periksa dua Room migration instrumentation test dengan `connectedDebugAndroidTest` pada API 36 cloud emulator: Run #49, 2/2 lulus.
 - [ ] Siapkan screenshot aktual dari aplikasi hasil build; aset icon/feature graphic bukan pengganti screenshot aplikasi.
 
 ## Organization developer account verification
@@ -75,13 +65,13 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [ ] Verifikasi perilaku backup/restore dan transfer file pada perangkat/API yang didukung.
 
 ## Build dan signing
-- [x] Jalankan unit test debug variant: 29 lulus, 0 gagal pada Run #89.
-- [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #89.
-- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #89.
-- [x] Capture merged release manifest dan release runtime dependency inventory pada Run #89.
-- [x] Review refreshed metadata Runs #81/#82: 455 komponen dan 745 checksum unik; seluruh 745 entri bersama memiliki checksum sama dengan Run #80, dan sembilan entri lama tidak lagi muncul. Metadata SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`. Run #81 source artifact archive SHA-256 `c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16`.
+- [x] Jalankan unit test debug variant: 31 lulus, 0 gagal pada Run #98.
+- [x] Jalankan lint debug (0 error; 2 warnings: OldTargetApi dan AndroidGradlePluginVersion) pada Run #98.
+- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #98.
+- [x] Capture merged release manifest dan release runtime dependency inventory pada Run #98.
+- [x] Review metadata Run #96: 459 komponen / 754 artifact; archive SHA-256 fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947; XML SHA-256 b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6. Run #98 mereproduksi XML yang identik.
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
-- [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #89.
+- [x] Verify debug APK 16 KB ZIP alignment dan seluruh empat native ELF LOAD alignment pada Run #98.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
 - [ ] Bangun release AAB dengan upload key yang disimpan hanya di GitHub Environment Secrets.
 - [ ] Validasi AAB dengan bundletool.
@@ -105,8 +95,8 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Identitas legal perusahaan, alamat korespondensi, dan kontak privasi resmi belum diberikan untuk Privacy Policy.
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
-- Room migration instrumentation test 1 → 2 **PASS** pada Run #42 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
-- Dependency baseline refreshed Runs #81/#82 telah direview; workflow kini memakai dedicated artifact dengan source provenance dan validasi SHA-256, tetapi baseline belum dikomit dan strict gate belum PASS.
+- Room migration instrumentation test 1 → 2 **PASS** pada Run #49 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
+- Dependency baseline Run #96 telah dipin pada workflow dan direproduksi oleh Run #98, tetapi baseline belum dikomit dan strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.

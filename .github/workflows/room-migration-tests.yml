@@ -1,4 +1,4 @@
-name: Room Migration Tests
+name: POS and Room Instrumentation Tests
 
 on:
   pull_request:
@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "app/src/main/java/id/berkahtigaputeri/basicpos/data/local/**"
+      - "app/src/main/java/id/berkahtigaputeri/basicpos/data/repository/**"
+      - "app/src/main/java/id/berkahtigaputeri/basicpos/domain/model/**"
+      - "app/src/main/java/id/berkahtigaputeri/basicpos/domain/repository/**"
       - "app/src/androidTest/**"
       - "app/schemas/**"
       - "app/build.gradle.kts"
@@ -22,7 +25,7 @@ concurrency:
 
 jobs:
   room-migration:
-    name: Room v1 to v2 instrumentation tests
+    name: POS checkout and Room v1 to v2 instrumentation tests
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -156,7 +159,7 @@ jobs:
           adb shell getprop ro.build.version.sdk
           test "$(adb shell getprop ro.build.version.sdk | tr -d '\\r')" = "36"
 
-      - name: Run Room migration instrumentation tests
+      - name: Run POS checkout and Room migration instrumentation tests
         run: ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace --console=plain
 
       - name: Capture emulator diagnostics on failure
