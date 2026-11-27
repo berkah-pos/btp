@@ -99,6 +99,11 @@ android {
         }
     }
 
+    sourceSets {
+        // MigrationTestHelper loads the exact KSP-exported schemas from test assets.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+
     lint {
         abortOnError = true
         checkReleaseBuilds = true
@@ -127,6 +132,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    androidTestImplementation(libs.androidx.room.testing)
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.core)
