@@ -1,5 +1,18 @@
 import org.gradle.api.GradleException
 
+fun String.asBuildConfigLiteral(): String =
+    "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+val saasUrl = providers.gradleProperty("btpSaasUrl").orElse("").get().trim()
+val supportEmail = providers.gradleProperty("btpSupportEmail").orElse("").get().trim()
+
+require(saasUrl.isEmpty() || saasUrl.startsWith("https://", ignoreCase = true)) {
+    "btpSaasUrl must be an HTTPS URL."
+}
+require(supportEmail.isEmpty() || (supportEmail.contains("@") && supportEmail.none(Char::isWhitespace))) {
+    "btpSupportEmail must be a valid email address."
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
@@ -30,10 +43,13 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SAAS_URL", saasUrl.asBuildConfigLiteral())
+        buildConfigField("String", "SUPPORT_EMAIL", supportEmail.asBuildConfigLiteral())
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
