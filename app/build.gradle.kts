@@ -9,12 +9,18 @@ plugins {
 fun String.asBuildConfigLiteral(): String =
     "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
-val candidateApplicationId = "id.berkahtigaputeri.basicpos"
-val applicationIdValue = providers.gradleProperty("btpApplicationId")
+val candidateApplicationId = "id.co.berkahtigaputeri.basicpos"
+val configuredApplicationId = providers.gradleProperty("btpApplicationId")
     .orNull
     ?.trim()
     ?.takeIf(String::isNotBlank)
-    ?: candidateApplicationId
+val applicationIdValue = configuredApplicationId ?: candidateApplicationId
+
+if (applicationIdValue != candidateApplicationId) {
+    throw GradleException(
+        "BTP_APPLICATION_ID must match the domain-derived permanent ID: $candidateApplicationId"
+    )
+}
 val saasUrl = providers.gradleProperty("btpSaasUrl").orElse("").get().trim()
 val supportEmail = providers.gradleProperty("btpSupportEmail").orElse("").get().trim()
 
