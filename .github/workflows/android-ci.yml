@@ -87,7 +87,7 @@ jobs:
 
   release:
     name: Signed release AAB
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_release == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_release == true && github.ref == 'refs/heads/main' }}
     needs: quality
     runs-on: ubuntu-24.04
     timeout-minutes: 30
