@@ -35,7 +35,7 @@ Artifacts:
 - `verify-metadata=true`, `verify-signatures=false`. The candidate baseline is not committed and clean strict dependency verification has **not passed**.
 
 ## Identitas dan kompatibilitas
-- [ ] Konfirmasi applicationId candidate `id.berkahtigaputeri.basicpos` dan periksa keunikan di Play Console.
+- [ ] Konfirmasi applicationId candidate `id.co.berkahtigaputeri.btp` dan periksa keunikan di Play Console.
 - [x] Tipe akun untuk submission: **Organization** (dikonfirmasi pemilik proyek; verifikasi account profile tetap harus diselesaikan di Play Console).
 - [x] Syarat closed testing khusus akun Personal baru (12 tester/14 hari): **NOT APPLICABLE** untuk submission melalui akun Organization ini. Persyaratan resmi 12/14 hari dibatasi pada akun Personal yang dibuat setelah 13 November 2023. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [x] `targetSdk=36`; memenuhi minimum API 36 yang berlaku pada tanggal pemeriksaan.
