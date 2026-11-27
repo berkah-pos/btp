@@ -105,7 +105,7 @@ fun DashboardScreen(
                             SummaryCard(
                                 modifier = Modifier.weight(1f),
                                 label = "Stok rendah",
-                                value = summary!!.lowStockProducts.size.toString()
+                                value = summary!!.lowStockCount.toString()
                             )
                         }
                     }
