@@ -8,6 +8,8 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "docs/store-assets/**"
+
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -18,6 +20,8 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "docs/store-assets/**"
+
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -79,6 +83,29 @@ jobs:
       - name: Bootstrap dependency hashes and run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: ./gradlew --no-daemon --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug
+
+      - name: Render Google Play listing graphics
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends librsvg2-bin imagemagick
+          mkdir -p play-store-assets
+          rsvg-convert --width 512 --height 512 --output "$RUNNER_TEMP/app-icon-source.png" docs/store-assets/app-icon.svg
+          rsvg-convert --width 1024 --height 500 --output "$RUNNER_TEMP/feature-source.png" docs/store-assets/feature-graphic.svg
+          convert "$RUNNER_TEMP/app-icon-source.png" -define png:color-type=6 play-store-assets/app-icon-512.png
+          convert "$RUNNER_TEMP/feature-source.png" -alpha remove -alpha off -quality 92 play-store-assets/feature-graphic-1024x500.jpg
+          identify -format '%f %wx%h %m %[channels]\\n' play-store-assets/app-icon-512.png play-store-assets/feature-graphic-1024x500.jpg
+          test "$(identify -format '%wx%h' play-store-assets/app-icon-512.png)" = "512x512"
+          test "$(identify -format '%wx%h' play-store-assets/feature-graphic-1024x500.jpg)" = "1024x500"
+          test "$(stat -c%s play-store-assets/app-icon-512.png)" -le 1048576
+
+      - name: Upload Google Play listing graphics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-play-store-assets-${{ github.run_number }}
+          path: play-store-assets/
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Upload debug APK and reports
         if: always()
