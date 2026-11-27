@@ -66,13 +66,11 @@ fun SettingsScreen(
     var legalDocument by remember { mutableStateOf<LegalDocument?>(null) }
 
     LaunchedEffect(profile) {
-        if (profile != null) {
-            storeName = profile!!.storeName
-            ownerName = profile!!.ownerName.orEmpty()
-            address = profile!!.address.orEmpty()
-            phoneNumber = profile!!.phoneNumber.orEmpty()
-            receiptFooter = profile!!.receiptFooter.orEmpty()
-        }
+        storeName = profile?.storeName.orEmpty()
+        ownerName = profile?.ownerName.orEmpty()
+        address = profile?.address.orEmpty()
+        phoneNumber = profile?.phoneNumber.orEmpty()
+        receiptFooter = profile?.receiptFooter.orEmpty()
     }
 
     Scaffold(
