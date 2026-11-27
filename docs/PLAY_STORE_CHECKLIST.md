@@ -57,7 +57,7 @@ This is CI and source-level evidence. It is **not** evidence of signed AAB valid
 - [ ] Jelaskan bahwa reviewer tidak memerlukan akun dan fungsi POS inti berjalan offline.
 - [ ] Kirim ke Internal Testing.
 - [ ] Periksa Pre-launch Report dan uji startup/alur utama pada perangkat.
-- [ ] Periksa syarat closed testing/production access yang berlaku untuk jenis dan usia akun developer.
+- [ ] Konfirmasi jenis akun developer dan tanggal pembuatannya. Jika akun **personal** dibuat setelah 13 November 2023, Google Play mewajibkan closed test dengan minimal **12 tester yang terus opted-in selama 14 hari berturut-turut** sebelum mengajukan production access. Internal testing tidak menggantikan syarat closed test. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [ ] Selesaikan semua blocker sebelum mengajukan production.
 
 ## Blocker yang sudah diketahui
@@ -69,4 +69,5 @@ This is CI and source-level evidence. It is **not** evidence of signed AAB valid
 - Dependency verification metadata belum direview/commit; strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada startup/device/UI test, internal testing, atau Pre-launch Report.
+- Jenis akun/tanggal pembuatan akun developer belum dikonfirmasi; syarat closed test 12/14 hari perlu dipastikan apakah berlaku.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.
