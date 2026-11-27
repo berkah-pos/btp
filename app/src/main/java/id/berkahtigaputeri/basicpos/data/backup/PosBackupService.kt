@@ -163,6 +163,7 @@ class PosBackupService(
 
         require(items.all { item ->
             item.transactionId in transactionIds &&
+                (item.productId == null || item.productId > 0) &&
                 item.productNameSnapshot.isNotBlank() &&
                 item.unitPriceRupiah >= 0 &&
                 item.quantity > 0 &&
