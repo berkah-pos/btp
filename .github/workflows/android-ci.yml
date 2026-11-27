@@ -42,22 +42,22 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4.7.1
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3.2.2
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
 
       - name: Install pinned Android SDK components
-        run: sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+        run: sdkmanager --install "platform-tools" "platforms;android-37" "build-tools;36.0.0"
 
       - name: Set up Gradle 9.6.0
-        uses: gradle/actions/setup-gradle@v4.4.2
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
         with:
           gradle-version: "9.6.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload debug APK and reports
         if: always()
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: berkah-pos-debug-${{ github.run_number }}
           path: |
@@ -87,7 +87,7 @@ jobs:
 
   release:
     name: Signed release AAB
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_release == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_release == true && github.ref == 'refs/heads/main' }}
     needs: quality
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -96,22 +96,22 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4.7.1
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3.2.2
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
 
       - name: Install pinned Android SDK components
-        run: sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+        run: sdkmanager --install "platform-tools" "platforms;android-37" "build-tools;36.0.0"
 
       - name: Set up Gradle 9.6.0
-        uses: gradle/actions/setup-gradle@v4.4.2
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
         with:
           gradle-version: "9.6.0"
           cache-read-only: true
@@ -180,7 +180,7 @@ jobs:
           cp docs/PLAY_STORE_CHECKLIST.md android-release/
 
       - name: Upload signed release artifact
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: berkah-pos-release-${{ github.run_number }}
           path: android-release/
