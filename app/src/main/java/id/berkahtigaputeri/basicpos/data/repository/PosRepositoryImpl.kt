@@ -215,6 +215,7 @@ class PosRepositoryImpl(
                 product to quantity
             }
 
+            val storeProfileSnapshot = dao.getStoreProfileForBackup()
             val totals = CheckoutCalculator.calculate(
                 lines = products.map { (product, quantity) ->
                     CheckoutLineAmount(
@@ -258,7 +259,12 @@ class PosRepositoryImpl(
                     taxRupiah = request.taxRupiah,
                     totalRupiah = total,
                     paidRupiah = request.paidRupiah,
-                    changeRupiah = change
+                    changeRupiah = change,
+                    storeNameSnapshot = storeProfileSnapshot?.storeName,
+                    storeOwnerSnapshot = storeProfileSnapshot?.ownerName,
+                    storeAddressSnapshot = storeProfileSnapshot?.address,
+                    storePhoneSnapshot = storeProfileSnapshot?.phoneNumber,
+                    receiptFooterSnapshot = storeProfileSnapshot?.receiptFooter
                 )
             )
             val savedItems = saleItems.map { it.copy(transactionId = transactionId) }
@@ -279,7 +285,8 @@ class PosRepositoryImpl(
                 subtotalRupiah = subtotal,
                 discountRupiah = request.discountRupiah,
                 taxRupiah = request.taxRupiah,
-                items = savedItems.map(::toDomain)
+                items = savedItems.map(::toDomain),
+                storeProfileSnapshot = storeProfileSnapshot?.let(::toDomain)
             )
         }
     }
@@ -295,7 +302,8 @@ class PosRepositoryImpl(
             subtotalRupiah = transaction.subtotalRupiah,
             discountRupiah = transaction.discountRupiah,
             taxRupiah = transaction.taxRupiah,
-            items = items
+            items = items,
+            storeProfileSnapshot = toStoreProfileSnapshot(transaction)
         )
     }
 
@@ -315,6 +323,17 @@ class PosRepositoryImpl(
         phoneNumber = row.phoneNumber,
         receiptFooter = row.receiptFooter
     )
+
+    private fun toStoreProfileSnapshot(row: SalesTransactionEntity): StoreProfile? =
+        row.storeNameSnapshot?.let { storeName ->
+            StoreProfile(
+                storeName = storeName,
+                ownerName = row.storeOwnerSnapshot,
+                address = row.storeAddressSnapshot,
+                phoneNumber = row.storePhoneSnapshot,
+                receiptFooter = row.receiptFooterSnapshot
+            )
+        }
 
     private fun toDomain(row: SalesTransactionEntity) = SaleSummary(
         id = row.id,
