@@ -141,9 +141,9 @@ jobs:
           set -euo pipefail
           python3 scripts/validate-dependency-baseline.py \
             gradle/verification-metadata.xml \
-            --expected-sha256 9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba \
-            --expected-components 455 \
-            --expected-artifacts 745
+            --expected-sha256 b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6 \
+            --expected-components 459 \
+            --expected-artifacts 754
 
       - name: Checkout original Room v1 source for KSP schema export
         if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
@@ -262,15 +262,15 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Fetch and validate the pinned reviewed Run 81 source
+      - name: Fetch and validate the pinned reviewed Run 96 source
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          SOURCE_RUN_ID=46020882214
-          SOURCE_ARTIFACT_ID=15207933387
-          SOURCE_ARCHIVE_SHA256=c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16
-          SOURCE_METADATA_SHA256=9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba
+          SOURCE_RUN_ID=46032064890
+          SOURCE_ARTIFACT_ID=15215416046
+          SOURCE_ARCHIVE_SHA256=fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947
+          SOURCE_METADATA_SHA256=b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6
 
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" > "$RUNNER_TEMP/source-run.json"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/jobs?per_page=100" > "$RUNNER_TEMP/source-jobs.json"
@@ -283,11 +283,11 @@ jobs:
           jobs = json.loads(open(sys.argv[2], encoding="utf-8").read()).get("jobs", [])
           artifacts = json.loads(open(sys.argv[3], encoding="utf-8").read()).get("artifacts", [])
           expected = {
-              "id": 46020882214, "run_number": 81, "workflow_id": 432452966,
-              "path": ".github/workflows/android-ci.yml", "event": "workflow_dispatch",
-              "status": "completed", "conclusion": "failure",
+              "id": 46032064890, "run_number": 96, "workflow_id": 432452966,
+              "path": ".github/workflows/android-ci.yml", "event": "pull_request",
+              "status": "completed", "conclusion": "success",
               "head_branch": "feat/basic-pos-mvp",
-              "head_sha": "5a96fc363e7dcdd4b765ac27b94274d9473c9e06",
+              "head_sha": "0739913749fa0783a9d6784ad7444bccbca3fa3f",
           }
           for key, value in expected.items():
               if run.get(key) != value:
@@ -297,22 +297,28 @@ jobs:
                   raise SystemExit(f"Unexpected source {key}")
           quality = [j for j in jobs if j.get("name") == "Unit tests, lint, and debug build"]
           baseline = [j for j in jobs if j.get("name") == "Commit reviewed dependency verification baseline"]
-          if len(quality) != 1 or quality[0].get("id") != 140579936988 or quality[0].get("conclusion") != "success":
+          prepare = [j for j in jobs if j.get("name") == "Prepare dedicated reviewed dependency-baseline artifact"]
+          strict = [j for j in jobs if j.get("name") == "Clean strict dependency verification"]
+          release = [j for j in jobs if j.get("name") == "Signed release AAB"]
+          if len(quality) != 1 or quality[0].get("id") != 140618069322 or quality[0].get("conclusion") != "success":
               raise SystemExit("Pinned source quality job did not pass")
-          if len(baseline) != 1 or baseline[0].get("conclusion") != "failure":
-              raise SystemExit("Pinned source baseline job was not the expected failed guard")
-          failed = [s for s in baseline[0].get("steps", []) if s.get("name") == "Download and validate reviewed CI dependency metadata"]
-          if len(failed) != 1 or failed[0].get("conclusion") != "failure":
-              raise SystemExit("Pinned source did not fail at the reviewed checksum-validation step")
-          selected = [a for a in artifacts if a.get("id") == 15207933387]
+          if len(baseline) != 1 or baseline[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source must not have committed a baseline")
+          if len(prepare) != 1 or prepare[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly prepared a baseline artifact")
+          if len(strict) != 1 or strict[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly ran clean strict verification")
+          if len(release) != 1 or release[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly created a signed release AAB")
+          selected = [a for a in artifacts if a.get("id") == 15215416046]
           if len(selected) != 1:
-              raise SystemExit("Pinned Run 81 artifact ID not unique")
+              raise SystemExit("Pinned Run 96 artifact ID not unique")
           a = selected[0]
-          if a.get("name") != "berkah-pos-debug-81" or a.get("expired") is not False:
-              raise SystemExit("Pinned Run 81 artifact name/retention mismatch")
-          if a.get("digest") != "sha256:c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16":
-              raise SystemExit("Pinned Run 81 artifact archive digest mismatch")
-          if a.get("workflow_run", {}).get("id") != 46020882214 or a["workflow_run"].get("head_sha") != expected["head_sha"]:
+          if a.get("name") != "berkah-pos-debug-96" or a.get("expired") is not False:
+              raise SystemExit("Pinned Run 96 artifact name/retention mismatch")
+          if a.get("digest") != "sha256:fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947":
+              raise SystemExit("Pinned Run 96 artifact archive digest mismatch")
+          if a.get("workflow_run", {}).get("id") != 46032064890 or a["workflow_run"].get("head_sha") != expected["head_sha"]:
               raise SystemExit("Pinned artifact source run/commit mismatch")
           PY
 
@@ -329,12 +335,12 @@ jobs:
           curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' "$LOCATION" --output "$SOURCE_ZIP"
           printf '%s  %s\n' "$SOURCE_ARCHIVE_SHA256" "$SOURCE_ZIP" | sha256sum --check
           unzip -tqq "$SOURCE_ZIP"
-          mkdir -p "$RUNNER_TEMP/source-run-81"
-          unzip -q "$SOURCE_ZIP" -d "$RUNNER_TEMP/source-run-81"
-          SOURCE_XML="$RUNNER_TEMP/source-run-81/gradle/verification-metadata.xml"
+          mkdir -p "$RUNNER_TEMP/source-run-96"
+          unzip -q "$SOURCE_ZIP" -d "$RUNNER_TEMP/source-run-96"
+          SOURCE_XML="$RUNNER_TEMP/source-run-96/gradle/verification-metadata.xml"
           test -s "$SOURCE_XML"
           python3 scripts/validate-dependency-baseline.py "$SOURCE_XML" \
-            --expected-sha256 "$SOURCE_METADATA_SHA256" --expected-components 455 --expected-artifacts 745
+            --expected-sha256 "$SOURCE_METADATA_SHA256" --expected-components 459 --expected-artifacts 754
 
           DEST="$RUNNER_TEMP/dependency-baseline-artifact"
           mkdir -p "$DEST/gradle"
@@ -343,18 +349,18 @@ jobs:
           format=berkah-pos-dependency-baseline-v1
           repository=berkah-pos/btp
           source_workflow_id=432452966
-          source_run_id=46020882214
-          source_run_number=81
-          source_event=workflow_dispatch
+          source_run_id=46032064890
+          source_run_number=96
+          source_event=pull_request
           source_branch=feat/basic-pos-mvp
-          source_commit_sha=5a96fc363e7dcdd4b765ac27b94274d9473c9e06
-          source_quality_job_id=140579936988
-          source_artifact_id=15207933387
-          source_artifact_name=berkah-pos-debug-81
+          source_commit_sha=0739913749fa0783a9d6784ad7444bccbca3fa3f
+          source_quality_job_id=140618069322
+          source_artifact_id=15215416046
+          source_artifact_name=berkah-pos-debug-96
           source_artifact_digest=sha256:$SOURCE_ARCHIVE_SHA256
           source_metadata_sha256=$SOURCE_METADATA_SHA256
-          component_count=455
-          artifact_count=745
+          component_count=459
+          artifact_count=754
           trigger_run_id=$GITHUB_RUN_ID
           trigger_run_number=$GITHUB_RUN_NUMBER
           trigger_commit_sha=$GITHUB_SHA
@@ -461,18 +467,18 @@ jobs:
               "format": "berkah-pos-dependency-baseline-v1",
               "repository": "berkah-pos/btp",
               "source_workflow_id": "432452966",
-              "source_run_id": "46020882214",
+              "source_run_id": "46032064890",
               "source_run_number": "81",
-              "source_event": "workflow_dispatch",
+              "source_event": "pull_request",
               "source_branch": "feat/basic-pos-mvp",
-              "source_commit_sha": "5a96fc363e7dcdd4b765ac27b94274d9473c9e06",
-              "source_quality_job_id": "140579936988",
-              "source_artifact_id": "15207933387",
-              "source_artifact_name": "berkah-pos-debug-81",
-              "source_artifact_digest": "sha256:c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16",
-              "source_metadata_sha256": "9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba",
-              "component_count": "455",
-              "artifact_count": "745",
+              "source_commit_sha": "0739913749fa0783a9d6784ad7444bccbca3fa3f",
+              "source_quality_job_id": "140618069322",
+              "source_artifact_id": "15215416046",
+              "source_artifact_name": "berkah-pos-debug-96",
+              "source_artifact_digest": "sha256:fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947",
+              "source_metadata_sha256": "b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6",
+              "component_count": "459",
+              "artifact_count": "754",
               "trigger_run_id": os.environ["GITHUB_RUN_ID"],
               "trigger_run_number": os.environ["GITHUB_RUN_NUMBER"],
               "trigger_commit_sha": os.environ["GITHUB_SHA"],
@@ -483,8 +489,8 @@ jobs:
           PY
 
           python3 scripts/validate-dependency-baseline.py "$SOURCE" \
-            --expected-sha256 9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba \
-            --expected-components 455 --expected-artifacts 745
+            --expected-sha256 b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6 \
+            --expected-components 459 --expected-artifacts 754
 
       - name: Commit baseline to feature branch
         id: commit-baseline
@@ -504,8 +510,8 @@ jobs:
           git reset --hard "refs/remotes/origin/$GITHUB_REF_NAME"
           if [[ -f gradle/verification-metadata.xml ]]; then
             python3 scripts/validate-dependency-baseline.py gradle/verification-metadata.xml \
-              --expected-sha256 9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba \
-              --expected-components 455 --expected-artifacts 745
+              --expected-sha256 b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6 \
+              --expected-components 459 --expected-artifacts 754
           else
             install -D "$SOURCE" gradle/verification-metadata.xml
           fi
