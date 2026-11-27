@@ -85,15 +85,20 @@ jobs:
       - name: Bootstrap Gradle wrapper
         run: |
           set -euo pipefail
-          mv settings.gradle.kts "$RUNNER_TEMP/settings.gradle.kts"
-          mv build.gradle.kts "$RUNNER_TEMP/build.gradle.kts"
-          restore_project_files() {
-            mv "$RUNNER_TEMP/settings.gradle.kts" settings.gradle.kts
-            mv "$RUNNER_TEMP/build.gradle.kts" build.gradle.kts
-          }
-          trap restore_project_files EXIT
-          gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
-            --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
+              --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
           test -s gradle/wrapper/gradle-wrapper.jar
           test -s gradlew
           test -s gradlew.bat
@@ -193,15 +198,20 @@ jobs:
       - name: Bootstrap Gradle wrapper
         run: |
           set -euo pipefail
-          mv settings.gradle.kts "$RUNNER_TEMP/settings.gradle.kts"
-          mv build.gradle.kts "$RUNNER_TEMP/build.gradle.kts"
-          restore_project_files() {
-            mv "$RUNNER_TEMP/settings.gradle.kts" settings.gradle.kts
-            mv "$RUNNER_TEMP/build.gradle.kts" build.gradle.kts
-          }
-          trap restore_project_files EXIT
-          gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
-            --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
+              --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
           test -s gradle/wrapper/gradle-wrapper.jar
           test -s gradlew
           test -s gradlew.bat
