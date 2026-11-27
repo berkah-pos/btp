@@ -85,7 +85,7 @@ class PosBackupService(
         val backupSchemaVersion = (schemaVersionValue as? Number)
             ?.toString()
             ?.toLongOrNull()
-        require(backupSchemaVersion in SUPPORTED_SCHEMA_VERSIONS) {
+        require(backupSchemaVersion != null && backupSchemaVersion in SUPPORTED_SCHEMA_VERSIONS) {
             "Versi cadangan tidak didukung aplikasi ini."
         }
 
