@@ -1,6 +1,6 @@
 # Google Play release checklist
 
-Status: pre-release review remains **BLOCKED**. Latest verified source/build evidence is GitHub Actions [run #41, attempt 2](https://github.com/berkah-pos/btp/actions/runs/45989244818), completed successfully on 27 November 2026. The validated PR head was `1365bab63bb91032b56bb4279f6dec212574d778`; the runner built merge commit `e4074059ef147bc64302431c7cee579679d169da`. The owner has confirmed that submission will use a **Google Play Organization developer account**.
+Status: pre-release review remains **BLOCKED**. Latest completed Android quality evidence is GitHub Actions [run #50](https://github.com/berkah-pos/btp/actions/runs/45992766270), completed successfully on 27 November 2026 for PR head `0ab07e7c5f4a77307d1349029fbbf73452c85c80`. The owner has confirmed that submission will use a **Google Play Organization developer account**.
 
 ## Latest verified CI evidence
 
@@ -16,10 +16,10 @@ Status: pre-release review remains **BLOCKED**. Latest verified source/build evi
 - Strict dependency verification: **SKIPPED**. The generated SHA-256 metadata is an unreviewed bootstrap artifact and is not a trusted committed baseline.
 
 Artifacts:
-- [Debug APK, unit-test/lint reports, Room schemas, bootstrap verification metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15193663522) — 14-day retention.
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15192494773) — 90-day retention.
+- [Debug APK, unit-test/lint reports, Room schemas, bootstrap verification metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/45992766270/artifacts/15195500151) — 14-day retention.
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15194771833) — 90-day retention.
 
-Room schema v1 from the original KSP export, schema v2, and two migration instrumentation test cases now exist in the PR branch. The PR CI compiled those test sources, but did **not** execute `connectedDebugAndroidTest`. A dedicated API 36 emulator workflow definition was added as `.github/workflows/room-migration-tests.yml`; there is not yet an emulator result to mark PASS.
+Room schema v1 from the original KSP export (commit `be1797a`), schema v2, and two migration instrumentation test cases exist in the PR branch. Android CI run #50 compiled the instrumentation sources but did **not** execute `connectedDebugAndroidTest`. Dedicated emulator [run #9](https://github.com/berkah-pos/btp/actions/runs/45992766223) failed before tests because the hosted runner user lacked access to `/dev/kvm`; diagnostics confirmed x86_64 hardware acceleration was unavailable. Workflow commit `f1585bd` adds scoped runner access to the ephemeral KVM device and an accelerator preflight. [Run #10](https://github.com/berkah-pos/btp/actions/runs/45997083558) is the verification attempt. Do not mark migration PASS until both instrumentation scenarios complete successfully.
 
 This is source/CI evidence only. It is **not** evidence of successful physical-device startup, full UI automation, Play Console submission, Internal Testing, Pre-launch Report, or Google Play approval.
 
@@ -55,8 +55,8 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [ ] Verifikasi perilaku backup/restore dan transfer file pada perangkat/API yang didukung.
 
 ## Build dan signing
-- [x] Jalankan unit test debug variant: 24 lulus, 0 gagal pada Run #41 attempt 2.
-- [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #41 attempt 2.
+- [x] Jalankan unit test debug variant: 24 lulus, 0 gagal pada Run #50.
+- [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #50 attempt 2.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #41.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #41.
 - [ ] Review dan commit `gradle/verification-metadata.xml`; jalankan ulang dengan strict dependency verification. Run #38 dan #41 menghasilkan bootstrap metadata byte-identical (SHA-256 `45c3de7dd53c00bc4a35afd64a2067fa05d10fe8ab8cb7ef22e86342ebb941b0`, 464 komponen, 761 hash SHA-256). Reproducibility bukan bukti signature publisher; metadata belum dikomit dan strict verification masih dilewati.
@@ -84,7 +84,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Identitas legal perusahaan, alamat korespondensi, dan kontak privasi resmi belum diberikan untuk Privacy Policy.
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
-- Room migration instrumentation test 1 → 2 belum dieksekusi pada emulator. Schema v1 asli sudah tersedia; jangan menandai migrasi PASS sampai kedua skenario uji berhasil dijalankan pada API 36.
+- Room migration instrumentation test 1 → 2 belum dieksekusi pada emulator. Schema v1 asli sudah tersedia; Run #9 gagal pada preflight emulator karena izin KVM, dan Run #10 memverifikasi perbaikan akses KVM. Jangan menandai migrasi PASS sampai kedua skenario uji berhasil dijalankan pada API 36.
 - Dependency verification metadata belum direview/commit; strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
