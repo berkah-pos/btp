@@ -38,7 +38,7 @@ Belum ada bukti uji startup di perangkat fisik/emulator, UI automation, internal
 - Semua nilai uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan.
 - Android minSdk 24, compileSdk 37, targetSdk 36.
-- AGP 9.5.1, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
+- AGP 9.5.3, Gradle 9.9.2, built-in Kotlin 2.4.21, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
 
 ## Identitas aplikasi
 
