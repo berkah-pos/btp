@@ -25,6 +25,18 @@ Artifacts:
 
 These artifacts are evidence for the exact commit above, not for later changes unless the workflow is rerun.
 
+## Organization Play Console account
+
+The owner confirmed that the app will be submitted through a Google Play Organization developer account. The personal-account-only closed-testing gate (12 opted-in testers for 14 continuous days for new Personal accounts created after 13 November 2023) is not an Organization-account submission requirement. Internal testing and the Pre-launch Report remain recommended quality checks.
+
+Before release, complete organization verification in Play Console:
+- D-U-N-S number and matching legal organization name/address in the linked Google payments profile.
+- Official organization registration document and identity document for an authorized representative, if requested by Google.
+- Verified organization phone number, verified developer email/phone, and official organization website.
+- Confirm public developer-profile contact details.
+
+Google says D-U-N-S registration is free and can take up to 30 days. Use the official [organization account information requirements](https://support.google.com/googleplay/android-developer/answer/13628312) and [identity verification guidance](https://support.google.com/android-developer-console/answer/16641416).
+
 ## Public repository variables
 
 Optional repository Actions Variables:
