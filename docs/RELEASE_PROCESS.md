@@ -11,23 +11,25 @@
 
 ## Latest audit checkpoint
 
-Run [#26](https://github.com/berkah-pos/btp/actions/runs/45983299284), commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`, completed successfully:
-- 24 debug unit tests, no failures/errors/skips.
+GitHub Actions [run #41, attempt 2](https://github.com/berkah-pos/btp/actions/runs/45989244818), completed successfully on 27 November 2026 for PR head `1365bab63bb91032b56bb4279f6dec212574d778` (runner merge commit `e4074059ef147bc64302431c7cee579679d169da`):
+- 24 debug JVM unit tests, no failures/errors/skips.
+- `compileDebugAndroidTestKotlin` passed; Room instrumentation sources compiled, but emulator tests did not run.
 - Debug lint: 0 errors and 1 `OldTargetApi` warning at target API 36.
-- Debug APK built.
-- Merged release manifest and release runtime dependency inventory captured.
-- Release audit confirms no INTERNET or personal-data runtime permission in the merged manifest; the only declared `uses-permission` is the app's signature-protected dynamic-receiver permission.
+- Debug APK built and uploaded.
+- 16 KB ZIP alignment passed; all four packaged native ELF LOAD segments reported aligned.
+- Merged release manifest and runtime dependency inventory captured.
+- Play Store app icon and feature graphic rendered/uploaded.
 - Signed AAB job was skipped because this was a pull-request run.
 
 Artifacts:
-- [Debug APK, test/lint reports, schema v2, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190830767), 14-day retention.
-- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190362585), 90-day retention.
+- [Debug APK, test/lint reports, schema fixtures, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15193663522), 14-day retention.
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15192494773), 90-day retention.
 
-These artifacts are evidence for the exact commit above, not for later changes unless the workflow is rerun.
+These artifacts are evidence for the source at PR head `1365bab...`, not for the later workflow/documentation-only commits unless the app workflow is run again.
 
 ## 16 KB page-size checks
 
-The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug check is awaiting its first cloud result on the current PR head; the signed AAB job has not run because PR workflows deliberately skip release signing.
+The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug ZIP and native ELF alignment checks **passed** on Run #41. The signed AAB check has not run because PR workflows deliberately skip release signing.
 
 ## Organization Play Console account
 
@@ -68,7 +70,7 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 
 ## Dependency verification
 - `gradle/verification-metadata.xml` harus dihasilkan dari dependency resolution cloud pertama, ditinjau, lalu dikomit sebagai baseline tepercaya.
-- Runs #22 and #26 produced byte-identical bootstrap metadata (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`): 462 components and 758 SHA-256 artifact entries. This is reproducibility evidence, not independent authenticity proof; the file is still uncommitted and strict verification remains skipped.
+- Runs #38 and #41 produced byte-identical bootstrap metadata (SHA-256 `45c3de7dd53c00bc4a35afd64a2067fa05d10fe8ab8cb7ef22e86342ebb941b0`): 464 components and 761 SHA-256 artifact entries. The coordinates and configured repositories were reviewed for plausibility, but byte-for-byte reproducibility is not independent publisher-signature proof. The file is still uncommitted and strict verification remains skipped.
 - Jangan menganggap metadata yang dibuat dan langsung diverifikasi dalam job yang sama sebagai baseline tepercaya; itu hanya bootstrap TOFU.
 - Setelah metadata disetujui dan dikomit, aktifkan `--dependency-verification=strict` untuk seluruh quality dan release build.
 - Setiap perubahan dependency harus melalui review metadata sebelum masuk branch utama.
@@ -88,4 +90,4 @@ Workflow menginstal Gradle 9.9.2 secara eksplisit pada GitHub-hosted runner, lal
 
 ## Dependency verification baseline
 
-Workflow saat ini dapat menghasilkan `gradle/verification-metadata.xml` pada build pertama melalui `--write-verification-metadata sha256`. File harus diperiksa dan dikomit ke branch tepercaya sebelum release. Release job menolak berjalan tanpa file tersebut dan menjalankan build dengan `--dependency-verification=strict`. Sampai metadata hasil generator tersedia sebagai file repository yang ditinjau, dependency verification belum berstatus PASS.
+`gradle/verification-metadata.xml` has not yet been committed. Run #38 and #41 generated identical metadata, but strict dependency verification is still **NOT PASS** until the baseline is reviewed, committed, and a subsequent strict-mode quality build succeeds.
