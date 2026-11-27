@@ -147,7 +147,12 @@ jobs:
         timeout-minutes: 1
         run: |
           set +e
-          if adb devices | grep -Eq '^emulator-[0-9]+[[:space:]]+device
+          if adb devices | grep -Eq '^emulator-[0-9]+[[:space:]]+device$'; then
+            timeout 15s adb logcat -d -t 3000 > "$RUNNER_TEMP/berkah-pos-emulator-logcat.txt" 2>&1
+          fi
+          if [ -f "$RUNNER_TEMP/berkah-pos-emulator.log" ]; then
+            tail -n 300 "$RUNNER_TEMP/berkah-pos-emulator.log" > "$RUNNER_TEMP/berkah-pos-emulator-startup.txt"
+          fi
 
       - name: Upload Room migration test reports
         if: always()
@@ -162,28 +167,5 @@ jobs:
             app/build/outputs/apk/debug/
             ${{ runner.temp }}/berkah-pos-emulator-logcat.txt
             ${{ runner.temp }}/berkah-pos-emulator-startup.txt
-          if-no-files-found: warn
-          retention-days: 30
-; then
-            timeout 15s adb logcat -d -t 3000 > "$RUNNER_TEMP/berkah-pos-emulator-logcat.txt" 2>&1
-          fi
-          if [ -f "$RUNNER_TEMP/berkah-pos-emulator.log" ]; then
-            tail -n 300 "$RUNNER_TEMP/berkah-pos-emulator.log" > "$RUNNER_TEMP/berkah-pos-emulator-startup.txt"
-          fi
-
-
-      - name: Upload Room migration test reports
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: berkah-pos-room-migration-${{ github.run_number }}
-          path: |
-            app/build/reports/androidTests/connected/
-            app/build/outputs/androidTest-results/connected/
-            app/build/test-results/
-            app/build/outputs/apk/androidTest/debug/
-            app/build/outputs/apk/debug/
-            ${RUNNER_TEMP}/berkah-pos-emulator-logcat.txt
-            ${RUNNER_TEMP}/berkah-pos-emulator-startup.txt
           if-no-files-found: warn
           retention-days: 30
