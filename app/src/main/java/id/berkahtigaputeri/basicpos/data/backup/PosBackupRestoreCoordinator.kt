@@ -24,10 +24,13 @@ internal suspend fun <T> restoreWithLowStockPreferenceCompensation(
 ): T {
     currentCoroutineContext().ensureActive()
 
-    return withContext(NonCancellable) {
+    // Return the outcome as a value across the NonCancellable context boundary.
+    // Throwing inside withContext may produce a stack-trace-recovered copy of the exception;
+    // carrying it in Result preserves the original throwable identity for callers and diagnostics.
+    val outcome: Result<T> = withContext(NonCancellable) {
         try {
             updateLowStockThreshold(restoredLowStockThreshold)
-            restoreRoom()
+            Result.success(restoreRoom())
         } catch (failure: Throwable) {
             val compensationFailure = runCatching {
                 updateLowStockThreshold(previousLowStockThreshold)
@@ -35,7 +38,8 @@ internal suspend fun <T> restoreWithLowStockPreferenceCompensation(
             if (compensationFailure != null && compensationFailure !== failure) {
                 failure.addSuppressed(compensationFailure)
             }
-            throw failure
+            Result.failure(failure)
         }
     }
+    return outcome.getOrThrow()
 }
