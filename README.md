@@ -52,7 +52,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan
 
 ## Cloud build
 
-Workflow `.github/workflows/android-ci.yml` memakai GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37, Build Tools 36.0.0, dan Gradle 9.8.2. Push ke `main` serta `feat/basic-pos-mvp`, dan pull request menuju `main`, menjalankan unit test, lint, dan debug build. Signed release AAB hanya melalui manual `workflow_dispatch` pada `main`, dengan GitHub Environment `android-release` dan upload-key secrets. Tidak ada self-hosted runner atau publikasi otomatis.
+Workflow `.github/workflows/android-ci.yml` memakai GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37, Build Tools 36.0.0, dan Gradle 9.8.2. Push ke `main` dan pull request menuju `main` menjalankan unit test, lint, dan debug build. Branch feature divalidasi melalui PR agar tidak membuat build duplikat pada setiap push. Signed release AAB hanya melalui manual `workflow_dispatch` pada `main`, dengan GitHub Environment `android-release` dan upload-key secrets. Tidak ada self-hosted runner atau publikasi otomatis.
 
 Gradle Wrapper di-bootstrap oleh runner cloud dari Gradle 9.8.2; wrapper JAR tidak disimpan di repository. Dependency verification metadata sudah dihasilkan oleh job awal, tetapi belum dikomit sebagai baseline yang ditinjau. Karena itu CI masih mempunyai jalur bootstrap checksum; jangan menganggap strict verification aktif sampai metadata di-review dan dikomit.
 
