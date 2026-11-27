@@ -27,7 +27,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Periksa keunikan dan ko
 ## Build cloud
 Workflow berada di `.github/workflows/android-ci.yml`. CI membangun debug dan menjalankan unit tests/lint. Release AAB hanya dijalankan manual dengan GitHub Environment `android-release` dan signing secrets tersedia.
 
-Untuk mem-bootstrap wrapper pada GitHub-hosted runner, workflow memasang Gradle 9.6.0 lalu menjalankan `gradle wrapper` sebelum `./gradlew`.
+Untuk mem-bootstrap wrapper pada GitHub-hosted runner, workflow memasang Gradle 9.8.2 lalu menjalankan `gradle wrapper` sebelum `./gradlew`.
 
 ## Dokumentasi
 - [Arsitektur](docs/ARSITEKTUR.md)
