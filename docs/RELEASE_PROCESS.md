@@ -50,3 +50,8 @@ AAB ditandatangani menggunakan upload key yang disimpan di GitHub Environment Se
 
 ## Gradle Wrapper
 Workflow menginstal Gradle 9.8.2 secara eksplisit pada GitHub-hosted runner, lalu membangkitkan wrapper dan menjalankan `./gradlew`. Wrapper distribution URL dipatok pada `gradle/wrapper/gradle-wrapper.properties`. Tambahkan wrapper scripts/JAR terverifikasi sebagai checkpoint CI hardening setelah proses cloud tersedia.
+
+
+## Dependency verification baseline
+
+Workflow saat ini dapat menghasilkan `gradle/verification-metadata.xml` pada build pertama melalui `--write-verification-metadata sha256`. File harus diperiksa dan dikomit ke branch tepercaya sebelum release. Release job menolak berjalan tanpa file tersebut dan menjalankan build dengan `--dependency-verification=strict`. Sampai metadata hasil generator tersedia sebagai file repository yang ditinjau, dependency verification belum berstatus PASS.
