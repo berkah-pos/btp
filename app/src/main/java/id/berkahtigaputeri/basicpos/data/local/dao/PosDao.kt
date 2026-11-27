@@ -17,6 +17,12 @@ interface PosDao {
     @Query("SELECT COUNT(*) FROM products")
     fun observeProductCount(): Flow<Long>
 
+    @Query("SELECT COUNT(*) FROM products")
+    suspend fun getProductCountOnce(): Long
+
+    @Insert
+    suspend fun insertSampleProducts(rows: List<ProductEntity>)
+
     @Query("SELECT COUNT(*) FROM sales_transactions")
     fun observeTransactionCount(): Flow<Long>
 
