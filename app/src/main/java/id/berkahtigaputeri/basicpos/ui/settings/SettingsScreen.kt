@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -290,9 +291,42 @@ fun SettingsScreen(
             onDismissRequest = { legalDocument = null },
             title = { Text("Kebijakan Privasi — Draf") },
             text = {
-                Text(
-                    "BERKAH POS Basic menyimpan profil usaha, kategori, produk, stok, transaksi, dan rincian struk di SQLite pada perangkat. Fungsi POS tidak memerlukan akun atau server dan manifest tidak mendeklarasikan izin INTERNET. Backup JSON mencakup data usaha dan transaksi, disimpan di lokasi yang dipilih pengguna, serta tidak dienkripsi oleh aplikasi. Restore mengganti data lokal setelah file divalidasi. Pengguna bertanggung jawab menjaga keamanan file backup. Struk hanya diteruskan melalui aplikasi berbagi yang dipilih pengguna. Aplikasi tidak menyertakan SDK iklan, analytics, Firebase, atau crash reporting.\n\nPengendali: BERKAH TIGA PUTERI. Alamat, kontak privasi, dan URL kebijakan publik belum disediakan. Dokumen ini belum layak menjadi Privacy Policy publik."
-                )
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        """Status: DRAF — belum layak dipublikasikan.
+
+Pengendali aplikasi
+BERKAH TIGA PUTERI.
+Alamat korespondensi: belum disediakan.
+Email privasi/dukungan: belum disediakan.
+URL kebijakan publik HTTPS: belum tersedia.
+
+Data yang disimpan
+BERKAH POS menyimpan profil toko, nama pemilik, alamat, nomor telepon, catatan struk, kategori, produk, SKU, harga, stok, transaksi, rincian item, dan preferensi ambang stok rendah pada perangkat melalui SQLite/Room dan Preferences DataStore.
+
+Pengiriman dan akun
+Fungsi POS inti tidak membutuhkan akun atau server. Source manifest tidak mendeklarasikan izin INTERNET. Tidak direncanakan Firebase, analytics, crash reporting, iklan pihak ketiga, atau SDK pengumpulan data. Dependency graph dan merged manifest release masih harus diperiksa.
+
+Backup dan berbagi
+Backup JSON dipilih dan disimpan pada lokasi yang ditentukan pengguna. File memuat profil, katalog, stok, transaksi, rincian struk, dan ambang stok rendah. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab atas penyimpanan dan pembagiannya. Restore mengganti data lokal setelah file tervalidasi. Berbagi struk hanya diteruskan ke aplikasi yang dipilih pengguna.
+
+Tautan eksternal
+Tautan SaaS yang dikonfigurasi membuka browser; email dukungan membuka aplikasi email pilihan pengguna. Layanan eksternal tersebut tunduk pada kebijakan privasi masing-masing.
+
+Retensi dan penghapusan
+Data disimpan sampai diubah/dihapus pengguna, dipulihkan dari backup lain, dihapus melalui pengaturan penyimpanan Android, atau aplikasi dihapus. File backup yang diekspor harus dihapus sendiri oleh pengguna bila tidak diperlukan.
+
+Hak dan kontak
+Pertanyaan privasi dapat diajukan kepada pengendali setelah alamat dan kontak resmi dilengkapi. Perubahan kebijakan akan dicantumkan pada halaman publik setelah URL HTTPS disediakan.
+
+Dokumen ini belum merupakan Privacy Policy publik dan tidak boleh dikirim sebagai URL final ke Google Play."""
+                    )
+                }
             },
             confirmButton = {
                 TextButton(onClick = { legalDocument = null }) { Text("Tutup") }
@@ -302,9 +336,37 @@ fun SettingsScreen(
             onDismissRequest = { legalDocument = null },
             title = { Text("Syarat dan Ketentuan — Draf") },
             text = {
-                Text(
-                    "BERKAH POS Basic adalah aplikasi kasir lokal. Pengguna bertanggung jawab atas kebenaran harga, stok, pajak, diskon, dan pembayaran yang dimasukkan serta pengamanan file backup. Aplikasi tidak menggantikan kewajiban pembukuan atau perpajakan. Kontak pengembang resmi belum tersedia."
-                )
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        """Status: DRAF — perlu pemeriksaan dan persetujuan pengelola.
+
+1. Ruang lingkup
+BERKAH POS Basic adalah aplikasi pencatatan kasir lokal yang dapat digunakan tanpa akun atau server.
+
+2. Tanggung jawab pengguna
+Pengguna bertanggung jawab atas ketepatan nama produk, harga, stok, pajak, diskon, dan nominal pembayaran yang dimasukkan.
+
+3. Backup dan pemulihan
+Backup JSON dapat berisi profil, katalog, stok, transaksi, rincian struk, dan ambang stok rendah. File tidak dienkripsi oleh aplikasi. Pengguna bertanggung jawab menyimpan backup secara aman dan memeriksa file sebelum membagikannya. Restore mengganti data lokal setelah validasi berhasil.
+
+4. Batas penggunaan
+Aplikasi tidak menggantikan kewajiban pembukuan, perpajakan, perlindungan konsumen, atau ketentuan usaha yang berlaku.
+
+5. Ketersediaan dan kehilangan data
+Pengembang tidak menjamin aplikasi bebas gangguan pada semua perangkat. Pengguna bertanggung jawab membuat dan menguji backup. Data yang tidak dibackup dapat hilang akibat kerusakan, reset, atau penghapusan aplikasi.
+
+6. Layanan SaaS
+Informasi SaaS BERKAH TIGA PUTERI bersifat informatif. Dokumen ini tidak mengaktifkan pembayaran atau langganan.
+
+7. Kontak
+Alamat korespondensi dan kontak resmi pengembang belum disediakan dan wajib dilengkapi sebelum publikasi."""
+                    )
+                }
             },
             confirmButton = {
                 TextButton(onClick = { legalDocument = null }) { Text("Tutup") }
@@ -319,7 +381,7 @@ fun SettingsScreen(
             title = { Text("Ganti data POS lokal?") },
             text = {
                 Text(
-                    "Data profil toko, produk, stok, kategori, dan transaksi saat ini akan diganti oleh isi file backup. Operasi hanya diterapkan setelah file lolos validasi."
+                    "Data profil toko, produk, stok, kategori, transaksi, rincian struk, dan ambang stok rendah saat ini akan diganti oleh isi file backup. Operasi hanya diterapkan setelah file lolos validasi."
                 )
             },
             confirmButton = {
