@@ -32,9 +32,6 @@ class CashierViewModel(
     private val inventory = repository.observeProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val storeProfile: StateFlow<StoreProfile?> = repository
-        .observeStoreProfile()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val searchQuery: StateFlow<String> = query.asStateFlow()
 
     val products: StateFlow<List<Product>> = query
