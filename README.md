@@ -4,7 +4,9 @@ Aplikasi Basic POS offline-first untuk UMKM Indonesia, dikembangkan oleh **BERKA
 
 ## Status implementasi sumber
 
-Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
+Implementasi MVP POS telah digabungkan ke branch `main` melalui [PR #1](https://github.com/berkah-pos/btp/pull/1) pada 27 November 2026.
+
+Source code saat ini mencakup:
 - Dashboard penjualan harian, jumlah transaksi, produk, dan stok rendah yang dibaca dari Room.
 - Profil usaha dan preferensi ambang stok rendah melalui DataStore.
 - CRUD produk, pencarian nama/SKU, kategori, dan stok.
@@ -14,7 +16,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 - Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
 - Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
 
-**Penting:** implementasi sumber belum sama dengan hasil yang teruji. Sampai 27 November 2026 belum ada GitHub Actions run/check yang dapat diverifikasi, jadi kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB masih berstatus **NOT TESTED**.
+**Status validasi:** implementasi sumber belum sama dengan hasil yang teruji. Per 27 November 2026, GitHub Actions API belum menunjukkan workflow run atau check-run untuk commit hasil merge. Karena itu, kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB masih berstatus **NOT VERIFIED**. Jangan menganggap merge sebagai bukti bahwa aplikasi sudah berhasil dibangun.
 
 ## Keputusan teknis
 
@@ -34,13 +36,15 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan
 
 ## Branch dan review
 
-- `main`: workflow CI dan baseline repository.
-- `feat/basic-pos-mvp`: implementasi aktif.
-- Draft PR: [#1 — Android foundation](https://github.com/berkah-pos/btp/pull/1).
+- `main`: baseline kanonis yang berisi implementasi MVP hasil merge PR #1.
+- Perubahan lanjutan dilakukan pada branch kerja terpisah dan diajukan melalui pull request.
+- [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1) telah **merged** menggunakan Squash and merge pada 27 November 2026.
 
 ## Cloud build
 
-Workflow ada di `.github/workflows/android-ci.yml` dan hanya menggunakan GitHub-hosted `ubuntu-24.04`. Workflow menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
+Workflow berada di `.github/workflows/android-ci.yml` dan menggunakan GitHub-hosted `ubuntu-24.04`. Workflow dirancang untuk menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
+
+**Catatan operasional:** belum ada hasil workflow yang dapat diverifikasi setelah merge. Periksa bahwa GitHub Actions diaktifkan untuk repository dan bahwa workflow `Android CI` muncul di tab Actions. Jangan membuka release workflow atau menambahkan signing secrets hanya untuk menguji CI.
 
 Untuk bootstrap Gradle Wrapper di runner, workflow memasang Gradle 9.8.2 lalu membangkitkan wrapper di workspace runner sebelum menjalankan `./gradlew`. Tidak ada wrapper JAR yang dikomit pada baseline ini.
 
