@@ -1,8 +1,10 @@
 package id.berkahtigaputeri.basicpos.ui.settings
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import id.berkahtigaputeri.basicpos.data.backup.PosBackupService
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.CancellationException
@@ -14,7 +16,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val repository: PosRepository
+    private val repository: PosRepository,
+    private val backupService: PosBackupService
 ) : ViewModel() {
     val profile: StateFlow<StoreProfile?> = repository
         .observeStoreProfile()
@@ -25,6 +28,9 @@ class SettingsViewModel(
 
     private val mutableSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = mutableSaving.asStateFlow()
+
+    private val mutableBackupBusy = MutableStateFlow(false)
+    val isBackupBusy: StateFlow<Boolean> = mutableBackupBusy.asStateFlow()
 
     fun dismissMessage() {
         mutableMessage.value = null
@@ -47,13 +53,49 @@ class SettingsViewModel(
         }
     }
 
+    fun exportBackup(uri: Uri) {
+        if (mutableBackupBusy.value) return
+        viewModelScope.launch {
+            mutableBackupBusy.value = true
+            try {
+                backupService.exportTo(uri)
+                mutableMessage.value = "Backup JSON berhasil dibuat. Simpan file di lokasi yang aman."
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                mutableMessage.value = error.message ?: "Backup tidak dapat dibuat."
+            } finally {
+                mutableBackupBusy.value = false
+            }
+        }
+    }
+
+    fun restoreBackup(uri: Uri) {
+        if (mutableBackupBusy.value) return
+        viewModelScope.launch {
+            mutableBackupBusy.value = true
+            try {
+                val summary = backupService.restoreFrom(uri)
+                mutableMessage.value =
+                    "Pemulihan berhasil: ${summary.productCount} produk, ${summary.categoryCount} kategori, dan ${summary.transactionCount} transaksi."
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                mutableMessage.value = error.message ?: "File cadangan tidak valid atau gagal dipulihkan."
+            } finally {
+                mutableBackupBusy.value = false
+            }
+        }
+    }
+
     class Factory(
-        private val repository: PosRepository
+        private val repository: PosRepository,
+        private val backupService: PosBackupService
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
-                return SettingsViewModel(repository) as T
+                return SettingsViewModel(repository, backupService) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
