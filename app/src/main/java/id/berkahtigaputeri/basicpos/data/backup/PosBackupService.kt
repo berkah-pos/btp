@@ -9,7 +9,10 @@ import id.berkahtigaputeri.basicpos.data.local.entity.ProductEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.SalesTransactionEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.StoreProfileEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.TransactionItemEntity
+import id.berkahtigaputeri.basicpos.data.preferences.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,15 +21,18 @@ import java.util.Locale
 
 class PosBackupService(
     private val database: BerkahPosDatabase,
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
+    private val preferencesRepository: UserPreferencesRepository
 ) {
     suspend fun exportTo(uri: Uri) = withContext(Dispatchers.IO) {
+        val lowStockThreshold = preferencesRepository.lowStockThreshold.first()
         val json = database.withTransaction {
             val dao = database.posDao()
             JSONObject()
                 .put("format", FORMAT_NAME)
                 .put("schemaVersion", SCHEMA_VERSION)
                 .put("exportedAtEpochMillis", System.currentTimeMillis())
+                .put("settings", JSONObject().put("lowStockThreshold", lowStockThreshold))
                 .put("storeProfile", dao.getStoreProfileForBackup()?.toJson() ?: JSONObject.NULL)
                 .put("categories", JSONArray().apply {
                     dao.getAllCategoriesForBackup().forEach { put(it.toJson()) }
@@ -90,6 +96,23 @@ class PosBackupService(
             rawProfile is JSONObject -> rawProfile.toProfile()
             else -> throw IllegalArgumentException("Profil toko pada cadangan harus berupa objek atau null.")
         }
+        require(root.has("settings") && root.get("settings") is JSONObject) {
+            "Bagian pengaturan tidak ditemukan atau tidak valid."
+        }
+        val settings = root.getJSONObject("settings")
+        val thresholdValue = settings.get("lowStockThreshold")
+        require(thresholdValue is Number) {
+            "Ambang stok pada backup harus berupa angka."
+        }
+        val restoredLowStockThreshold = thresholdValue.toString().toLongOrNull()
+            ?: throw IllegalArgumentException("Ambang stok pada backup harus berupa bilangan bulat.")
+        require(
+            restoredLowStockThreshold in
+                UserPreferencesRepository.MIN_LOW_STOCK_THRESHOLD..UserPreferencesRepository.MAX_LOW_STOCK_THRESHOLD
+        ) {
+            "Ambang stok pada backup berada di luar rentang yang didukung."
+        }
+
         val categories = root.getJSONArray("categories").decode(MAX_CATEGORIES) { it.toCategory() }
         val products = root.getJSONArray("products").decode(MAX_PRODUCTS) { it.toProduct() }
         val transactions = root.getJSONArray("transactions").decode(MAX_TRANSACTIONS) { it.toTransaction() }
@@ -97,23 +120,41 @@ class PosBackupService(
 
         validate(profile, categories, products, transactions, items)
 
-        // Restore is all-or-nothing: invalid inserts roll back the complete replacement.
-        database.withTransaction {
-            val dao = database.posDao()
-            dao.deleteAllTransactionItems()
-            dao.deleteAllTransactions()
-            dao.deleteAllProducts()
-            dao.deleteAllCategories()
-            dao.deleteAllStoreProfiles()
+        // Room and DataStore cannot share a single database transaction. Update DataStore first,
+        // then restore Room atomically; compensate the preference if the Room transaction fails.
+        val previousLowStockThreshold = preferencesRepository.lowStockThreshold.first()
+        preferencesRepository.setLowStockThreshold(restoredLowStockThreshold)
+        try {
+            database.withTransaction {
+                val dao = database.posDao()
+                dao.deleteAllTransactionItems()
+                dao.deleteAllTransactions()
+                dao.deleteAllProducts()
+                dao.deleteAllCategories()
+                dao.deleteAllStoreProfiles()
 
-            profile?.let { dao.upsertStoreProfile(it) }
-            if (categories.isNotEmpty()) dao.insertCategoriesForBackup(categories)
-            if (products.isNotEmpty()) dao.insertProductsForBackup(products)
-            if (transactions.isNotEmpty()) dao.insertTransactionsForBackup(transactions)
-            if (items.isNotEmpty()) dao.insertTransactionItemsForBackup(items)
+                profile?.let { dao.upsertStoreProfile(it) }
+                if (categories.isNotEmpty()) dao.insertCategoriesForBackup(categories)
+                if (products.isNotEmpty()) dao.insertProductsForBackup(products)
+                if (transactions.isNotEmpty()) dao.insertTransactionsForBackup(transactions)
+                if (items.isNotEmpty()) dao.insertTransactionItemsForBackup(items)
+            }
+        } catch (error: Throwable) {
+            withContext(NonCancellable) {
+                runCatching {
+                    preferencesRepository.setLowStockThreshold(previousLowStockThreshold)
+                }
+            }
+            throw error
         }
 
-        RestoreSummary(categories.size, products.size, transactions.size, items.size)
+        RestoreSummary(
+            categories.size,
+            products.size,
+            transactions.size,
+            items.size,
+            restoredLowStockThreshold
+        )
     }
 
     private fun validate(
@@ -289,12 +330,13 @@ class PosBackupService(
         val categoryCount: Int,
         val productCount: Int,
         val transactionCount: Int,
-        val transactionItemCount: Int
+        val transactionItemCount: Int,
+        val lowStockThreshold: Long
     )
 
     companion object {
         private const val FORMAT_NAME = "BERKAH_POS_BACKUP"
-        private const val SCHEMA_VERSION = 1
+        private const val SCHEMA_VERSION = 2
         private const val MAX_BACKUP_BYTES = 25 * 1024 * 1024
         private const val MAX_CATEGORIES = 5_000
         private const val MAX_PRODUCTS = 50_000
