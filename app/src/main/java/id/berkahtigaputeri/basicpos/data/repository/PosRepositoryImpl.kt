@@ -32,7 +32,6 @@ import java.util.Locale
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class 
 class PosRepositoryImpl(
     private val database: BerkahPosDatabase
 ) : PosRepository {
