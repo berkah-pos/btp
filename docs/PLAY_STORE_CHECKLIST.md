@@ -74,12 +74,12 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 
 ## Build dan signing
 - [x] Jalankan unit test debug variant: 29 lulus, 0 gagal pada Run #80.
-- [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #79.
-- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #79.
-- [x] Capture merged release manifest dan release runtime dependency inventory pada Run #79.
+- [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #80.
+- [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #80.
+- [x] Capture merged release manifest dan release runtime dependency inventory pada Run #80.
 - [x] Review refreshed metadata Runs #81/#82: 455 komponen dan 745 checksum unik; seluruh 745 entri bersama memiliki checksum sama dengan Run #80, dan sembilan entri stale tidak lagi dipakai. Metadata SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`. Ini bukan bukti signature publisher (`verify-signatures=false`).
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
-- [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #79.
+- [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #80.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
 - [ ] Bangun release AAB dengan upload key yang disimpan hanya di GitHub Environment Secrets.
 - [ ] Validasi AAB dengan bundletool.
@@ -104,7 +104,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
 - Room migration instrumentation test 1 → 2 **PASS** pada Run #35 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
-- Dependency verification metadata telah direview dari Run #79 tetapi belum dikomit; strict gate belum PASS.
+- Dependency baseline refreshed Runs #81/#82 telah direview dan guard diperbaiki; baseline belum dikomit dan strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.
