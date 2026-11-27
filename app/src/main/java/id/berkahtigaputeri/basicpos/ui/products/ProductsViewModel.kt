@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import id.berkahtigaputeri.basicpos.domain.model.Category
 import id.berkahtigaputeri.basicpos.domain.model.Product
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,35 +40,48 @@ class ProductsViewModel(
         mutableMessage.value = null
     }
 
-    fun saveProduct(product: Product) {
-        viewModelScope.launch {
-            runCatching { repository.saveProduct(product) }
-                .onSuccess { mutableMessage.value = "Produk berhasil disimpan." }
-                .onFailure { mutableMessage.value = it.message ?: "Produk tidak dapat disimpan." }
-        }
+    fun saveProduct(product: Product) = execute(
+        success = "Produk berhasil disimpan.",
+        fallback = "Produk tidak dapat disimpan."
+    ) {
+        repository.saveProduct(product)
     }
 
-    fun seedSampleProducts() {
-        viewModelScope.launch {
-            runCatching { repository.seedSampleProducts() }
-                .onSuccess { mutableMessage.value = "Tiga produk contoh ditambahkan. Tidak ada transaksi contoh yang dibuat." }
-                .onFailure { mutableMessage.value = it.message ?: "Data contoh tidak dapat ditambahkan." }
-        }
+    fun deleteProduct(productId: Long) = execute(
+        success = "Produk berhasil dihapus.",
+        fallback = "Produk tidak dapat dihapus."
+    ) {
+        repository.deleteProduct(productId)
     }
 
-    fun deleteProduct(productId: Long) {
-        viewModelScope.launch {
-            runCatching { repository.deleteProduct(productId) }
-                .onSuccess { mutableMessage.value = "Produk berhasil dihapus." }
-                .onFailure { mutableMessage.value = it.message ?: "Produk tidak dapat dihapus." }
-        }
+    fun saveCategory(name: String) = execute(
+        success = "Kategori berhasil ditambahkan.",
+        fallback = "Kategori tidak dapat disimpan."
+    ) {
+        repository.saveCategory(Category(name = name))
     }
 
-    fun saveCategory(name: String) {
+    fun seedSampleProducts() = execute(
+        success = "Tiga produk contoh ditambahkan. Tidak ada transaksi contoh yang dibuat.",
+        fallback = "Data contoh tidak dapat ditambahkan."
+    ) {
+        repository.seedSampleProducts()
+    }
+
+    private fun execute(
+        success: String,
+        fallback: String,
+        action: suspend () -> Unit
+    ) {
         viewModelScope.launch {
-            runCatching { repository.saveCategory(Category(name = name)) }
-                .onSuccess { mutableMessage.value = "Kategori berhasil ditambahkan." }
-                .onFailure { mutableMessage.value = it.message ?: "Kategori tidak dapat disimpan." }
+            try {
+                action()
+                mutableMessage.value = success
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                mutableMessage.value = error.message ?: fallback
+            }
         }
     }
 
