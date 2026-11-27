@@ -45,6 +45,8 @@ fun CashierScreen(
     val message by viewModel.message.collectAsState()
     val receipt by viewModel.receipt.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
+    val storeProfile by viewModel.storeProfile.collectAsState()
+    val cartHasCurrentStock = cart.all { it.product.stockQuantity >= it.quantity }
 
     var discountText by remember { mutableStateOf("0") }
     var taxText by remember { mutableStateOf("0") }
@@ -204,6 +206,7 @@ fun CashierScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = cart.isNotEmpty() &&
                         !isSubmitting &&
+                        cartHasCurrentStock &&
                         subtotal != null &&
                         discount != null &&
                         tax != null &&
@@ -241,11 +244,15 @@ fun CashierScreen(
             title = { Text("Transaksi tersimpan") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(storeProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+                    storeProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
+                    storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
                     Text(saved.sale.transactionNumber)
                     Text("Total: ${Rupiah.from(saved.sale.totalRupiah).formatIdr()}")
                     Text("Dibayar: ${Rupiah.from(saved.sale.paidRupiah).formatIdr()}")
                     Text("Kembalian: ${Rupiah.from(saved.sale.changeRupiah).formatIdr()}")
                     Text("${saved.items.size} jenis produk")
+                    storeProfile?.receiptFooter?.takeIf(String::isNotBlank)?.let { Text(it) }
                 }
             },
             confirmButton = {
