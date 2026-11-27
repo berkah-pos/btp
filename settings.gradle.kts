@@ -1,17 +1,11 @@
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "org.jetbrains.kotlin.plugin.compose") {
-                // Resolve the Compose compiler implementation directly from Maven Central.
-                // This avoids depending on the Gradle Plugin Portal marker lookup in cold CI runners.
-                useModule("org.jetbrains.kotlin:compose-compiler-gradle-plugin:${requested.version}")
-            }
-        }
-    }
     repositories {
+        // Use the official plugin marker published for org.jetbrains.kotlin.plugin.compose.
+        // Kotlin's Compose Compiler Gradle plugin is versioned with Kotlin; do not remap
+        // the plugin ID to an implementation module or bypass marker resolution.
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
 }
 
