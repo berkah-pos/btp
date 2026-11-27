@@ -67,7 +67,12 @@ data class SalesTransactionEntity(
     val taxRupiah: Long,
     val totalRupiah: Long,
     val paidRupiah: Long,
-    val changeRupiah: Long
+    val changeRupiah: Long,
+    val storeNameSnapshot: String? = null,
+    val storeOwnerSnapshot: String? = null,
+    val storeAddressSnapshot: String? = null,
+    val storePhoneSnapshot: String? = null,
+    val receiptFooterSnapshot: String? = null
 )
 
 @Entity(
