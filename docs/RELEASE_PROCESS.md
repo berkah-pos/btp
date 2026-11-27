@@ -4,7 +4,7 @@
 - Semua job memakai standard GitHub-hosted `ubuntu-24.04`; self-hosted runner dilarang.
 - Repository ini sengaja public. Standard runners public repository tidak dikenakan biaya per menit, tetapi artifact storage tetap berkuota.
 - Pull request menuju `main` menjalankan unit test, lint, dan debug build. Push langsung ke `main` juga menjalankan quality workflow; branch feature yang memiliki PR tidak menjalankan build push duplikat.
-- Quality bootstrap retries only the known transient Compose compiler plugin repository-resolution failure up to five attempts with bounded backoff (15/30/60/90 seconds); all other build failures fail immediately.
+- Quality bootstrap retries known transient Compose Compiler and Android Gradle Plugin marker repository-resolution failures up to five attempts with bounded backoff (15/30/60/90 seconds); all other build failures fail immediately.
 - Quality job juga memproses merged release manifest dan mengekspor `releaseRuntimeClasspath` dependency inventory ke `release-audit/` dalam debug artifact. Ini memungkinkan review permission dan SDK tanpa membuka signing secrets.
 - Release AAB hanya melalui `workflow_dispatch` di branch `main` dengan input `build_release=true`.
 - Workflow dibatasi permission `contents: read`; secret hanya tersedia di job release melalui Environment.

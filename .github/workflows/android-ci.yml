@@ -122,17 +122,17 @@ jobs:
             if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
               exit 0
             fi
-            if ! grep -Eq "Could not resolve plugin artifact|Plugin \\[id: 'org\\.jetbrains\\.kotlin\\.plugin\\.compose'" "$LOG_FILE"; then
-              echo "Quality gate failed for a reason other than transient Compose plugin resolution; not retrying."
+            if ! grep -Eiq "Could not resolve plugin artifact|Plugin \\[id: '(org\\.jetbrains\\.kotlin\\.plugin\\.compose|com\\.android\\.application)'" "$LOG_FILE"; then
+              echo "Quality gate failed for a reason other than transient Gradle plugin marker resolution; not retrying."
               exit 1
             fi
             if [ "$attempt" -lt "$max_attempts" ]; then
               delay="${retry_delays[$((attempt - 1))]}"
-              echo "Compose plugin repository resolution failed; retrying with refreshed dependency metadata in ${delay}s (attempt $((attempt + 1))/${max_attempts})."
+              echo "Gradle plugin marker repository resolution failed; retrying with refreshed dependency metadata in ${delay}s (attempt $((attempt + 1))/${max_attempts})."
               sleep "$delay"
             fi
           done
-          echo "Compose plugin resolution failed after ${max_attempts} attempts and bounded backoff."
+          echo "Gradle plugin marker resolution failed after ${max_attempts} attempts and bounded backoff."
           exit 1
 
       - name: Validate refreshed dependency metadata against the reviewed baseline
