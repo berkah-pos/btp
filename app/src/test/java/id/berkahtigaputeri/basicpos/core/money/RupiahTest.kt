@@ -2,6 +2,7 @@ package id.berkahtigaputeri.basicpos.core.money
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RupiahTest {
@@ -27,6 +28,25 @@ class RupiahTest {
         assertThrows(IllegalArgumentException::class.java) {
             Rupiah.from(1_000) - Rupiah.from(1_500)
         }
+    }
+
+    @Test
+    fun multiplicationRejectsNegativeQuantity() {
+        assertThrows(IllegalArgumentException::class.java) {
+            Rupiah.from(1_000).multipliedBy(-1)
+        }
+    }
+
+    @Test
+    fun multiplicationOverflowIsRejected() {
+        assertThrows(ArithmeticException::class.java) {
+            Rupiah.from(Long.MAX_VALUE).multipliedBy(2)
+        }
+    }
+
+    @Test
+    fun formatsWholeRupiahWithIndonesianGrouping() {
+        assertTrue(Rupiah.from(1_234_000).formatIdr().contains("1.234.000"))
     }
 
     @Test
