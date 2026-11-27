@@ -16,7 +16,7 @@ Source code saat ini mencakup:
 - Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
 - Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
 
-**Status validasi (27 November 2026):** GitHub Actions sudah menjalankan workflow, tetapi belum ada build aplikasi yang berhasil diverifikasi. Run [45966614465 pada `main`](https://github.com/berkah-pos/btp/actions/runs/45966614465) gagal saat instalasi Android SDK karena workflow meminta package `platforms;android-37` yang tidak tersedia. Run [45967320633 pada PR #3](https://github.com/berkah-pos/btp/actions/runs/45967320633) melewati instalasi SDK, tetapi gagal saat resolusi plugin karena AGP `9.6.0` belum tersedia sebagai rilis stabil. Run [45968839371](https://github.com/berkah-pos/btp/actions/runs/45968839371) melewati instalasi SDK, bootstrap Gradle Wrapper, dan resolusi plugin; kompilasi Kotlin kemudian menemukan deklarasi ganda `DashboardSummary` pada `DashboardSummary.kt` dan `PosModels.kt`. PR #3 menghapus deklarasi lama yang hanya memiliki dua field; run [45969254895](https://github.com/berkah-pos/btp/actions/runs/45969254895) sedang memverifikasi koreksi tersebut. Sampai runner menyelesaikan unit test, lint, dan debug build dengan sukses, kompilasi Kotlin, unit test, lint, startup perangkat, serta APK/AAB tetap berstatus **NOT VERIFIED**. Jangan menganggap instalasi SDK atau bootstrap Gradle sebagai bukti build berhasil.
+**Status validasi (27 November 2026):** PR #3 telah digabungkan ke `main` setelah workflow cloud berhasil pada commit PR `b0c9d1988d39209b29cfcaee3f03923a47b834dc`. Run [45969254895](https://github.com/berkah-pos/btp/actions/runs/45969254895) menjalankan `testDebugUnitTest` (16 test, 0 gagal, 0 error, 0 skipped), `lintDebug` (0 error, 8 warning), dan `assembleDebug` (berhasil); artifact APK debug serta laporan lint/test berhasil diunggah. Delapan warning lint mencakup target API yang belum setinggi compile SDK, versi Gradle/AGP/dependency yang memiliki rilis lebih baru, konfigurasi backup Android 12+, resource launcher yang tidak dipakai, serta resource shrinking. Warning tersebut bukan error build, tetapi harus ditinjau sebelum rilis. Job signed release AAB dilewati karena run berasal dari pull request; AAB hanya dibuat melalui `workflow_dispatch` pada `main` setelah identitas aplikasi, baseline dependency verification, dan signing secrets tersedia. Belum ada uji startup pada perangkat fisik/emulator, UI automation, internal testing, atau Pre-launch Report. Room schema v2 dan dependency verification metadata telah dihasilkan sebagai artifact CI, tetapi belum menjadi file yang dikomit pada branch kanonis; strict dependency verification baru dianggap aktif setelah metadata tersebut direview dan dikomit.
 
 ## Keputusan teknis
 
@@ -36,15 +36,14 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan
 
 ## Branch dan review
 
-- `main`: baseline kanonis yang berisi implementasi MVP hasil merge PR #1.
+- `main`: baseline kanonis yang berisi implementasi MVP hasil merge PR #1 dan koreksi CI PR #3.
 - Perubahan lanjutan dilakukan pada branch kerja terpisah dan diajukan melalui pull request.
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1) telah **merged** menggunakan Squash and merge pada 27 November 2026.
+- [PR #3 — perbaikan Android SDK dan CI](https://github.com/berkah-pos/btp/pull/3) telah **merged** setelah quality workflow berhasil pada 27 November 2026.
 
 ## Cloud build
 
 Workflow berada di `.github/workflows/android-ci.yml` dan menggunakan GitHub-hosted `ubuntu-24.04`. Workflow dirancang untuk menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
-
-**Catatan operasional:** GitHub Actions aktif dan telah membuat workflow run; blocker yang ditemukan sejauh ini adalah konfigurasi SDK dan versi plugin Gradle, bukan ketiadaan run. PR #3 memuat koreksi keduanya. Jangan membuka release workflow atau menambahkan signing secrets hanya untuk menguji CI.
 
 Untuk bootstrap Gradle Wrapper di runner, workflow memasang Gradle 9.8.2 lalu membangkitkan wrapper di workspace runner sebelum menjalankan `./gradlew`. Tidak ada wrapper JAR yang dikomit pada baseline ini.
 
