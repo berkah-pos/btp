@@ -79,6 +79,7 @@ class PosRepositoryImpl(
                     totalSalesTodayRupiah = sales.first,
                     transactionCountToday = sales.second,
                     productCount = productCount,
+                    lowStockThreshold = threshold,
                     lowStockCount = lowStock.first,
                     lowStockProducts = lowStock.second.map(::toDomain),
                     recentTransactions = recent.map(::toDomain)
