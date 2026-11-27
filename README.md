@@ -1,40 +1,69 @@
 # BERKAH POS
 
-Aplikasi Basic POS Android untuk UMKM Indonesia, dikembangkan oleh **BERKAH TIGA PUTERI**.
+Aplikasi Basic POS offline-first untuk UMKM Indonesia, dikembangkan oleh **BERKAH TIGA PUTERI**.
 
-## Status
-Fondasi Android tahap pertama sedang dibangun pada branch `feat/basic-pos-mvp`. Fitur kasir, master produk lengkap, transaksi, backup/restore JSON, dan promosi SaaS belum dinyatakan selesai.
+## Status implementasi sumber
+
+Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
+- Dashboard penjualan harian, jumlah transaksi, produk, dan stok rendah yang dibaca dari Room.
+- Profil usaha dan preferensi ambang stok rendah melalui DataStore.
+- CRUD produk, pencarian nama/SKU, kategori, dan stok.
+- Kasir, keranjang, diskon/pajak nominal, pembayaran, kembalian, dan checkout Room atomik.
+- Riwayat transaksi, detail item snapshot, dan berbagi struk.
+- Backup/restore JSON lokal melalui Android Storage Access Framework.
+- Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
+- Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
+
+**Penting:** implementasi sumber belum sama dengan hasil yang teruji. Sampai 27 November 2026 belum ada GitHub Actions run/check yang dapat diverifikasi, jadi kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB masih berstatus **NOT TESTED**.
 
 ## Keputusan teknis
+
 - Kotlin + Jetpack Compose + Material 3.
 - MVVM, Coroutines, Flow, Navigation Compose.
 - Room/SQLite sebagai sumber data POS lokal.
-- DataStore untuk preferensi.
+- Preferences DataStore untuk ambang stok rendah.
 - Repository Pattern untuk memisahkan UI dari storage.
 - Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
-- Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan pada fondasi.
+- Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan.
 - Android minSdk 24, compileSdk 37, targetSdk 36.
 - AGP 9.6.0, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
-- GitHub Actions menggunakan standard GitHub-hosted runner `ubuntu-24.04`.
 
 ## Identitas aplikasi
-Candidate applicationId: `id.berkahtigaputeri.basicpos`. Periksa keunikan dan konfirmasi sebelum rilis pertama; jangan mengubah applicationId setelah aplikasi dipublikasikan.
 
-## Branch
-- `main`: baseline stabil.
+Candidate applicationId: `id.berkahtigaputeri.basicpos`. Periksa keunikan dan konfirmasi melalui Play Console sebelum rilis pertama; jangan mengubah applicationId setelah aplikasi dipublikasikan.
+
+## Branch dan review
+
+- `main`: workflow CI dan baseline repository.
 - `feat/basic-pos-mvp`: implementasi aktif.
+- Draft PR: [#1 — Android foundation](https://github.com/berkah-pos/btp/pull/1).
 
-## Build cloud
-Workflow berada di `.github/workflows/android-ci.yml`. CI membangun debug dan menjalankan unit tests/lint. Release AAB hanya dijalankan manual dengan GitHub Environment `android-release` dan signing secrets tersedia.
+## Cloud build
 
-Untuk mem-bootstrap wrapper pada GitHub-hosted runner, workflow memasang Gradle 9.8.2 lalu menjalankan `gradle wrapper` sebelum `./gradlew`.
+Workflow ada di `.github/workflows/android-ci.yml` dan hanya menggunakan GitHub-hosted `ubuntu-24.04`. Workflow menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
+
+Untuk bootstrap Gradle Wrapper di runner, workflow memasang Gradle 9.8.2 lalu membangkitkan wrapper di workspace runner sebelum menjalankan `./gradlew`. Tidak ada wrapper JAR yang dikomit pada baseline ini.
+
+## Konfigurasi promosi dan dukungan
+
+GitHub Actions Repository Variables opsional:
+- `BTP_SAAS_URL`: URL HTTPS resmi layanan SaaS.
+- `BTP_SUPPORT_EMAIL`: email dukungan resmi.
+
+Keduanya sengaja kosong secara default. Jangan mengisi alamat placeholder atau informasi perusahaan yang belum diverifikasi.
 
 ## Dokumentasi
+
 - [Arsitektur](docs/ARSITEKTUR.md)
-- [Privacy Policy draft](docs/PRIVACY_POLICY.md)
-- [Terms of Service draft](docs/TERMS_OF_SERVICE.md)
-- [Play Store checklist](docs/PLAY_STORE_CHECKLIST.md)
+- [Kebijakan Privasi — draf](docs/PRIVACY_POLICY.md)
+- [Syarat dan Ketentuan — draf](docs/TERMS_OF_SERVICE.md)
+- [Google Play checklist](docs/PLAY_STORE_CHECKLIST.md)
 - [Release process](docs/RELEASE_PROCESS.md)
 
-## Catatan repository public
-Repository ini sengaja public agar penggunaan standard GitHub-hosted runners pada public repository tidak dikenakan biaya per menit. Seluruh source code dan konfigurasi non-secret bersifat publik. Jangan memasukkan signing key, password, token, atau data usaha nyata ke Git.
+## Backup dan privasi
+
+Backup JSON berada di lokasi pilihan pengguna dan **tidak dienkripsi oleh aplikasi**. File dapat memuat profil toko, produk, stok, transaksi, dan rincian struk. Jaga file tersebut; jangan menyimpan data usaha nyata pada issue, log, atau commit publik.
+
+## Repository public
+
+Repository ini sengaja public agar standard GitHub-hosted runners pada public repository dapat digunakan tanpa biaya menit runner. Artifact storage tetap mempunyai kuota dan retensi. Jangan commit signing keystore, password, token, atau data usaha nyata.
