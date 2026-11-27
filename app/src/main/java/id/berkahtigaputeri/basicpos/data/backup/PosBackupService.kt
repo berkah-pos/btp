@@ -90,7 +90,7 @@ class PosBackupService(
             output.toByteArray()
         }
 
-        val root = runCatching { JSONObject(String(bytes, Charsets.UTF_8)) }
+        val root = runCatching { JSONObject(PosBackupPayloadDecoder.decodeUtf8(bytes)) }
             .getOrElse { throw IllegalArgumentException("File bukan JSON yang valid.", it) }
         require(root.getString("format") == FORMAT_NAME) {
             "Format file bukan cadangan BERKAH POS."
