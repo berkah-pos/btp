@@ -19,15 +19,17 @@ Pada rancangan aplikasi Basic POS, pengguna dapat menyimpan profil toko, kategor
 Rilis Basic POS yang direncanakan tidak memerlukan akun, server aplikasi, atau koneksi internet untuk fungsi POS. Fondasi repository saat ini tidak mendeklarasikan permission INTERNET dan tidak memasukkan Firebase, analytics, crash reporting, atau SDK iklan. Pernyataan final ini tetap harus diverifikasi kembali terhadap seluruh dependency dan manifest pada build release.
 
 ## Backup dan berbagi file
-Fitur backup manual JSON akan memungkinkan pengguna memilih lokasi ekspor atau file pemulihan melalui Android Storage Access Framework. Ketika pengguna secara eksplisit membagikan file, penerima dan aplikasi pihak ketiga yang dipilih berada di luar kendali pengembang. Pengguna harus memeriksa isi file sebelum membagikannya.
+Fitur backup manual JSON tersedia melalui Android Storage Access Framework. Pengguna memilih lokasi untuk menulis file cadangan atau memilih file untuk pemulihan. File berisi profil toko, kategori, produk, stok, transaksi, dan rincian item struk. File JSON tidak dienkripsi oleh aplikasi; pengguna harus menyimpannya di lokasi aman dan tidak membagikannya kepada pihak yang tidak dipercaya. Ketika pengguna memilih aplikasi penerima melalui fitur berbagi struk, isi struk diteruskan ke aplikasi yang dipilih pengguna. Pengembang tidak menerima file tersebut melalui aplikasi.
 
-Automatic Android application backup dinonaktifkan pada konfigurasi saat ini. Data dapat tetap ikut dalam salinan perangkat yang dibuat pengguna atau mekanisme sistem lain di luar kendali aplikasi.
+Pemulihan mengganti data POS lokal dengan isi file setelah validasi, dalam satu transaksi database. File yang tidak sesuai format atau tidak konsisten ditolak dan tidak diterapkan sebagian.
+
+Automatic Android application backup dinonaktifkan pada konfigurasi saat ini.
 
 ## SDK dan pihak ketiga
-Tidak direncanakan penggunaan SDK iklan, analytics, Firebase, atau SDK pengumpulan data pihak ketiga. Daftar SDK final harus dibuat dari pemeriksaan dependency graph release sebelum publikasi.
+Aplikasi menggunakan Jetpack Compose, AndroidX, Room/SQLite, Kotlin Coroutines, dan Preferences DataStore untuk fungsi lokal. Tidak ada SDK iklan, analytics, Firebase, crash reporting, atau SDK pengumpulan data pihak ketiga yang direncanakan. Daftar dependency dan semua SDK transitif tetap harus diverifikasi dari dependency graph release sebelum publikasi.
 
 ## Retensi dan penghapusan
-Data POS disimpan sampai pengguna menghapusnya dari aplikasi atau menghapus data aplikasi/uninstall. Fitur penghapusan dan reset data harus disediakan dan diuji sebelum rilis.
+Data POS disimpan di perangkat sampai pengguna memulihkan backup lain, menghapus data melalui pengaturan Android, atau menghapus aplikasi. Penghapusan profil/produk/transaksi satu per satu mengikuti operasi yang tersedia di aplikasi. File backup yang diekspor tetap berada di lokasi yang dipilih pengguna dan harus dihapus sendiri oleh pengguna bila tidak lagi diperlukan.
 
 ## Hak pengguna
 Pengguna mengendalikan data usaha yang dimasukkan ke aplikasi dan dapat meminta informasi atau mengajukan pertanyaan privasi melalui kontak pengendali yang harus dilengkapi sebelum publikasi.
