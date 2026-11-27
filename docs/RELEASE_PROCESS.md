@@ -49,7 +49,7 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 AAB ditandatangani menggunakan upload key yang disimpan di GitHub Environment Secrets. Google Play App Signing harus diaktifkan/diterima di Play Console. Verifikasi certificate fingerprint dari AAB dan cocokkan dengan upload certificate yang terdaftar di Play Console. Jangan mengklaim signing terverifikasi sebelum output pemeriksaan tersedia.
 
 ## Gradle Wrapper
-Workflow menginstal Gradle 9.8.2 secara eksplisit pada GitHub-hosted runner, lalu membangkitkan wrapper dan menjalankan `./gradlew`. Wrapper distribution URL dipatok pada `gradle/wrapper/gradle-wrapper.properties`. Tambahkan wrapper scripts/JAR terverifikasi sebagai checkpoint CI hardening setelah proses cloud tersedia.
+Workflow menginstal Gradle 9.9.2 secara eksplisit pada GitHub-hosted runner, lalu membangkitkan wrapper dan menjalankan `./gradlew`. Wrapper distribution URL dipatok pada `gradle/wrapper/gradle-wrapper.properties`. Tambahkan wrapper scripts/JAR terverifikasi sebagai checkpoint CI hardening setelah proses cloud tersedia.
 
 
 ## Dependency verification baseline
