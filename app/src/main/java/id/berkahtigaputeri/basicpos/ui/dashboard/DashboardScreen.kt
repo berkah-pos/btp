@@ -22,14 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
-private val DashboardDateFormatter = DateTimeFormatter
-    .ofPattern("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID"))
-    .withZone(ZoneId.systemDefault())
+private fun formatDashboardTimestamp(epochMillis: Long): String =
+    SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID"))
+        .format(Date(epochMillis))
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -160,9 +159,7 @@ fun DashboardScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = DashboardDateFormatter.format(
-                                            Instant.ofEpochMilli(transaction.createdAtEpochMillis)
-                                        ),
+                                        text = formatDashboardTimestamp(transaction.createdAtEpochMillis),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
