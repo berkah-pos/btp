@@ -4,7 +4,7 @@ Status: DRAFT. Use only after the release build has passed functional testing an
 
 ## App identity
 - App name: **BERKAH POS - Kasir UMKM**
-- Candidate application ID: `id.berkahtigaputeri.basicpos` (must be checked in Play Console before first publication)
+- Candidate application ID: `id.co.berkahtigaputeri.basicpos` (derived from `berkahtigaputeri.co.id`; must be checked in Play Console before first publication)
 - Category proposal: Business
 - Developer/brand: BERKAH TIGA PUTERI
 - Short description (under 80 characters): `Kasir offline untuk UMKM: produk, stok, transaksi, dan struk.`
