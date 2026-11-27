@@ -18,6 +18,7 @@ import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
 import id.berkahtigaputeri.basicpos.domain.model.SaleSummary
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -30,6 +31,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class 
 class PosRepositoryImpl(
     private val database: BerkahPosDatabase
 ) : PosRepository {
