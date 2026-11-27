@@ -44,7 +44,7 @@ DAO menyediakan pencarian produk/nomor transaksi, ringkasan agregat penjualan ha
 
 Preferences DataStore menyimpan ambang stok rendah pengguna (0–1.000.000 unit, default 5). Dashboard mengamati DataStore dan menjalankan query Room dengan ambang tersebut.
 
-Automatic Android backup dinonaktifkan pada manifest. Backup JSON manual tersedia melalui Android Storage Access Framework. Restore memvalidasi format, jumlah data, ID/referensi, SKU, nominal transaksi, dan subtotal item sebelum mengganti database dalam satu transaksi Room. Ukuran backup dibatasi 25 MB. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab menyimpannya secara aman.
+Automatic Android backup dinonaktifkan pada manifest. Backup JSON manual tersedia melalui Android Storage Access Framework dan mencakup ambang stok rendah dari DataStore. Restore memvalidasi format, jumlah data, ID/referensi, SKU, nominal transaksi, subtotal item, dan rentang preferensi sebelum mengganti database dalam satu transaksi Room. Nilai DataStore diperbarui terpisah; bila transaksi Room gagal, nilai preferensi lama dipulihkan sebagai kompensasi. Room dan DataStore tidak berbagi satu transaksi ACID. Ukuran backup dibatasi 25 MB. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab menyimpannya secara aman.
 
 ## Dependency injection
 Fondasi menggunakan `AppContainer` manual. Tidak ada Hilt/Dagger untuk menghindari dependency dan plugin tambahan yang belum diperlukan.
