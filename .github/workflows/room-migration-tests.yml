@@ -47,12 +47,17 @@ jobs:
         run: |
           set -euo pipefail
           sdkmanager --install \
+            "platform-tools" \
+            "emulator" \
             "platforms;android-36" \
             "platforms;android-37.1" \
             "system-images;android-36;google_apis;x86_64" \
             "build-tools;36.0.0" --channel=0
           test -s "$ANDROID_SDK_ROOT/platforms/android-37.1/android.jar"
           test -s "$ANDROID_SDK_ROOT/platforms/android-36/android.jar"
+          test -x "$ANDROID_HOME/emulator/emulator"
+          command -v avdmanager
+          command -v adb
 
       - name: Set up Gradle 9.9.2
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
@@ -81,21 +86,71 @@ jobs:
           test -s gradle/wrapper/gradle-wrapper.jar
           echo "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
-      - name: Run Room migration tests on API 36 cloud emulator
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: 36
-          target: google_apis
-          arch: x86_64
-          profile: pixel_7_pro
-          cores: 2
-          ram-size: 2048M
-          disk-size: 6G
-          emulator-boot-timeout: 600
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          disable-animations: true
-          disable-linux-hw-accel: auto
-          script: ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace --console=plain
+      - name: Create API 36 Android Virtual Device
+        run: |
+          set -euo pipefail
+          echo "no" | avdmanager create avd --force \
+            --name berkah-pos-api-36 \
+            --package "system-images;android-36;google_apis;x86_64" \
+            --device pixel_7_pro \
+            --sdcard 2G
+          emulator -list-avds | grep -Fx "berkah-pos-api-36"
+
+      - name: Boot API 36 emulator
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          EMULATOR_LOG="$RUNNER_TEMP/berkah-pos-emulator.log"
+          nohup "$ANDROID_HOME/emulator/emulator" \
+            -avd berkah-pos-api-36 \
+            -no-window \
+            -gpu swiftshader_indirect \
+            -no-snapshot \
+            -noaudio \
+            -no-boot-anim \
+            -no-metrics \
+            -wipe-data \
+            -accel auto > "$EMULATOR_LOG" 2>&1 &
+          EMULATOR_PID=$!
+          echo "$EMULATOR_PID" > "$RUNNER_TEMP/berkah-pos-emulator.pid"
+
+          adb start-server
+          adb wait-for-device
+
+          DEADLINE=$((SECONDS + 600))
+          until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r')" = "1" ]; do
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              cat "$EMULATOR_LOG"
+              echo "Android emulator exited before boot completed."
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$DEADLINE" ]; then
+              cat "$EMULATOR_LOG"
+              echo "Android emulator did not finish booting within 10 minutes."
+              exit 1
+            fi
+            sleep 5
+          done
+
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          adb shell svc power stayon true
+          adb shell getprop ro.build.version.sdk
+          test "$(adb shell getprop ro.build.version.sdk | tr -d '\\r')" = "36"
+
+      - name: Run Room migration instrumentation tests
+        run: ./gradlew --no-daemon connectedDebugAndroidTest --stacktrace --console=plain
+
+      - name: Capture emulator diagnostics on failure
+        if: failure()
+        run: |
+          set +e
+          adb logcat -d -t 3000 > "$RUNNER_TEMP/berkah-pos-emulator-logcat.txt"
+          if [ -f "$RUNNER_TEMP/berkah-pos-emulator.log" ]; then
+            tail -n 300 "$RUNNER_TEMP/berkah-pos-emulator.log" > "$RUNNER_TEMP/berkah-pos-emulator-startup.txt"
+          fi
+
 
       - name: Upload Room migration test reports
         if: always()
@@ -108,5 +163,7 @@ jobs:
             app/build/test-results/
             app/build/outputs/apk/androidTest/debug/
             app/build/outputs/apk/debug/
+            ${RUNNER_TEMP}/berkah-pos-emulator-logcat.txt
+            ${RUNNER_TEMP}/berkah-pos-emulator-startup.txt
           if-no-files-found: warn
           retention-days: 30
