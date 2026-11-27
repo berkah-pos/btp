@@ -38,7 +38,7 @@ The previous Room run #14 reached the instrumentation task but failed before mig
 
 ## 16 KB page-size checks
 
-The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug ZIP and native ELF alignment checks **passed** on Run #41. The signed AAB check has not run because PR workflows deliberately skip release signing.
+The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug ZIP and native ELF alignment checks **passed** on Run #58. The signed AAB check has not run because PR workflows deliberately skip release signing.
 
 ## Organization Play Console account
 
