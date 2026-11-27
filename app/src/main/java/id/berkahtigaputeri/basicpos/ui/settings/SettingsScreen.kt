@@ -241,7 +241,7 @@ fun SettingsScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = lowStockThresholdText.toLongOrNull() in 0L..1_000_000L
+                enabled = lowStockThresholdText.toLongOrNull()?.let { it in 0L..1_000_000L } == true
             ) {
                 Text("Simpan pengaturan stok")
             }
