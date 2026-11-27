@@ -212,7 +212,7 @@ jobs:
           curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
             "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
             --output "$RUNNER_TEMP/bundletool.jar"
-          printf '%s  %s\\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+          printf '%s  %s\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
           java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
           java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
           grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
