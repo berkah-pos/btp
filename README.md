@@ -62,7 +62,7 @@ Keduanya sengaja kosong secara default. Jangan mengisi alamat placeholder atau i
 
 ## Backup dan privasi
 
-Backup JSON berada di lokasi pilihan pengguna dan **tidak dienkripsi oleh aplikasi**. File dapat memuat profil toko, produk, stok, transaksi, dan rincian struk. Jaga file tersebut; jangan menyimpan data usaha nyata pada issue, log, atau commit publik.
+Backup JSON versi 2 berada di lokasi pilihan pengguna dan **tidak dienkripsi oleh aplikasi**. File memuat profil toko, kategori, produk, stok, transaksi, rincian struk, serta preferensi ambang stok rendah. Jaga file tersebut; jangan menyimpan data usaha nyata pada issue, log, atau commit publik.
 
 ## Repository public
 
