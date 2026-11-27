@@ -68,7 +68,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [x] Jalankan lint debug (0 error; 3 warnings: OldTargetApi dan dua AndroidGradlePluginVersion) pada Run #108.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #108.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #108.
-- [x] Review metadata Run #108: 578 komponen / 960 artifact; archive SHA-256 f1c8367699e8fc5172909b87b09cf8618fe36066977aa36c2b42b5b68932875f; XML SHA-256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3. Runs #98, #99, #100, dan #108 mereproduksi XML yang identik.
+- [x] Review artifact candidate Run #108: 578 komponen / 960 artifact; archive SHA-256 f1c8367699e8fc5172909b87b09cf8618fe36066977aa36c2b42b5b68932875f; XML SHA-256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3. Ini baseline kandidat untuk toolchain AGP 9.3.1 / Gradle 9.7.0; belum dianggap reviewed/committed sebelum clean strict verification.
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
 - [x] Verify debug APK 16 KB ZIP alignment dan seluruh empat native ELF LOAD alignment pada Run #108.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
@@ -95,7 +95,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
 - Room migration instrumentation test 1 → 2 **PASS** pada Run #59 (5 test total, termasuk 2 migrasi dan 3 checkout, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
-- Dependency baseline Run #108 telah dipin pada workflow dan direproduksi oleh Run #98, tetapi baseline belum dikomit dan strict gate belum PASS.
+- Dependency baseline guard kini menunjuk artifact Run #108, tetapi baseline belum dikomit dan clean strict gate belum PASS. Metadata Run #98 berasal dari toolchain sebelumnya dan bukan reproduksi baseline kandidat ini.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.

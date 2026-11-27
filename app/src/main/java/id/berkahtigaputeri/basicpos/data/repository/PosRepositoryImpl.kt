@@ -1,0 +1,369 @@
+package id.berkahtigaputeri.basicpos.data.repository
+
+import androidx.room.withTransaction
+import id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase
+import id.berkahtigaputeri.basicpos.data.local.entity.CategoryEntity
+import id.berkahtigaputeri.basicpos.data.local.entity.ProductEntity
+import id.berkahtigaputeri.basicpos.data.local.entity.SalesTransactionEntity
+import id.berkahtigaputeri.basicpos.data.local.entity.StoreProfileEntity
+import id.berkahtigaputeri.basicpos.data.local.entity.TransactionItemEntity
+import id.berkahtigaputeri.basicpos.domain.model.Category
+import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
+import id.berkahtigaputeri.basicpos.domain.model.CheckoutCalculator
+import id.berkahtigaputeri.basicpos.domain.model.CheckoutLineAmount
+import id.berkahtigaputeri.basicpos.domain.model.DashboardSummary
+import id.berkahtigaputeri.basicpos.domain.model.Product
+import id.berkahtigaputeri.basicpos.domain.model.SaleItem
+import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
+import id.berkahtigaputeri.basicpos.domain.model.SaleSummary
+import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
+import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class PosRepositoryImpl(
+    private val database: BerkahPosDatabase
+) : PosRepository {
+    private val dao = database.posDao()
+
+    override fun observeProducts(query: String): Flow<List<Product>> =
+        dao.observeProducts(query.trim()).map { rows -> rows.map(::toDomain) }
+
+    override fun observeCategories(): Flow<List<Category>> =
+        dao.observeCategories().map { rows ->
+            rows.map { Category(id = it.id, name = it.name) }
+        }
+
+    override fun observeStoreProfile(): Flow<StoreProfile?> =
+        dao.observeStoreProfile().map { row -> row?.let(::toDomain) }
+
+    override fun observeRecentTransactions(limit: Int): Flow<List<SaleSummary>> =
+        dao.observeRecentTransactions(limit.coerceIn(1, 100)).map { rows -> rows.map(::toDomain) }
+
+    override fun observeTransactions(query: String): Flow<List<SaleSummary>> =
+        dao.observeTransactions(query.trim()).map { rows -> rows.map(::toDomain) }
+
+    override fun observeLowStockProducts(threshold: Long, limit: Int): Flow<List<Product>> =
+        dao.observeLowStockProducts(threshold.coerceAtLeast(0), limit.coerceIn(1, 100))
+            .map { rows -> rows.map(::toDomain) }
+
+    override fun observeDashboardSummary(lowStockThreshold: Long): Flow<DashboardSummary> {
+        val threshold = lowStockThreshold.coerceIn(0L, 1_000_000L)
+        return currentLocalDayWindow().flatMapLatest { (start, end) ->
+            val salesSummary = combine(
+                dao.observeSalesBetween(start, end),
+                dao.observeTransactionCountBetween(start, end)
+            ) { sales, transactions -> sales to transactions }
+
+            val lowStockSummary = combine(
+                dao.observeLowStockCount(threshold),
+                dao.observeLowStockProducts(threshold = threshold, limit = 5)
+            ) { count, preview -> count to preview }
+
+            combine(
+                salesSummary,
+                dao.observeProductCount(),
+                lowStockSummary,
+                dao.observeRecentTransactions(limit = 5)
+            ) { sales, productCount, lowStock, recent ->
+                DashboardSummary(
+                    totalSalesTodayRupiah = sales.first,
+                    transactionCountToday = sales.second,
+                    productCount = productCount,
+                    lowStockThreshold = threshold,
+                    lowStockCount = lowStock.first,
+                    lowStockProducts = lowStock.second.map(::toDomain),
+                    recentTransactions = recent.map(::toDomain)
+                )
+            }
+        }
+    }
+
+    private fun currentLocalDayWindow(): Flow<Pair<Long, Long>> = flow {
+        while (true) {
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val start = calendar.timeInMillis
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+            val end = calendar.timeInMillis
+            emit(start to end)
+
+            // Recreate the aggregate query at the next local midnight.
+            delay((end - System.currentTimeMillis()).coerceAtLeast(1_000L))
+        }
+    }
+
+    override suspend fun saveProduct(product: Product) {
+        require(product.name.isNotBlank()) { "Nama produk wajib diisi." }
+        require(product.priceRupiah >= 0) { "Harga tidak boleh negatif." }
+        require(product.stockQuantity >= 0) { "Stok tidak boleh negatif." }
+        val normalizedSku = product.sku?.trim()?.takeIf(String::isNotEmpty)
+        dao.upsertProduct(
+            ProductEntity(
+                id = product.id,
+                name = product.name.trim(),
+                sku = normalizedSku,
+                priceRupiah = product.priceRupiah,
+                stockQuantity = product.stockQuantity,
+                categoryId = product.categoryId,
+                updatedAtEpochMillis = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun seedSampleProducts() {
+        database.withTransaction {
+            require(dao.getProductCountOnce() == 0L) {
+                "Data contoh hanya dapat ditambahkan saat daftar produk kosong."
+            }
+            val timestamp = System.currentTimeMillis()
+            dao.insertSampleProducts(
+                listOf(
+                    ProductEntity(
+                        name = "[CONTOH] Kopi Susu",
+                        sku = "CONTOH-001",
+                        priceRupiah = 15_000,
+                        stockQuantity = 20,
+                        updatedAtEpochMillis = timestamp
+                    ),
+                    ProductEntity(
+                        name = "[CONTOH] Teh Manis",
+                        sku = "CONTOH-002",
+                        priceRupiah = 8_000,
+                        stockQuantity = 25,
+                        updatedAtEpochMillis = timestamp
+                    ),
+                    ProductEntity(
+                        name = "[CONTOH] Roti Bakar",
+                        sku = "CONTOH-003",
+                        priceRupiah = 18_000,
+                        stockQuantity = 12,
+                        updatedAtEpochMillis = timestamp
+                    )
+                )
+            )
+        }
+    }
+
+    override suspend fun deleteProduct(productId: Long) {
+        val existing = dao.getProductById(productId) ?: return
+        dao.deleteProduct(existing)
+    }
+
+    override suspend fun saveCategory(category: Category) {
+        val name = category.name.trim()
+        require(name.isNotEmpty()) { "Nama kategori wajib diisi." }
+        dao.upsertCategory(
+            CategoryEntity(
+                id = category.id,
+                name = name,
+                createdAtEpochMillis = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun saveStoreProfile(profile: StoreProfile) {
+        val storeName = profile.storeName.trim()
+        require(storeName.isNotEmpty()) { "Nama toko wajib diisi." }
+        dao.upsertStoreProfile(
+            StoreProfileEntity(
+                id = 1,
+                storeName = storeName,
+                ownerName = profile.ownerName?.trim()?.takeIf(String::isNotEmpty),
+                address = profile.address?.trim()?.takeIf(String::isNotEmpty),
+                phoneNumber = profile.phoneNumber?.trim()?.takeIf(String::isNotEmpty),
+                receiptFooter = profile.receiptFooter?.trim()?.takeIf(String::isNotEmpty),
+                updatedAtEpochMillis = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun checkout(request: CheckoutRequest): SaleReceipt {
+        require(request.lines.isNotEmpty()) { "Keranjang masih kosong." }
+        require(request.discountRupiah >= 0) { "Diskon tidak boleh negatif." }
+        require(request.taxRupiah >= 0) { "Pajak tidak boleh negatif." }
+        require(request.paidRupiah >= 0) { "Pembayaran tidak boleh negatif." }
+
+        return database.withTransaction {
+            val distinctLines = request.lines.groupBy { it.productId }
+                .map { (productId, lines) ->
+                    val quantity = lines.fold(0L) { total, line ->
+                        require(line.quantity > 0) { "Jumlah item harus lebih dari nol." }
+                        Math.addExact(total, line.quantity)
+                    }
+                    productId to quantity
+                }
+
+            val products = distinctLines.map { (productId, quantity) ->
+                val product = dao.getProductById(productId)
+                    ?: throw IllegalArgumentException("Produk sudah tidak tersedia.")
+                require(product.stockQuantity >= quantity) {
+                    "Stok ${product.name} tidak mencukupi."
+                }
+                product to quantity
+            }
+
+            val storeProfileSnapshot = dao.getStoreProfileForBackup()
+            val totals = CheckoutCalculator.calculate(
+                lines = products.map { (product, quantity) ->
+                    CheckoutLineAmount(
+                        unitPriceRupiah = product.priceRupiah,
+                        quantity = quantity
+                    )
+                },
+                discountRupiah = request.discountRupiah,
+                taxRupiah = request.taxRupiah,
+                paidRupiah = request.paidRupiah
+            )
+            val saleItems = products.mapIndexed { index, (product, quantity) ->
+                TransactionItemEntity(
+                    transactionId = 0,
+                    productId = product.id,
+                    productNameSnapshot = product.name,
+                    skuSnapshot = product.sku,
+                    unitPriceRupiah = product.priceRupiah,
+                    quantity = quantity,
+                    lineTotalRupiah = totals.lineTotalsRupiah[index]
+                )
+            }
+            val subtotal = totals.subtotalRupiah
+            val total = totals.totalRupiah
+            val change = totals.changeRupiah
+            val createdAt = System.currentTimeMillis()
+            val transactionNumber = createTransactionNumber(createdAt)
+
+            // Stock updates, sale header, and receipt lines commit atomically.
+            products.forEach { (product, quantity) ->
+                val updated = dao.decrementStockIfAvailable(product.id, quantity)
+                check(updated == 1) { "Stok ${product.name} berubah. Silakan ulangi checkout." }
+            }
+
+            val transactionId = dao.insertTransaction(
+                SalesTransactionEntity(
+                    transactionNumber = transactionNumber,
+                    createdAtEpochMillis = createdAt,
+                    subtotalRupiah = subtotal,
+                    discountRupiah = request.discountRupiah,
+                    taxRupiah = request.taxRupiah,
+                    totalRupiah = total,
+                    paidRupiah = request.paidRupiah,
+                    changeRupiah = change,
+                    storeNameSnapshot = storeProfileSnapshot?.storeName,
+                    storeOwnerSnapshot = storeProfileSnapshot?.ownerName,
+                    storeAddressSnapshot = storeProfileSnapshot?.address,
+                    storePhoneSnapshot = storeProfileSnapshot?.phoneNumber,
+                    receiptFooterSnapshot = storeProfileSnapshot?.receiptFooter
+                )
+            )
+            val savedItems = saleItems.map { it.copy(transactionId = transactionId) }
+            dao.insertTransactionItems(savedItems)
+
+            SaleReceipt(
+                sale = SaleSummary(
+                    id = transactionId,
+                    transactionNumber = transactionNumber,
+                    createdAtEpochMillis = createdAt,
+                    subtotalRupiah = subtotal,
+                    discountRupiah = request.discountRupiah,
+                    taxRupiah = request.taxRupiah,
+                    totalRupiah = total,
+                    paidRupiah = request.paidRupiah,
+                    changeRupiah = change
+                ),
+                subtotalRupiah = subtotal,
+                discountRupiah = request.discountRupiah,
+                taxRupiah = request.taxRupiah,
+                items = savedItems.map(::toDomain),
+                storeProfileSnapshot = storeProfileSnapshot?.let(::toDomain)
+            )
+        }
+    }
+
+    override suspend fun getTransactionItems(transactionId: Long): List<SaleItem> =
+        dao.getTransactionItems(transactionId).map(::toDomain)
+
+    override suspend fun getTransactionReceipt(transactionId: Long): SaleReceipt? {
+        val transaction = dao.getTransactionById(transactionId) ?: return null
+        val items = dao.getTransactionItems(transactionId).map(::toDomain)
+        return SaleReceipt(
+            sale = toDomain(transaction),
+            subtotalRupiah = transaction.subtotalRupiah,
+            discountRupiah = transaction.discountRupiah,
+            taxRupiah = transaction.taxRupiah,
+            items = items,
+            storeProfileSnapshot = toStoreProfileSnapshot(transaction)
+        )
+    }
+
+    private fun toDomain(row: ProductEntity) = Product(
+        id = row.id,
+        name = row.name,
+        sku = row.sku,
+        priceRupiah = row.priceRupiah,
+        stockQuantity = row.stockQuantity,
+        categoryId = row.categoryId
+    )
+
+    private fun toDomain(row: StoreProfileEntity) = StoreProfile(
+        storeName = row.storeName,
+        ownerName = row.ownerName,
+        address = row.address,
+        phoneNumber = row.phoneNumber,
+        receiptFooter = row.receiptFooter
+    )
+
+    private fun toStoreProfileSnapshot(row: SalesTransactionEntity): StoreProfile? =
+        row.storeNameSnapshot?.let { storeName ->
+            StoreProfile(
+                storeName = storeName,
+                ownerName = row.storeOwnerSnapshot,
+                address = row.storeAddressSnapshot,
+                phoneNumber = row.storePhoneSnapshot,
+                receiptFooter = row.receiptFooterSnapshot
+            )
+        }
+
+    private fun toDomain(row: SalesTransactionEntity) = SaleSummary(
+        id = row.id,
+        transactionNumber = row.transactionNumber,
+        createdAtEpochMillis = row.createdAtEpochMillis,
+        subtotalRupiah = row.subtotalRupiah,
+        discountRupiah = row.discountRupiah,
+        taxRupiah = row.taxRupiah,
+        totalRupiah = row.totalRupiah,
+        paidRupiah = row.paidRupiah,
+        changeRupiah = row.changeRupiah
+    )
+
+    private fun toDomain(row: TransactionItemEntity) = SaleItem(
+        productId = row.productId,
+        productName = row.productNameSnapshot,
+        sku = row.skuSnapshot,
+        unitPriceRupiah = row.unitPriceRupiah,
+        quantity = row.quantity,
+        lineTotalRupiah = row.lineTotalRupiah
+    )
+
+    private fun createTransactionNumber(epochMillis: Long): String {
+        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(Date(epochMillis))
+        return "BTP-$stamp-${UUID.randomUUID().toString().take(8).uppercase(Locale.ROOT)}"
+    }
+
+    companion object {
+        const val DEFAULT_LOW_STOCK_THRESHOLD = 5L
+    }
+}
