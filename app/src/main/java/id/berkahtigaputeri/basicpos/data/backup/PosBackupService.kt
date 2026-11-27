@@ -11,7 +11,6 @@ import id.berkahtigaputeri.basicpos.data.local.entity.StoreProfileEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.TransactionItemEntity
 import id.berkahtigaputeri.basicpos.data.preferences.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -120,11 +119,14 @@ class PosBackupService(
 
         PosBackupValidator.validate(profile, categories, products, transactions, items)
 
-        // Room and DataStore cannot share a single database transaction. Update DataStore first,
-        // then restore Room atomically; compensate the preference if the Room transaction fails.
+        // Room and DataStore cannot share one ACID transaction. Keep the preference update
+        // inside the compensation boundary so a failed/cancelled DataStore write is also handled.
         val previousLowStockThreshold = preferencesRepository.lowStockThreshold.first()
-        preferencesRepository.setLowStockThreshold(restoredLowStockThreshold)
-        try {
+        restoreWithLowStockPreferenceCompensation(
+            previousLowStockThreshold = previousLowStockThreshold,
+            restoredLowStockThreshold = restoredLowStockThreshold,
+            updateLowStockThreshold = preferencesRepository::setLowStockThreshold
+        ) {
             database.withTransaction {
                 val dao = database.posDao()
                 dao.deleteAllTransactionItems()
@@ -139,13 +141,6 @@ class PosBackupService(
                 if (transactions.isNotEmpty()) dao.insertTransactionsForBackup(transactions)
                 if (items.isNotEmpty()) dao.insertTransactionItemsForBackup(items)
             }
-        } catch (error: Throwable) {
-            withContext(NonCancellable) {
-                runCatching {
-                    preferencesRepository.setLowStockThreshold(previousLowStockThreshold)
-                }
-            }
-            throw error
         }
 
         RestoreSummary(
