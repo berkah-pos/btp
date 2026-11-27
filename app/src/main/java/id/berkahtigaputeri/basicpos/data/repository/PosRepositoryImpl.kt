@@ -19,9 +19,9 @@ import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
@@ -49,10 +49,14 @@ class PosRepositoryImpl(
             .map { rows -> rows.map(::toDomain) }
 
     override fun observeDashboardSummary(): Flow<DashboardSummary> {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        val start = today.atStartOfDay(zone).toInstant().toEpochMilli()
-        val end = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val start = calendar.timeInMillis
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val end = calendar.timeInMillis
 
         return combine(
             dao.observeSalesBetween(start, end),
@@ -254,10 +258,7 @@ class PosRepositoryImpl(
     )
 
     private fun createTransactionNumber(epochMillis: Long): String {
-        val instant = java.time.Instant.ofEpochMilli(epochMillis)
-        val stamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT)
-            .withZone(ZoneId.systemDefault())
-            .format(instant)
+        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(Date(epochMillis))
         return "BTP-$stamp-${UUID.randomUUID().toString().take(8).uppercase(Locale.ROOT)}"
     }
 
