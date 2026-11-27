@@ -4,17 +4,23 @@ Status: **NOT SUBMITTED / NOT FINAL**. The evidence below is a source/build revi
 
 ## Latest release-variant evidence
 
-GitHub Actions [run #26](https://github.com/berkah-pos/btp/actions/runs/45983299284), commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`, captured:
+GitHub Actions [run #41, attempt 2](https://github.com/berkah-pos/btp/actions/runs/45989244818), PR head `1365bab63bb91032b56bb4279f6dec212574d778`, captured and uploaded:
 - `release-audit/merged-release-manifest.xml`
 - `release-audit/release-runtime-dependencies.txt`
 - `release-audit/manifest-source-paths.txt`
 - `release-audit/SHA256SUMS`
 
-The inspected merged release manifest reports `minSdk=24`, `targetSdk=36`, and candidate package `id.berkahtigaputeri.basicpos`. It contains no `INTERNET`, contacts, phone, camera, location, or broad-storage permission. The only `uses-permission` entry requests the app's own `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, protected with signature-level permission. The merged manifest includes AndroidX Startup initialization, Room's non-exported multi-instance invalidation service, and AndroidX ProfileInstaller receiver protected by `android.permission.DUMP`.
+The inspected merged release manifest reports candidate package `id.berkahtigaputeri.basicpos`, `minSdk=24`, `targetSdk=36`, and compile SDK 37.1. It contains no `INTERNET`, contacts, phone, camera, location, or broad-storage permission. The only `uses-permission` entry requests the app's own `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, protected with signature-level permission. The merged manifest includes AndroidX Startup initialization, Room's non-exported multi-instance invalidation service, and AndroidX ProfileInstaller receiver protected by `android.permission.DUMP`.
 
 The release manifest sets `android:allowBackup="false"`, uses explicit full-backup and data-extraction rule files, and sets `android:usesCleartextTraffic="false"`.
 
-The captured `releaseRuntimeClasspath` graph was reviewed. Runtime modules are from AndroidX/Jetpack (including Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Startup, and ProfileInstaller), Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No advertising, analytics, Firebase, crash-reporting, HTTP client, or remote POS backend SDK was identified in this graph. This conclusion applies to the captured release runtime classpath and merged manifest; re-check if dependencies, manifest, or app code change.
+The captured `releaseRuntimeClasspath` graph was reviewed from the Run #41 artifact. Runtime modules are from AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, or Retrofit was identified in this captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
+
+Artifacts:
+- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15193663522).
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15192494773).
+
+This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event.
 
 ## Observasi implementasi
 
@@ -55,4 +61,4 @@ Google Play's Data Safety rules distinguish data processed only on-device from d
 - Kontak privasi dan alamat resmi pengendali belum tersedia.
 - Data Safety and Ads declarations have not yet been submitted in Play Console.
 - Signed release AAB and device verification remain outstanding.
-- Dependency verification metadata from successful runs #22 and #26 is byte-identical (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`): 462 components and 758 SHA-256 artifact entries. The graph resolves only from the configured Google, Maven Central, and Gradle Plugin Portal repositories, with no dynamic or SNAPSHOT versions observed. The file remains an uncommitted bootstrap artifact; strict dependency verification was skipped and signature verification is not enabled.
+- Dependency verification metadata from Run #38 and Run #41 is byte-identical (SHA-256 `45c3de7dd53c00bc4a35afd64a2067fa05d10fe8ab8cb7ef22e86342ebb941b0`): 464 components and 761 SHA-256 artifact entries. The graph resolves from configured Google, Maven Central, and Gradle Plugin Portal repositories, with no dynamic or SNAPSHOT versions observed in the reviewed graph. The file remains an uncommitted bootstrap artifact; strict dependency verification was skipped and Gradle signature verification is disabled (`verify-signatures=false`).
