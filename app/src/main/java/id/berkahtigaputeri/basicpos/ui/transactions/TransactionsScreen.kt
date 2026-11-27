@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
+import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,6 +49,7 @@ fun TransactionsScreen(
     val query by viewModel.searchQuery.collectAsState()
     val receipt by viewModel.receipt.collectAsState()
     val message by viewModel.message.collectAsState()
+    val storeProfile by viewModel.storeProfile.collectAsState()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Riwayat transaksi") }) }
@@ -135,12 +137,12 @@ fun TransactionsScreen(
         AlertDialog(
             onDismissRequest = viewModel::closeReceipt,
             title = { Text("Struk transaksi") },
-            text = { ReceiptDetails(saved) },
+            text = { ReceiptDetails(saved, storeProfile) },
             confirmButton = {
                 Button(onClick = {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, buildReceiptText(saved))
+                        putExtra(Intent.EXTRA_TEXT, buildReceiptText(saved, storeProfile))
                     }
                     context.startActivity(Intent.createChooser(intent, "Bagikan struk"))
                 }) {
@@ -155,13 +157,17 @@ fun TransactionsScreen(
 }
 
 @Composable
-private fun ReceiptDetails(receipt: SaleReceipt) {
+private fun ReceiptDetails(receipt: SaleReceipt, storeProfile: StoreProfile?) {
     Column(
         modifier = Modifier
             .heightIn(max = 480.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
+        Text(storeProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+        storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { Text("Pemilik: $it") }
+        storeProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
+        storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
         Text(receipt.sale.transactionNumber, style = MaterialTheme.typography.labelLarge)
         Text(formatTransactionDate(receipt.sale.createdAtEpochMillis))
         Spacer(modifier = Modifier.height(4.dp))
@@ -182,6 +188,7 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
         ReceiptAmountRow("Total", receipt.sale.totalRupiah)
         ReceiptAmountRow("Dibayar", receipt.sale.paidRupiah)
         ReceiptAmountRow("Kembalian", receipt.sale.changeRupiah)
+        storeProfile?.receiptFooter?.takeIf(String::isNotBlank)?.let { Text(it) }
     }
 }
 
@@ -200,8 +207,11 @@ private fun formatTransactionDate(epochMillis: Long): String =
     SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID"))
         .format(Date(epochMillis))
 
-private fun buildReceiptText(receipt: SaleReceipt): String = buildString {
-    appendLine("BERKAH POS")
+private fun buildReceiptText(receipt: SaleReceipt, storeProfile: StoreProfile?): String = buildString {
+    appendLine(storeProfile?.storeName ?: "BERKAH POS")
+    storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { appendLine("Pemilik: $it") }
+    storeProfile?.address?.takeIf(String::isNotBlank)?.let { appendLine(it) }
+    storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { appendLine(it) }
     appendLine(receipt.sale.transactionNumber)
     appendLine(formatTransactionDate(receipt.sale.createdAtEpochMillis))
     appendLine("------------------------------")
@@ -216,4 +226,5 @@ private fun buildReceiptText(receipt: SaleReceipt): String = buildString {
     appendLine("Total: ${Rupiah.from(receipt.sale.totalRupiah).formatIdr()}")
     appendLine("Dibayar: ${Rupiah.from(receipt.sale.paidRupiah).formatIdr()}")
     appendLine("Kembalian: ${Rupiah.from(receipt.sale.changeRupiah).formatIdr()}")
+    storeProfile?.receiptFooter?.takeIf(String::isNotBlank)?.let { appendLine(it) }
 }
