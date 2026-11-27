@@ -95,7 +95,7 @@ class SettingsViewModel(
             try {
                 val summary = backupService.restoreFrom(uri)
                 mutableMessage.value =
-                    "Pemulihan berhasil: ${summary.productCount} produk, ${summary.categoryCount} kategori, dan ${summary.transactionCount} transaksi."
+                    "Pemulihan berhasil: ${summary.productCount} produk, ${summary.categoryCount} kategori, ${summary.transactionCount} transaksi. Ambang stok: ${summary.lowStockThreshold} unit."
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
