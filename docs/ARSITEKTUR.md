@@ -1,5 +1,23 @@
 # Arsitektur BERKAH POS
 
+## Versi toolchain yang dipatok
+
+- Android Gradle Plugin: 9.5.3
+- Gradle: 9.6.0
+- JDK: 17
+- Kotlin / Compose Compiler plugin: 2.4.21
+- Kotlin Symbol Processing: 2.3.14
+- Compose BOM: 2026.09.00
+- Kotlin Coroutines: 1.11.0
+- AndroidX Activity Compose: 1.13.0
+- Navigation Compose: 2.10.2
+- Lifecycle: 2.11.1
+- Room: 2.8.5
+- Preferences DataStore: 1.3.0
+- Android `minSdk=24`, `compileSdk=37`, `targetSdk=36`
+
+Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk kompatibilitas Compose stabil; target SDK tetap 36 sesuai persyaratan Google Play minimum pada tanggal baseline ini. Periksa kembali ketentuan Play sebelum setiap rilis.
+
 ## Prinsip
 - Local-first / offline-first: SQLite melalui Room menjadi sumber data utama.
 - Tidak ada akun pengguna, backend, Firebase, analytics, iklan pihak ketiga, atau SDK jaringan pada fondasi aplikasi.
