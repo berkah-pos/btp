@@ -9,7 +9,7 @@ plugins {
 fun String.asBuildConfigLiteral(): String =
     "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
-val candidateApplicationId = "id.co.berkahtigaputeri.basicpos"
+val candidateApplicationId = "id.co.berkahtigaputeri.btp"
 val configuredApplicationId = providers.gradleProperty("btpApplicationId")
     .orNull
     ?.trim()
