@@ -1,23 +1,40 @@
 # BERKAH POS
 
-Basic POS Android application for Indonesian small businesses, developed by BERKAH TIGA PUTERI.
+Aplikasi Basic POS Android untuk UMKM Indonesia, dikembangkan oleh **BERKAH TIGA PUTERI**.
 
-## Project status
+## Status
+Fondasi Android tahap pertama sedang dibangun pada branch `feat/basic-pos-mvp`. Fitur kasir, master produk lengkap, transaksi, backup/restore JSON, dan promosi SaaS belum dinyatakan selesai.
 
-The repository is being bootstrapped. The first implementation milestone is the Android foundation (Kotlin, Jetpack Compose, Material 3, MVVM, Room, DataStore, and Navigation Compose).
+## Keputusan teknis
+- Kotlin + Jetpack Compose + Material 3.
+- MVVM, Coroutines, Flow, Navigation Compose.
+- Room/SQLite sebagai sumber data POS lokal.
+- DataStore untuk preferensi.
+- Repository Pattern untuk memisahkan UI dari storage.
+- Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
+- Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan pada fondasi.
+- Android minSdk 24, compileSdk 36, targetSdk 36.
+- AGP 9.5.3, Gradle 9.6.0, Kotlin 2.4.21, JDK 17.
+- GitHub Actions menggunakan standard GitHub-hosted runner `ubuntu-24.04`.
 
-## Development
+## Identitas aplikasi
+Candidate applicationId: `id.berkahtigaputeri.basicpos`. Periksa keunikan dan konfirmasi sebelum rilis pertama; jangan mengubah applicationId setelah aplikasi dipublikasikan.
 
-- Main branch: `main`
-- Development branch: `feat/basic-pos-mvp`
-- CI: GitHub-hosted runners only (`ubuntu-24.04`)
-- Release distribution: Android App Bundle (AAB)
-- Local-first: no account or backend is required for the POS core
+## Branch
+- `main`: baseline stabil.
+- `feat/basic-pos-mvp`: implementasi aktif.
 
-## Security
+## Build cloud
+Workflow berada di `.github/workflows/android-ci.yml`. CI membangun debug dan menjalankan unit tests/lint. Release AAB hanya dijalankan manual dengan GitHub Environment `android-release` dan signing secrets tersedia.
 
-This repository is intentionally public so standard GitHub-hosted runners can be used without per-minute Actions charges. Never commit signing keystores, passwords, API tokens, or other secrets.
+Untuk mem-bootstrap wrapper pada GitHub-hosted runner, workflow memasang Gradle 9.6.0 lalu menjalankan `gradle wrapper` sebelum `./gradlew`.
 
-## Publication blockers
+## Dokumentasi
+- [Arsitektur](docs/ARSITEKTUR.md)
+- [Privacy Policy draft](docs/PRIVACY_POLICY.md)
+- [Terms of Service draft](docs/TERMS_OF_SERVICE.md)
+- [Play Store checklist](docs/PLAY_STORE_CHECKLIST.md)
+- [Release process](docs/RELEASE_PROCESS.md)
 
-The final application ID, public HTTPS privacy-policy URL, company support contact, and Play Console upload-key configuration must be confirmed before a production release.
+## Catatan repository public
+Repository ini sengaja public agar penggunaan standard GitHub-hosted runners pada public repository tidak dikenakan biaya per menit. Seluruh source code dan konfigurasi non-secret bersifat publik. Jangan memasukkan signing key, password, token, atau data usaha nyata ke Git.
