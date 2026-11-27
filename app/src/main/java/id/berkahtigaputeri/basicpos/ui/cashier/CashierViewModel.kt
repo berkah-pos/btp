@@ -3,6 +3,7 @@ package id.berkahtigaputeri.basicpos.ui.cashier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CancellationException
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutLine
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
@@ -23,6 +24,8 @@ data class CashierCartItem(
     val quantity: Long
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class 
 class CashierViewModel(
     private val repository: PosRepository
 ) : ViewModel() {
