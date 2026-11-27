@@ -105,9 +105,44 @@ jobs:
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
         run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest lintDebug assembleDebug
 
-      - name: Bootstrap dependency hashes and run first quality gates
+      - name: Bootstrap dependency hashes and signatures, then run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
-        run: ./gradlew --no-daemon --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug
+        run: ./gradlew --no-daemon --write-verification-metadata sha256,pgp testDebugUnitTest lintDebug assembleDebug
+
+      - name: Checkout original Room v1 source for KSP schema export
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 75c7c538f8c6c38e014dbdb5edfa0c8f8fe40577
+          path: room-v1-source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Generate authentic Room v1 schema using historical KSP build
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        run: |
+          set -euo pipefail
+          sdkmanager --install "platforms;android-36"
+          test -s "$ANDROID_SDK_ROOT/platforms/android-36/android.jar"
+          gradle --no-daemon --stacktrace -p room-v1-source :app:kspDebugKotlin
+          SCHEMA="room-v1-source/app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json"
+          test -s "$SCHEMA" || {
+            echo "Historical KSP build did not generate the expected Room v1 schema."
+            exit 1
+          }
+          mkdir -p room-v1-schema
+          cp "$SCHEMA" room-v1-schema/1.json
+          sha256sum room-v1-schema/1.json > room-v1-schema/SHA256SUMS
+          echo "Generated from historical source commit 75c7c538f8c6c38e014dbdb5edfa0c8f8fe40577"
+
+      - name: Upload authentic Room v1 KSP schema
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-room-v1-ksp-${{ github.run_number }}
+          path: room-v1-schema/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Verify debug APK 16 KB page-size alignment
         run: |
