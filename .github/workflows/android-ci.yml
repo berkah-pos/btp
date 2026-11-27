@@ -257,16 +257,11 @@ jobs:
         run: |
           set -euo pipefail
           gh --version
-          gh run download "$GITHUB_RUN_ID" \\
-            --repo "$GITHUB_REPOSITORY" \\
-            --name "berkah-pos-debug-$GITHUB_RUN_NUMBER" \\
-            --dir "$RUNNER_TEMP/dependency-baseline"
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "berkah-pos-debug-$GITHUB_RUN_NUMBER" --dir "$RUNNER_TEMP/dependency-baseline"
           SOURCE="$RUNNER_TEMP/dependency-baseline/gradle/verification-metadata.xml"
           test -s "$SOURCE"
           install -D "$SOURCE" gradle/verification-metadata.xml
-          printf '%s  %s\\n' \\
-            "3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0" \\
-            "gradle/verification-metadata.xml" | sha256sum --check
+          printf '%s  %s\n' "3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0" "gradle/verification-metadata.xml" | sha256sum --check
           python3 - <<'PY'
           import hashlib
           import xml.etree.ElementTree as ET
