@@ -1,7 +1,13 @@
 # Room schemas
 
-Room schema JSON hasil KSP disimpan pada direktori ini dan harus dikomit pada setiap perubahan schema database. Jangan menghapus schema versi lama setelah rilis karena dibutuhkan untuk pengujian migrasi.
+Room schema JSON yang diekspor KSP dikomit di direktori ini pada setiap perubahan skema database. Jangan menghapus versi lama setelah dirilis karena file tersebut diperlukan untuk pengujian migrasi.
 
-The database is now at schema version 2. The 1 → 2 migration adds nullable store-identity snapshot columns to `sales_transactions` and must preserve all existing rows.
+## Current schema
 
-The first generated schema JSON is still pending a successful KSP/Room cloud build. Do not hand-author or fabricate exported Room schema files. After CI becomes available, commit the generated version 2 schema and add a migration test using the exported version 1 schema before treating the database upgrade as verified.
+- Version 2: `id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/2.json`.
+- Schema v2 dihasilkan oleh KSP dalam GitHub Actions run [45969254895](https://github.com/berkah-pos/btp/actions/runs/45969254895) dan disimpan di repository.
+- Migrasi 1 → 2 menambahkan lima kolom snapshot identitas toko nullable pada `sales_transactions`; migrasi menggunakan `ALTER TABLE` dan tidak menghapus tabel atau baris transaksi.
+
+## Migration-test gap
+
+Schema v1 yang diekspor dari build historis belum tersedia di repository maupun artifact yang dapat diverifikasi. Jangan membuat schema v1 secara manual. Karena itu, migrasi 1 → 2 belum dapat dinyatakan teruji terhadap database v1 aktual. Tambahkan schema v1 asli dan migration test menggunakan fixture tersebut sebelum rilis pertama.
