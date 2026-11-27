@@ -32,6 +32,11 @@ on:
         required: true
         type: boolean
         default: false
+      commit_dependency_baseline:
+        description: Commit the reviewed dependency baseline on the development branch and run its strict verification workflow
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
