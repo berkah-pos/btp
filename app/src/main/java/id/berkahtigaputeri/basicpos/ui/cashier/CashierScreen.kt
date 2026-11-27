@@ -57,10 +57,17 @@ fun CashierScreen(
             }
         }.getOrNull()
     }
-    val discount = discountText.toLongOrNull() ?: 0L
-    val tax = taxText.toLongOrNull() ?: 0L
+    val discount = discountText.ifBlank { "0" }.toLongOrNull()
+    val tax = taxText.ifBlank { "0" }.toLongOrNull()
     val total = remember(subtotal, discount, tax) {
-        if (subtotal == null || discount < 0 || discount > subtotal || tax < 0) {
+        if (
+            subtotal == null ||
+            discount == null ||
+            tax == null ||
+            discount < 0 ||
+            discount > subtotal ||
+            tax < 0
+        ) {
             null
         } else {
             runCatching {
@@ -183,21 +190,23 @@ fun CashierScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 PaymentSummaryRow("Subtotal", subtotal?.let { Rupiah.from(it).formatIdr() } ?: "Nilai terlalu besar")
-                PaymentSummaryRow("Diskon", Rupiah.from(discount).formatIdr())
-                PaymentSummaryRow("Pajak", Rupiah.from(tax).formatIdr())
+                PaymentSummaryRow("Diskon", discount?.let { Rupiah.from(it).formatIdr() } ?: "Nominal tidak valid")
+                PaymentSummaryRow("Pajak", tax?.let { Rupiah.from(it).formatIdr() } ?: "Nominal tidak valid")
                 PaymentSummaryRow("Total", total?.let { Rupiah.from(it).formatIdr() } ?: "Periksa diskon/pajak")
                 PaymentSummaryRow("Kembalian", change?.let { Rupiah.from(it).formatIdr() } ?: "—")
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
                         if (total != null && paid != null) {
-                            viewModel.checkout(discount, tax, paid)
+                            viewModel.checkout(discount!!, tax!!, paid)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = cart.isNotEmpty() &&
                         !isSubmitting &&
                         subtotal != null &&
+                        discount != null &&
+                        tax != null &&
                         total != null &&
                         paid != null &&
                         paid >= total
