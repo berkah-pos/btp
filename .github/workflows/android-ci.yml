@@ -108,7 +108,7 @@ jobs:
 
       - name: Run strict quality gates against reviewed dependency hashes
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
-        run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug
+        run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug :app:bundleRelease
 
       - name: Bootstrap SHA-256 dependency hashes from refreshed resolution, then run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
@@ -119,7 +119,7 @@ jobs:
           for attempt in $(seq 1 "$max_attempts"); do
             LOG_FILE="$RUNNER_TEMP/quality-gates-${attempt}.log"
             EXTRA_ARGS=(--refresh-dependencies)
-            if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
+            if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug :app:bundleRelease --console=plain 2>&1 | tee "$LOG_FILE"; then
               exit 0
             fi
             if ! grep -Eiq "Could not resolve plugin artifact|Plugin \\[id: '(org\\.jetbrains\\.kotlin\\.plugin\\.compose|com\\.android\\.application)'" "$LOG_FILE"; then
@@ -202,6 +202,30 @@ jobs:
           printf '%s\n' "${manifests[@]}" > release-audit/manifest-source-paths.txt
           cp "${manifests[0]}" release-audit/merged-release-manifest.xml
           sha256sum release-audit/* > release-audit/SHA256SUMS
+
+      - name: Validate unsigned release AAB and 16 KB alignment
+        run: |
+          set -euo pipefail
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -s "$AAB"
+          curl --fail --silent --show-error --location \
+            "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
+            --output "$RUNNER_TEMP/bundletool.jar"
+          java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
+          grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
+            echo "Release AAB does not request 16 KB native-library ZIP alignment."
+            exit 1
+          }
+          bash scripts/check-native-libraries-16kb.sh "$AAB"
+
+      - name: Upload unsigned release AAB candidate
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-aab-candidate-${{ github.run_number }}
+          path: app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Render Google Play listing graphics
         run: |
