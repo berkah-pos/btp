@@ -16,7 +16,7 @@ Source code saat ini mencakup:
 - Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
 - Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
 
-**Status validasi:** implementasi sumber belum sama dengan hasil yang teruji. Per 27 November 2026, GitHub Actions API belum menunjukkan workflow run atau check-run untuk commit hasil merge. Karena itu, kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB masih berstatus **NOT VERIFIED**. Jangan menganggap merge sebagai bukti bahwa aplikasi sudah berhasil dibangun.
+**Status validasi (27 November 2026):** GitHub Actions sudah menjalankan workflow, tetapi belum ada build aplikasi yang berhasil diverifikasi. Run [45966614465 pada `main`](https://github.com/berkah-pos/btp/actions/runs/45966614465) gagal saat instalasi Android SDK karena workflow meminta package `platforms;android-37` yang tidak tersedia. Run [45967320633 pada PR #3](https://github.com/berkah-pos/btp/actions/runs/45967320633) berhasil melewati instalasi SDK, tetapi gagal saat resolusi plugin karena versi AGP `9.6.0` belum tersedia sebagai rilis stabil. PR #3 kemudian mengganti AGP ke `9.5.1` stabil dan menyelaraskan Build Tools ke `36.0.0`; run [45968839371](https://github.com/berkah-pos/btp/actions/runs/45968839371) untuk revisi tersebut masih berjalan/menunggu hasil saat README ini diperbarui. Sampai ada hasil runner yang sukses, kompilasi Kotlin, unit test, lint, startup perangkat, dan build APK/AAB tetap berstatus **NOT VERIFIED**. Jangan menganggap instalasi SDK atau resolusi plugin sebagai bukti build berhasil.
 
 ## Keputusan teknis
 
@@ -28,7 +28,7 @@ Source code saat ini mencakup:
 - Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan.
 - Android minSdk 24, compileSdk 37, targetSdk 36.
-- AGP 9.6.0, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
+- AGP 9.5.1, Gradle 9.8.2, built-in Kotlin 2.4.20, KSP 2.3.14, Coroutines 1.11.0, JDK 17.
 
 ## Identitas aplikasi
 
@@ -44,7 +44,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan
 
 Workflow berada di `.github/workflows/android-ci.yml` dan menggunakan GitHub-hosted `ubuntu-24.04`. Workflow dirancang untuk menjalankan unit tests, lint, dan debug APK. Signed release AAB hanya melalui manual `workflow_dispatch` dari `main`, GitHub Environment `android-release`, dan upload-key secrets.
 
-**Catatan operasional:** belum ada hasil workflow yang dapat diverifikasi setelah merge. Periksa bahwa GitHub Actions diaktifkan untuk repository dan bahwa workflow `Android CI` muncul di tab Actions. Jangan membuka release workflow atau menambahkan signing secrets hanya untuk menguji CI.
+**Catatan operasional:** GitHub Actions aktif dan telah membuat workflow run; blocker yang ditemukan sejauh ini adalah konfigurasi SDK dan versi plugin Gradle, bukan ketiadaan run. PR #3 memuat koreksi keduanya. Jangan membuka release workflow atau menambahkan signing secrets hanya untuk menguji CI.
 
 Untuk bootstrap Gradle Wrapper di runner, workflow memasang Gradle 9.8.2 lalu membangkitkan wrapper di workspace runner sebelum menjalankan `./gradlew`. Tidak ada wrapper JAR yang dikomit pada baseline ini.
 
