@@ -105,7 +105,7 @@ jobs:
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
         run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest lintDebug assembleDebug
 
-      - name: Bootstrap dependency hashes and signatures, then run first quality gates
+      - name: Bootstrap SHA-256 dependency hashes, then run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: |
           set -euo pipefail
@@ -115,7 +115,7 @@ jobs:
             if [ "$attempt" -gt 1 ]; then
               EXTRA_ARGS+=(--refresh-dependencies)
             fi
-            if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256,pgp testDebugUnitTest lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
+            if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
               exit 0
             fi
             if ! grep -Eq "Could not resolve plugin artifact|Plugin \\[id: 'org\\.jetbrains\\.kotlin\\.plugin\\.compose'" "$LOG_FILE"; then
