@@ -46,7 +46,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             mutableSaving.value = true
             try {
-                repository.saveStoreProfile(profile)
+                backupService.runExclusiveSettingsOperation {
+                    repository.saveStoreProfile(profile)
+                }
                 mutableMessage.value = "Profil toko berhasil disimpan."
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -61,7 +63,7 @@ class SettingsViewModel(
     fun saveLowStockThreshold(value: Long) {
         viewModelScope.launch {
             try {
-                preferencesRepository.setLowStockThreshold(value)
+                backupService.setLowStockThreshold(value)
                 mutableMessage.value = "Ambang stok rendah berhasil disimpan."
             } catch (cancelled: CancellationException) {
                 throw cancelled

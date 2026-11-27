@@ -111,6 +111,7 @@ fun SettingsScreen(
                 value = storeName,
                 onValueChange = { storeName = it; validationMessage = null },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nama toko *") }
             )
@@ -118,6 +119,7 @@ fun SettingsScreen(
                 value = ownerName,
                 onValueChange = { ownerName = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nama pemilik (opsional)") }
             )
@@ -125,12 +127,14 @@ fun SettingsScreen(
                 value = address,
                 onValueChange = { address = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 label = { Text("Alamat (opsional)") }
             )
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nomor telepon (opsional)") }
             )
@@ -138,6 +142,7 @@ fun SettingsScreen(
                 value = receiptFooter,
                 onValueChange = { receiptFooter = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 label = { Text("Catatan bawah struk (opsional)") }
             )
             if (validationMessage != null) {
@@ -164,7 +169,7 @@ fun SettingsScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !saving
+                enabled = !saving && !backupBusy
             ) {
                 if (saving) {
                     CircularProgressIndicator(
@@ -237,6 +242,7 @@ fun SettingsScreen(
                     thresholdValidationMessage = null
                 },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 label = { Text("Ambang stok rendah (unit)") }
@@ -259,7 +265,7 @@ fun SettingsScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = lowStockThresholdText.toLongOrNull()?.let { it in 0L..1_000_000L } == true
+                enabled = !backupBusy && lowStockThresholdText.toLongOrNull()?.let { it in 0L..1_000_000L } == true
             ) {
                 Text("Simpan pengaturan stok")
             }

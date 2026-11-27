@@ -22,7 +22,20 @@ class PosBackupService(
     private val contentResolver: ContentResolver,
     private val preferencesRepository: UserPreferencesRepository
 ) {
-    suspend fun exportTo(uri: Uri) = withContext(Dispatchers.IO) {
+    // One application-scoped service serializes backup/restore with SettingsScreen mutations.
+    private val operationGate = PosBackupOperationGate()
+
+    suspend fun <T> runExclusiveSettingsOperation(block: suspend () -> T): T =
+        operationGate.withExclusiveOperation(block)
+
+    suspend fun setLowStockThreshold(value: Long) {
+        operationGate.withExclusiveOperation {
+            preferencesRepository.setLowStockThreshold(value)
+        }
+    }
+
+    suspend fun exportTo(uri: Uri) = operationGate.withExclusiveOperation {
+        withContext(Dispatchers.IO) {
         val lowStockThreshold = preferencesRepository.lowStockThreshold.first()
         val json = database.withTransaction {
             val dao = database.posDao()
@@ -54,9 +67,11 @@ class PosBackupService(
         val output = contentResolver.openOutputStream(uri, "wt")
             ?: throw IllegalStateException("File tujuan tidak dapat dibuka.")
         output.use { it.write(payload) }
+        }
     }
 
-    suspend fun restoreFrom(uri: Uri): RestoreSummary = withContext(Dispatchers.IO) {
+    suspend fun restoreFrom(uri: Uri): RestoreSummary = operationGate.withExclusiveOperation {
+        withContext(Dispatchers.IO) {
         val input = contentResolver.openInputStream(uri)
             ?: throw IllegalArgumentException("File cadangan tidak dapat dibuka.")
         val bytes = input.use { stream ->
@@ -150,6 +165,7 @@ class PosBackupService(
             items.size,
             restoredLowStockThreshold
         )
+        }
     }
 
     private inline fun <T> JSONArray.decode(limit: Int, convert: (JSONObject) -> T): List<T> {
