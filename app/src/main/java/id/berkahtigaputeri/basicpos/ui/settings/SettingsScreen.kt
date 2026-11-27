@@ -36,6 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import id.berkahtigaputeri.basicpos.BuildConfig
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 
 private enum class LegalDocument { PRIVACY, TERMS }
@@ -137,7 +141,11 @@ fun SettingsScreen(
                 label = { Text("Catatan bawah struk (opsional)") }
             )
             if (validationMessage != null) {
-                Text(validationMessage!!, color = MaterialTheme.colorScheme.error)
+                Text(
+                    validationMessage!!,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                    color = MaterialTheme.colorScheme.error
+                )
             }
             Button(
                 onClick = {
@@ -159,14 +167,22 @@ fun SettingsScreen(
                 enabled = !saving
             ) {
                 if (saving) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.semantics {
+                            contentDescription = "Menyimpan profil toko"
+                        }
+                    )
                 } else {
                     Text("Simpan profil toko")
                 }
             }
 
             if (message != null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(message!!)
                         TextButton(onClick = viewModel::dismissMessage) {
@@ -228,6 +244,7 @@ fun SettingsScreen(
             if (thresholdValidationMessage != null) {
                 Text(
                     thresholdValidationMessage!!,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )

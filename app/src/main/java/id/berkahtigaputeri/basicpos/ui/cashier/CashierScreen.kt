@@ -30,6 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.Product
@@ -142,19 +146,31 @@ fun CashierScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                TextButton(onClick = {
-                                    viewModel.changeQuantity(item.product.id, -1)
-                                }, enabled = !isSubmitting) { Text("−") }
+                                TextButton(
+                                    onClick = { viewModel.changeQuantity(item.product.id, -1) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Kurangi jumlah ${item.product.name}"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("−") }
                                 Text(
                                     item.quantity.toString(),
                                     modifier = Modifier.padding(top = 10.dp)
                                 )
-                                TextButton(onClick = {
-                                    viewModel.changeQuantity(item.product.id, 1)
-                                }, enabled = !isSubmitting) { Text("+") }
-                                TextButton(onClick = {
-                                    viewModel.removeProduct(item.product.id)
-                                }, enabled = !isSubmitting) { Text("Hapus") }
+                                TextButton(
+                                    onClick = { viewModel.changeQuantity(item.product.id, 1) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Tambah jumlah ${item.product.name}"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("+") }
+                                TextButton(
+                                    onClick = { viewModel.removeProduct(item.product.id) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Hapus ${item.product.name} dari keranjang"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("Hapus") }
                             }
                             Text(
                                 text = "Jumlah: ${runCatching {
@@ -221,7 +237,11 @@ fun CashierScreen(
                         paid >= total
                 ) {
                     if (isSubmitting) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.semantics {
+                                contentDescription = "Menyimpan transaksi"
+                            }
+                        )
                     } else {
                         Text("Simpan transaksi")
                     }
@@ -230,7 +250,11 @@ fun CashierScreen(
 
             if (message != null) {
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { liveRegion = LiveRegionMode.Polite }
+                    ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -296,6 +320,9 @@ private fun CashierProductCard(
             }
             TextButton(
                 onClick = onAdd,
+                modifier = Modifier.semantics {
+                    contentDescription = "Tambah ${product.name} ke keranjang"
+                },
                 enabled = product.stockQuantity > 0 && !isSubmitting
             ) { Text("Tambah") }
         }

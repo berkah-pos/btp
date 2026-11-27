@@ -31,6 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
@@ -69,7 +74,11 @@ fun TransactionsScreen(
             )
 
             if (message != null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                ) {
                     Row(
                         modifier = Modifier.padding(10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -98,7 +107,10 @@ fun TransactionsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.openReceipt(sale.id) }
+                                .clickable(role = Role.Button) { viewModel.openReceipt(sale.id) }
+                                .semantics {
+                                    contentDescription = "Buka struk transaksi ${sale.transactionNumber}, total ${Rupiah.from(sale.totalRupiah).formatIdr()}"
+                                }
                         ) {
                             Column(
                                 modifier = Modifier.padding(14.dp),
