@@ -61,7 +61,7 @@ Artifacts:
 
 ## Identitas aplikasi
 
-Candidate/permanent applicationId yang dipilih dari domain `berkahtigaputeri.co.id`: `id.co.berkahtigaputeri.basicpos`. Namespace Kotlin internal tetap `id.berkahtigaputeri.basicpos` agar tidak perlu memindahkan source package. Pastikan ID tersedia dan belum dipakai aplikasi yang sudah dipublikasikan di Play Console; set GitHub Actions Repository Variable `BTP_APPLICATION_ID` persis ke ID tersebut sebelum signed release. Jangan mengubah applicationId setelah publikasi pertama.
+Application ID yang ditetapkan pemilik untuk build berikutnya: `id.co.berkahtigaputeri.btp` (reverse-domain dari `berkahtigaputeri.co.id`); ketersediaan package tetap harus dikonfirmasi di Play Console sebelum publikasi pertama. Namespace Kotlin internal tetap `id.berkahtigaputeri.basicpos` agar tidak perlu memindahkan source package. Pastikan ID tersedia dan belum dipakai aplikasi yang sudah dipublikasikan di Play Console; set GitHub Actions Repository Variable `BTP_APPLICATION_ID` persis ke ID tersebut sebelum signed release. Jangan mengubah applicationId setelah publikasi pertama.
 
 ## Riwayat dan review
 
