@@ -7,7 +7,7 @@ Status: DRAFT. Use only after the release build has passed functional testing an
 - Candidate application ID: `id.berkahtigaputeri.basicpos` (must be checked in Play Console before first publication)
 - Category proposal: Business
 - Developer/brand: BERKAH TIGA PUTERI
-- Short description (under 80 characters): `Kasir offline gratis untuk UMKM: produk, stok, transaksi, dan struk.`
+- Short description (under 80 characters): `Kasir offline untuk UMKM: produk, stok, transaksi, dan struk.`
 
 ## Full description draft
 
@@ -30,7 +30,7 @@ Kelola pencatatan penjualan harian usaha kecil Anda dengan aplikasi kasir sederh
 - Tidak menggunakan Firebase, analytics, crash reporting, atau SDK iklan pihak ketiga pada rancangan aplikasi ini.
 - File backup JSON tidak dienkripsi oleh aplikasi. Simpan file cadangan di tempat aman dan jangan membagikannya kepada orang yang tidak dipercaya.
 
-BERKAH POS Basic merupakan aplikasi gratis untuk pencatatan kasir lokal. Informasi layanan POS dan manajemen bisnis dari BERKAH TIGA PUTERI tersedia pada halaman informasi di dalam aplikasi. Tautan dan kontak resmi akan ditampilkan setelah dikonfigurasi.
+BERKAH POS Basic merupakan aplikasi pencatatan kasir lokal. Informasi layanan POS dan manajemen bisnis dari BERKAH TIGA PUTERI tersedia pada halaman informasi di dalam aplikasi. Tautan dan kontak resmi akan ditampilkan setelah dikonfigurasi.
 
 ## App access instructions for reviewers
 No login, no registration, and no account credentials are required. Open the app and use its local features. Internet access is not required for POS workflows. To explore the cashier flow, add a product manually or use the clearly labelled optional sample products in the Products screen. Sample data adds products only; it does not create sample transactions or sales.
