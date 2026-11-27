@@ -61,18 +61,28 @@ class PosRepositoryImpl(
         calendar.add(Calendar.DAY_OF_YEAR, 1)
         val end = calendar.timeInMillis
 
-        return combine(
+        val salesSummary = combine(
             dao.observeSalesBetween(start, end),
-            dao.observeTransactionCountBetween(start, end),
+            dao.observeTransactionCountBetween(start, end)
+        ) { sales, transactions -> sales to transactions }
+
+        val lowStockSummary = combine(
+            dao.observeLowStockCount(DEFAULT_LOW_STOCK_THRESHOLD),
+            dao.observeLowStockProducts(threshold = DEFAULT_LOW_STOCK_THRESHOLD, limit = 5)
+        ) { count, preview -> count to preview }
+
+        return combine(
+            salesSummary,
             dao.observeProductCount(),
-            dao.observeLowStockProducts(threshold = DEFAULT_LOW_STOCK_THRESHOLD, limit = 5),
+            lowStockSummary,
             dao.observeRecentTransactions(limit = 5)
-        ) { sales, transactions, products, lowStock, recent ->
+        ) { sales, productCount, lowStock, recent ->
             DashboardSummary(
-                totalSalesTodayRupiah = sales,
-                transactionCountToday = transactions,
-                productCount = products,
-                lowStockProducts = lowStock.map(::toDomain),
+                totalSalesTodayRupiah = sales.first,
+                transactionCountToday = sales.second,
+                productCount = productCount,
+                lowStockCount = lowStock.first,
+                lowStockProducts = lowStock.second.map(::toDomain),
                 recentTransactions = recent.map(::toDomain)
             )
         }
