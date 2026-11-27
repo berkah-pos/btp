@@ -9,7 +9,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 - Profil usaha dan preferensi ambang stok rendah melalui DataStore.
 - CRUD produk, pencarian nama/SKU, kategori, dan stok.
 - Kasir, keranjang, diskon/pajak nominal, pembayaran, kembalian, dan checkout Room atomik.
-- Riwayat transaksi, detail item snapshot, dan berbagi struk.
+- Riwayat transaksi, detail item snapshot, dan berbagi struk. Identitas toko juga disimpan per transaksi agar struk historis tidak berubah ketika profil toko diperbarui.
 - Backup/restore JSON lokal melalui Android Storage Access Framework.
 - Informasi SaaS yang URL HTTPS/email-nya dikonfigurasi melalui GitHub Actions Variables.
 - Pilihan data contoh yang eksplisit, hanya katalog produk berlabel `[CONTOH]`, tanpa transaksi palsu.
@@ -20,7 +20,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 
 - Kotlin + Jetpack Compose + Material 3.
 - MVVM, Coroutines, Flow, Navigation Compose.
-- Room/SQLite sebagai sumber data POS lokal.
+- Room/SQLite sebagai sumber data POS lokal. Database schema versi 2 memiliki migrasi non-destruktif dari versi 1 untuk mempertahankan transaksi yang sudah tersimpan.
 - Preferences DataStore untuk ambang stok rendah.
 - Repository Pattern untuk memisahkan UI dari storage.
 - Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
@@ -62,7 +62,7 @@ Keduanya sengaja kosong secara default. Jangan mengisi alamat placeholder atau i
 
 ## Backup dan privasi
 
-Backup JSON versi 2 berada di lokasi pilihan pengguna dan **tidak dienkripsi oleh aplikasi**. File memuat profil toko, kategori, produk, stok, transaksi, rincian struk, serta preferensi ambang stok rendah. Jaga file tersebut; jangan menyimpan data usaha nyata pada issue, log, atau commit publik.
+Backup JSON versi 3 berada di lokasi pilihan pengguna dan **tidak dienkripsi oleh aplikasi**. File memuat profil toko, kategori, produk, stok, transaksi, snapshot identitas toko per transaksi, rincian struk, serta preferensi ambang stok rendah. Restore tetap menerima backup versi 2; transaksi lama tanpa snapshot tetap menampilkan identitas toko sebagai tidak tersedia, bukan mengambil profil terkini. Jaga file backup tersebut; jangan menyimpan data usaha nyata pada issue, log, atau commit publik.
 
 ## Repository public
 
