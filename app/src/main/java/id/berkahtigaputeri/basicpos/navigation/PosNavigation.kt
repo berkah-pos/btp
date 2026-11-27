@@ -85,7 +85,10 @@ fun PosNavigation() {
         ) {
             composable(PosRoute.DASHBOARD) {
                 val dashboardViewModel: DashboardViewModel = viewModel(
-                    factory = DashboardViewModel.Factory(application.container.posRepository)
+                    factory = DashboardViewModel.Factory(
+                        application.container.posRepository,
+                        application.container.preferencesRepository
+                    )
                 )
                 DashboardScreen(viewModel = dashboardViewModel)
             }
@@ -109,7 +112,11 @@ fun PosNavigation() {
             }
             composable(PosRoute.SETTINGS) {
                 val settingsViewModel: SettingsViewModel = viewModel(
-                    factory = SettingsViewModel.Factory(application.container.posRepository, application.container.backupService)
+                    factory = SettingsViewModel.Factory(
+                        application.container.posRepository,
+                        application.container.backupService,
+                        application.container.preferencesRepository
+                    )
                 )
                 SettingsScreen(viewModel = settingsViewModel)
             }
