@@ -47,6 +47,14 @@ class ProductsViewModel(
         }
     }
 
+    fun seedSampleProducts() {
+        viewModelScope.launch {
+            runCatching { repository.seedSampleProducts() }
+                .onSuccess { mutableMessage.value = "Tiga produk contoh ditambahkan. Tidak ada transaksi contoh yang dibuat." }
+                .onFailure { mutableMessage.value = it.message ?: "Data contoh tidak dapat ditambahkan." }
+        }
+    }
+
     fun deleteProduct(productId: Long) {
         viewModelScope.launch {
             runCatching { repository.deleteProduct(productId) }
