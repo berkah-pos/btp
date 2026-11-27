@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
-import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,7 +48,6 @@ fun TransactionsScreen(
     val query by viewModel.searchQuery.collectAsState()
     val receipt by viewModel.receipt.collectAsState()
     val message by viewModel.message.collectAsState()
-    val storeProfile by viewModel.storeProfile.collectAsState()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Riwayat transaksi") }) }
@@ -137,12 +135,12 @@ fun TransactionsScreen(
         AlertDialog(
             onDismissRequest = viewModel::closeReceipt,
             title = { Text("Struk transaksi") },
-            text = { ReceiptDetails(saved, storeProfile) },
+            text = { ReceiptDetails(saved) },
             confirmButton = {
                 Button(onClick = {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, buildReceiptText(saved, storeProfile))
+                        putExtra(Intent.EXTRA_TEXT, buildReceiptText(saved))
                     }
                     context.startActivity(Intent.createChooser(intent, "Bagikan struk"))
                 }) {
@@ -157,7 +155,8 @@ fun TransactionsScreen(
 }
 
 @Composable
-private fun ReceiptDetails(receipt: SaleReceipt, storeProfile: StoreProfile?) {
+private fun ReceiptDetails(receipt: SaleReceipt) {
+    val storeProfile = receipt.storeProfileSnapshot
     Column(
         modifier = Modifier
             .heightIn(max = 480.dp)
@@ -207,7 +206,8 @@ private fun formatTransactionDate(epochMillis: Long): String =
     SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID"))
         .format(Date(epochMillis))
 
-private fun buildReceiptText(receipt: SaleReceipt, storeProfile: StoreProfile?): String = buildString {
+private fun buildReceiptText(receipt: SaleReceipt): String = buildString {
+    val storeProfile = receipt.storeProfileSnapshot
     appendLine(storeProfile?.storeName ?: "BERKAH POS")
     storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { appendLine("Pemilik: $it") }
     storeProfile?.address?.takeIf(String::isNotBlank)?.let { appendLine(it) }
