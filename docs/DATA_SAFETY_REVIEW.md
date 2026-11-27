@@ -4,7 +4,7 @@ Status: **NOT SUBMITTED / NOT FINAL**. The evidence below is a source/build revi
 
 ## Latest release-variant evidence
 
-GitHub Actions [run #75](https://github.com/berkah-pos/btp/actions/runs/46014464446), source head `1444da8ea1f61f10b72594fd1e3f4532f9323e4a`, captured and uploaded:
+GitHub Actions [run #79](https://github.com/berkah-pos/btp/actions/runs/46018281138), source head `cbeba6fea7576b6557e9e1b935a8f66a8104db91`, captured and uploaded:
 - `release-audit/merged-release-manifest.xml`
 - `release-audit/release-runtime-dependencies.txt`
 - `release-audit/manifest-source-paths.txt`
@@ -14,13 +14,13 @@ The merged release manifest reports candidate package `id.berkahtigaputeri.basic
 
 The release manifest sets `android:allowBackup="false"`, uses explicit full-backup and data-extraction rule files, and sets `android:usesCleartextTraffic="false"`.
 
-The Run #75 `releaseRuntimeClasspath` inventory contains AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, Retrofit, or other HTTP client was identified in the captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
+The Run #79 `releaseRuntimeClasspath` inventory contains AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, Retrofit, or other HTTP client was identified in the captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
 
 Artifacts:
-- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206156491).
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206301089).
+- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15208270198).
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15207651178).
 
-This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #75 completed 24 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
+This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #79 completed 29 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
 
 ## Observasi implementasi
 
@@ -61,4 +61,4 @@ Google Play's Data Safety rules distinguish data processed only on-device from d
 - Kontak privasi dan alamat resmi pengendali belum tersedia.
 - Data Safety and Ads declarations have not yet been submitted in Play Console.
 - Signed release AAB and device verification remain outstanding.
-- Dependency verification metadata from Run #75 has SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`: 459 components and 754 unique SHA-256 artifact entries. All 754 current coordinates/artifacts match the previous Run #58 inventory; four obsolete plugin metadata entries were removed. The file remains an uncommitted bootstrap artifact; strict dependency verification was skipped and Gradle signature verification is disabled (`verify-signatures=false`).
+- Dependency verification metadata from Run #79 has SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`: 459 components and 754 unique SHA-256 artifact entries. All 754 current coordinates/artifacts match the previous Run #58 inventory; four obsolete plugin metadata entries were removed. The file remains an uncommitted bootstrap artifact; strict dependency verification was skipped and Gradle signature verification is disabled (`verify-signatures=false`).
