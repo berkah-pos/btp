@@ -20,7 +20,7 @@ if (hasAnySigningValue && !hasCompleteSigningValues) {
 
 android {
     namespace = "id.berkahtigaputeri.basicpos"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         // Candidate ID; verify Play Console availability and approve before first publication.
