@@ -8,6 +8,7 @@ import id.berkahtigaputeri.basicpos.domain.model.CheckoutLine
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
 import id.berkahtigaputeri.basicpos.domain.model.Product
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
+import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +27,12 @@ class CashierViewModel(
     private val repository: PosRepository
 ) : ViewModel() {
     private val query = MutableStateFlow("")
+    private val inventory = repository.observeProducts()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val storeProfile: StateFlow<StoreProfile?> = repository
+        .observeStoreProfile()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val searchQuery: StateFlow<String> = query.asStateFlow()
 
     val products: StateFlow<List<Product>> = query
@@ -44,6 +51,20 @@ class CashierViewModel(
     private val mutableSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = mutableSubmitting.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            inventory.collect { latestProducts ->
+                val latestById = latestProducts.associateBy { it.id }
+                mutableCart.value = mutableCart.value.map { item ->
+                    val latest = latestById[item.product.id]
+                    item.copy(
+                        product = latest ?: item.product.copy(stockQuantity = 0)
+                    )
+                }
+            }
+        }
+    }
+
     fun updateQuery(value: String) {
         query.value = value
     }
@@ -51,7 +72,12 @@ class CashierViewModel(
     fun addProduct(product: Product) {
         val current = mutableCart.value
         val existing = current.firstOrNull { it.product.id == product.id }
-        val nextQuantity = (existing?.quantity ?: 0L) + 1L
+        val nextQuantity = runCatching {
+            Math.addExact(existing?.quantity ?: 0L, 1L)
+        }.getOrElse {
+            mutableMessage.value = "Jumlah produk terlalu besar."
+            return
+        }
         if (product.stockQuantity < nextQuantity) {
             mutableMessage.value = "Stok ${product.name} tidak mencukupi."
             return
@@ -70,7 +96,10 @@ class CashierViewModel(
         mutableCart.value = mutableCart.value.mapNotNull { item ->
             if (item.product.id != productId) return@mapNotNull item
             val next = runCatching { Math.addExact(item.quantity, delta) }.getOrNull()
-                ?: return@mapNotNull item
+                ?: run {
+                    mutableMessage.value = "Jumlah produk terlalu besar."
+                    return@mapNotNull item
+                }
             when {
                 next <= 0 -> null
                 next > item.product.stockQuantity -> {
