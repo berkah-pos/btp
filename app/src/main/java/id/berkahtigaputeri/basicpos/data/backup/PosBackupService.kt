@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.util.Locale
 
 class PosBackupService(
     private val database: BerkahPosDatabase,
@@ -203,7 +202,15 @@ class PosBackupService(
                     sale.taxRupiah
                 ) &&
                 sale.paidRupiah >= sale.totalRupiah &&
-                sale.changeRupiah == sale.paidRupiah - sale.totalRupiah
+                sale.changeRupiah == sale.paidRupiah - sale.totalRupiah &&
+                (sale.storeNameSnapshot == null || sale.storeNameSnapshot.isNotBlank()) &&
+                (sale.storeNameSnapshot != null ||
+                    listOf(
+                        sale.storeOwnerSnapshot,
+                        sale.storeAddressSnapshot,
+                        sale.storePhoneSnapshot,
+                        sale.receiptFooterSnapshot
+                    ).all { it == null })
         }) { "Nominal atau nomor transaksi pada cadangan tidak valid." }
         require(transactions.map { it.transactionNumber }.toSet().size == transactions.size) {
             "Nomor transaksi ganda pada cadangan."
@@ -260,6 +267,11 @@ class PosBackupService(
         .put("subtotalRupiah", subtotalRupiah).put("discountRupiah", discountRupiah)
         .put("taxRupiah", taxRupiah).put("totalRupiah", totalRupiah)
         .put("paidRupiah", paidRupiah).put("changeRupiah", changeRupiah)
+        .put("storeNameSnapshot", storeNameSnapshot ?: JSONObject.NULL)
+        .put("storeOwnerSnapshot", storeOwnerSnapshot ?: JSONObject.NULL)
+        .put("storeAddressSnapshot", storeAddressSnapshot ?: JSONObject.NULL)
+        .put("storePhoneSnapshot", storePhoneSnapshot ?: JSONObject.NULL)
+        .put("receiptFooterSnapshot", receiptFooterSnapshot ?: JSONObject.NULL)
 
     private fun TransactionItemEntity.toJson() = JSONObject()
         .put("id", id).put("transactionId", transactionId)
@@ -294,7 +306,12 @@ class PosBackupService(
         createdAtEpochMillis = long("createdAtEpochMillis"),
         subtotalRupiah = long("subtotalRupiah"), discountRupiah = long("discountRupiah"),
         taxRupiah = long("taxRupiah"), totalRupiah = long("totalRupiah"),
-        paidRupiah = long("paidRupiah"), changeRupiah = long("changeRupiah")
+        paidRupiah = long("paidRupiah"), changeRupiah = long("changeRupiah"),
+        storeNameSnapshot = optionalString("storeNameSnapshot"),
+        storeOwnerSnapshot = optionalString("storeOwnerSnapshot"),
+        storeAddressSnapshot = optionalString("storeAddressSnapshot"),
+        storePhoneSnapshot = optionalString("storePhoneSnapshot"),
+        receiptFooterSnapshot = optionalString("receiptFooterSnapshot")
     )
 
     private fun JSONObject.toTransactionItem() = TransactionItemEntity(
@@ -336,7 +353,7 @@ class PosBackupService(
 
     companion object {
         private const val FORMAT_NAME = "BERKAH_POS_BACKUP"
-        private const val SCHEMA_VERSION = 2
+        private const val SCHEMA_VERSION = 3
         private const val MAX_BACKUP_BYTES = 25 * 1024 * 1024
         private const val MAX_CATEGORIES = 5_000
         private const val MAX_PRODUCTS = 50_000
