@@ -14,13 +14,13 @@
 - Lifecycle: 2.11.1
 - Room: 2.8.5
 - Preferences DataStore: 1.3.0
-- Android `minSdk=24`, `compileSdk=37`, `targetSdk=36`
+- Android `minSdk=24`, `compileSdk=37.1` (API 37 minor level 1), `targetSdk=36`
 
-Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk kompatibilitas Compose stabil; target SDK tetap 36 sesuai persyaratan Google Play minimum pada tanggal baseline ini. Paket Android 17 API 37 dipasang dari SDK Manager sebagai `platforms;android-37.0`; workflow CI memasangnya secara eksplisit, lalu membuat alias `platforms/android-37` untuk resolusi API level oleh Android Gradle Plugin. Build Tools 36.0.0 dipatok terpisah. Periksa kembali ketentuan Play sebelum setiap rilis.
+Versi disimpan di `gradle/libs.versions.toml`. Compile SDK API 37.1 dipakai karena Compose UI 1.13.0 dalam Compose BOM 2026.11.01 mensyaratkannya. AGP 9.5.3 mendukung API tersebut. Runner memasang paket stabil `platforms;android-37.1` dari channel 0. `targetSdk=36` tetap terpisah dari compile SDK dan memenuhi minimum Google Play yang berlaku untuk aplikasi baru pada 31 Agustus 2026. Build Tools 36.0.0 dipatok terpisah. Periksa kembali ketentuan Play sebelum setiap rilis.
 
 ## Android compatibility
 
-Google Play currently requires new Android apps and updates to target at least API 36 from 31 August 2026. Project baseline uses `targetSdk=36`; re-check the policy immediately before submission. Compile SDK is 37 because the selected Compose stable BOM 2026.11.01 requires the newer SDK level.
+Google Play currently requires new Android apps and updates to target at least API 36 from 31 August 2026. Project baseline uses `targetSdk=36`; re-check the policy immediately before submission. Compile SDK is API 37.1 because the selected stable Compose BOM 2026.11.01 (Compose UI 1.13.0) requires that minor API level. The CI installs the stable `platforms;android-37.1` package. Target SDK remains 36, independently of compile SDK.
 
 ## Prinsip
 - Local-first / offline-first: SQLite melalui Room menjadi sumber data utama.
