@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class 
 class ProductsViewModel(
     private val repository: PosRepository
 ) : ViewModel() {
