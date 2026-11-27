@@ -22,7 +22,7 @@ class BerkahPosApplication : Application() {
         val preferencesRepository = UserPreferencesRepository(applicationContext)
         container = AppContainer(
             posRepository = PosRepositoryImpl(database),
-            preferencesRepository = UserPreferencesRepository(applicationContext),
+            preferencesRepository = preferencesRepository,
             backupService = PosBackupService(
                 database = database,
                 contentResolver = contentResolver,
