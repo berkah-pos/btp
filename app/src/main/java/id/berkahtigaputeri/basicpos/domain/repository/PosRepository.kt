@@ -11,7 +11,7 @@ import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import kotlinx.coroutines.flow.Flow
 
 interface PosRepository {
-    fun observeDashboardSummary(): Flow<DashboardSummary>
+    fun observeDashboardSummary(lowStockThreshold: Long = 5L): Flow<DashboardSummary>
     fun observeProducts(query: String = ""): Flow<List<Product>>
     fun observeCategories(): Flow<List<Category>>
     fun observeStoreProfile(): Flow<StoreProfile?>
