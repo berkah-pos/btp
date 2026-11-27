@@ -8,11 +8,15 @@ import id.berkahtigaputeri.basicpos.data.local.entity.ProductEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.StoreProfileEntity
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutLine
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -135,6 +139,31 @@ class PosRepositoryCheckoutTest {
         assertEquals(5L, dao.getProductById(first.id)?.stockQuantity)
         assertEquals(5L, dao.getProductById(second.id)?.stockQuantity)
         assertEquals(0L, dao.observeTransactionCount().first())
+    }
+
+    @Test
+    fun concurrentCheckoutsCannotSellTheLastUnitTwice() = runBlocking {
+        val dao = database.posDao()
+        val product = insertProduct("Produk terbatas", "LIMITED-01", 1_500, 1)
+        val request = CheckoutRequest(
+            lines = listOf(CheckoutLine(productId = product.id, quantity = 1)),
+            paidRupiah = 1_500
+        )
+
+        // Execute from separate worker threads so both callers contend for the same Room database.
+        val outcomes = listOf(
+            async(Dispatchers.IO) { runCatching { repository.checkout(request) } },
+            async(Dispatchers.IO) { runCatching { repository.checkout(request) } }
+        ).awaitAll()
+
+        assertEquals(1, outcomes.count { it.isSuccess })
+        assertEquals(1, outcomes.count { it.isFailure })
+        assertTrue(
+            outcomes.single { it.isFailure }.exceptionOrNull() is IllegalArgumentException ||
+                outcomes.single { it.isFailure }.exceptionOrNull() is IllegalStateException
+        )
+        assertEquals(0L, dao.getProductById(product.id)?.stockQuantity)
+        assertEquals(1L, dao.observeTransactionCount().first())
     }
 
     private suspend fun insertProduct(
