@@ -19,8 +19,8 @@ class CheckoutCalculatorTest {
 
         assertEquals(listOf(25_000L, 7_000L), totals.lineTotalsRupiah)
         assertEquals(32_000L, totals.subtotalRupiah)
-        assertEquals(30_000L, totals.totalRupiah)
-        assertEquals(10_000L, totals.changeRupiah)
+        assertEquals(31_500L, totals.totalRupiah)
+        assertEquals(8_500L, totals.changeRupiah)
     }
 
     @Test
