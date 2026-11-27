@@ -32,6 +32,9 @@ interface PosDao {
     @Query("SELECT * FROM products WHERE id = :productId LIMIT 1")
     suspend fun getProductById(productId: Long): ProductEntity?
 
+    @Query("SELECT COUNT(*) FROM products WHERE stockQuantity <= :threshold")
+    fun observeLowStockCount(threshold: Long): Flow<Long>
+
     @Query("SELECT * FROM products WHERE stockQuantity <= :threshold ORDER BY stockQuantity ASC, name ASC LIMIT :limit")
     fun observeLowStockProducts(threshold: Long, limit: Int): Flow<List<ProductEntity>>
 
