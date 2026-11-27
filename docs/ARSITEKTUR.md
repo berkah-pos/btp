@@ -18,6 +18,10 @@
 
 Versi disimpan di `gradle/libs.versions.toml`. Compile SDK 37 dipakai untuk kompatibilitas Compose stabil; target SDK tetap 36 sesuai persyaratan Google Play minimum pada tanggal baseline ini. Periksa kembali ketentuan Play sebelum setiap rilis.
 
+## Android compatibility
+
+Google Play currently requires new Android apps and updates to target at least API 36 from 31 August 2026. Project baseline uses `targetSdk=36`; re-check the policy immediately before submission. Compile SDK is 37 because the selected Compose stable BOM requires the newer SDK level.
+
 ## Prinsip
 - Local-first / offline-first: SQLite melalui Room menjadi sumber data utama.
 - Tidak ada akun pengguna, backend, Firebase, analytics, iklan pihak ketiga, atau SDK jaringan pada fondasi aplikasi.
