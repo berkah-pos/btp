@@ -2,6 +2,7 @@ package id.berkahtigaputeri.basicpos.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import id.berkahtigaputeri.basicpos.data.local.entity.CategoryEntity
@@ -19,8 +20,20 @@ interface PosDao {
     @Query("SELECT COUNT(*) FROM sales_transactions")
     fun observeTransactionCount(): Flow<Long>
 
-    @Query("SELECT * FROM products ORDER BY name COLLATE NOCASE ASC")
-    fun observeProducts(): Flow<List<ProductEntity>>
+    @Query(
+        """SELECT * FROM products
+        WHERE :query = ''
+           OR name LIKE '%' || :query || '%' COLLATE NOCASE
+           OR COALESCE(sku, '') LIKE '%' || :query || '%' COLLATE NOCASE
+        ORDER BY name COLLATE NOCASE ASC"""
+    )
+    fun observeProducts(query: String): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE id = :productId LIMIT 1")
+    suspend fun getProductById(productId: Long): ProductEntity?
+
+    @Query("SELECT * FROM products WHERE stockQuantity <= :threshold ORDER BY stockQuantity ASC, name ASC LIMIT :limit")
+    fun observeLowStockProducts(threshold: Long, limit: Int): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM categories ORDER BY name COLLATE NOCASE ASC")
     fun observeCategories(): Flow<List<CategoryEntity>>
@@ -40,9 +53,24 @@ interface PosDao {
     @Delete
     suspend fun deleteProduct(product: ProductEntity)
 
-    @Upsert
-    suspend fun upsertTransaction(transaction: SalesTransactionEntity)
+    @Query("SELECT * FROM sales_transactions ORDER BY createdAtEpochMillis DESC LIMIT :limit")
+    fun observeRecentTransactions(limit: Int): Flow<List<SalesTransactionEntity>>
 
-    @Upsert
-    suspend fun upsertTransactionItems(items: List<TransactionItemEntity>)
+    @Query("SELECT COALESCE(SUM(totalRupiah), 0) FROM sales_transactions WHERE createdAtEpochMillis >= :startInclusive AND createdAtEpochMillis < :endExclusive")
+    fun observeSalesBetween(startInclusive: Long, endExclusive: Long): Flow<Long>
+
+    @Query("SELECT COUNT(*) FROM sales_transactions WHERE createdAtEpochMillis >= :startInclusive AND createdAtEpochMillis < :endExclusive")
+    fun observeTransactionCountBetween(startInclusive: Long, endExclusive: Long): Flow<Long>
+
+    @Query("SELECT * FROM transaction_items WHERE transactionId = :transactionId ORDER BY id ASC")
+    suspend fun getTransactionItems(transactionId: Long): List<TransactionItemEntity>
+
+    @Insert
+    suspend fun insertTransaction(transaction: SalesTransactionEntity): Long
+
+    @Insert
+    suspend fun insertTransactionItems(items: List<TransactionItemEntity>)
+
+    @Query("UPDATE products SET stockQuantity = stockQuantity - :quantity WHERE id = :productId AND stockQuantity >= :quantity")
+    suspend fun decrementStockIfAvailable(productId: Long, quantity: Long): Int
 }

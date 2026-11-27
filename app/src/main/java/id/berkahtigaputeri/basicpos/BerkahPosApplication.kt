@@ -18,7 +18,7 @@ class BerkahPosApplication : Application() {
             "berkah-pos.db"
         ).build()
         container = AppContainer(
-            posRepository = PosRepositoryImpl(database.posDao())
+            posRepository = PosRepositoryImpl(database)
         )
     }
 }

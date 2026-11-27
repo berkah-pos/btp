@@ -45,7 +45,6 @@ data class ProductEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val sku: String? = null,
-    /** Integer Rupiah; never store a price in Float or Double. */
     val priceRupiah: Long,
     val stockQuantity: Long,
     val categoryId: Long? = null,
@@ -81,12 +80,13 @@ data class SalesTransactionEntity(
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["transactionId"])]
+    indices = [Index(value = ["transactionId"]), Index(value = ["productId"])]
 )
 data class TransactionItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val transactionId: Long,
-    /** Snapshot fields preserve receipt history after a product is edited or removed. */
+    /** Product ID is a non-FK reference so historical receipts survive product deletion. */
+    val productId: Long? = null,
     val productNameSnapshot: String,
     val skuSnapshot: String? = null,
     val unitPriceRupiah: Long,
