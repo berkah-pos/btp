@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
 import id.berkahtigaputeri.basicpos.domain.model.SaleSummary
+import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,10 @@ class TransactionsViewModel(
     val transactions: StateFlow<List<SaleSummary>> = query
         .flatMapLatest(repository::observeTransactions)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val storeProfile: StateFlow<StoreProfile?> = repository
+        .observeStoreProfile()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val mutableReceipt = MutableStateFlow<SaleReceipt?>(null)
     val receipt: StateFlow<SaleReceipt?> = mutableReceipt.asStateFlow()
