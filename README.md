@@ -17,7 +17,7 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 
 ## Validasi cloud yang teramati
 
-**Android CI [run #98](https://github.com/berkah-pos/btp/actions/runs/46034740526)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk source head `81b9cef36414019822ee1b2e42e31449fb43c229`.
+**Android CI [run #99](https://github.com/berkah-pos/btp/actions/runs/46038433914)** selesai **success** pada 27 November 2026 untuk current source head `746839c8088e8208ff771d988b284d833244eef3`.
 
 - `testDebugUnitTest`: **31 test, 0 failure, 0 error, 0 skipped**, diverifikasi dari enam JUnit XML.
 - `compileDebugAndroidTestKotlin`: **success**.
@@ -29,24 +29,23 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 - Signed release AAB **SKIPPED** pada pull-request run.
 
 Artifacts:
-- [Debug APK, enam JUnit XML, laporan lint, Room schemas, dan release audit](https://github.com/berkah-pos/btp/actions/runs/46034740526/artifacts/15215569160).
-- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/46034740526/artifacts/15216955134).
+- [Debug APK, enam JUnit XML, laporan lint, Room schemas, dan release audit](https://github.com/berkah-pos/btp/actions/runs/46038433914/artifacts/15217718908).
+- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/46038433914/artifacts/15217893799).
 
-**Room Migration Tests [run #49](https://github.com/berkah-pos/btp/actions/runs/46034740545)** selesai **success** pada API 36 GitHub-hosted emulator.
+**POS and Room Instrumentation Tests [run #50](https://github.com/berkah-pos/btp/actions/runs/46038433756)** selesai **success** pada API 36 GitHub-hosted emulator.
 
-- **2 instrumentation test, 0 failure, 0 error, 0 skipped**.
-- Schema v1 asli dan bentuk v1 historis berhasil melewati production `MIGRATION_1_2`.
-- Data transaksi, item struk, dan snapshot historis dipertahankan; Room memvalidasi schema v2.
-- [Room migration report dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46034740545/artifacts/15215524359).
-
-Dua instrumentation test repository POS ditambahkan dalam commit ini: agregasi baris produk duplikat dan receipt snapshot, serta rollback checkout ketika conditional stock update gagal. Keduanya **menunggu runner** dan belum dihitung sebagai hasil lulus.
+- **4 instrumentation test, 0 failure, 0 error, 0 skipped**, diverifikasi dari JUnit XML.
+- Dua fixture schema v1 (KSP asli dan bentuk historis) berhasil melewati production `MIGRATION_1_2`; Room memvalidasi schema v2.
+- Checkout menggabungkan baris produk duplikat, menghitung subtotal/total/change, mengurangi stok tepat sekali, dan mempertahankan snapshot profil toko pada struk setelah profil berubah.
+- Simulasi conditional stock update gagal pada item kedua membuktikan decrement item pertama di-rollback dan tidak ada transaksi struk yang tersimpan.
+- [POS/Room instrumentation report dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46038433756/artifacts/15218852575).
 
 **Dependency verification — provenance yang sedang dipin**
 
 - Source baseline: Android CI [run #96](https://github.com/berkah-pos/btp/actions/runs/46032064890), quality job **success**, source commit `0739913749fa0783a9d6784ad7444bccbca3fa3f`.
 - Artifact `berkah-pos-debug-96`, ID `15215416046`, archive SHA-256 `fde80191ddb1b52e9388615ac1ab0a27f566422c903547bf1f2b4b258ca67947`. Archive diunduh dan digest diverifikasi.
 - `gradle/verification-metadata.xml` dari artifact tersebut memiliki SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`: **459 components / 754 unique SHA-256 artifact entries**.
-- Android CI #98 menghasilkan metadata dengan hash dan inventory identik setelah `--refresh-dependencies`.
+- Android CI #98 dan #99 menghasilkan metadata dengan hash dan inventory identik setelah `--refresh-dependencies`.
 - Manual dispatch #95 sebelumnya gagal karena guard masih mengharapkan kandidat lama `9adc4cac…` (455/745). Workflow pada branch saat ini sudah dipindahkan ke source Run #96 dan hash `b75c079d…`; commit `81b9cef` menyelaraskan nomor run pada manifest provenance.
 - Metadata menetapkan `verify-metadata=true`, tetapi `verify-signatures=false`; checksum pinning bukan autentikasi tanda tangan publisher.
 - File baseline belum dikomit dan clean `--dependency-verification=strict` **belum lulus**.
@@ -68,13 +67,13 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1), [PR #2 — koreksi dokumentasi pasca-merge](https://github.com/berkah-pos/btp/pull/2), dan [PR #3 — koreksi Android SDK/CI](https://github.com/berkah-pos/btp/pull/3) telah merged pada 27 November 2026.
 - [PR #4 — hardening fondasi, backup, Room migration, POS checkout, dan aksesibilitas](https://github.com/berkah-pos/btp/pull/4) tetap **open, draft, dan belum merged**.
 - Semua perubahan lanjutan berada di `feat/basic-pos-mvp`; tidak ada commit langsung ke `main`.
-- Android CI #98 dan Room Migration #49 lulus pada head sebelum dua checkout instrumentation test baru. Hasil untuk test baru menunggu workflow berikutnya.
+- Android CI #99 dan POS/Room instrumentation #50 lulus pada current head; dua checkout instrumentation test kini terverifikasi.
 
 ## Cloud build
 
-Workflow memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Android CI #98 meluluskan 31 JVM tests, lint (0 error, 2 warning), instrumentation-source compilation, debug APK, serta audit APK 16 KiB. POS/Room instrumentation run #49 meluluskan dua migrasi SQLite v1→v2.
+Workflow memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Android CI #99 meluluskan 31 JVM tests, lint (0 error, 2 warning), instrumentation-source compilation, debug APK, serta audit APK 16 KiB. POS/Room instrumentation run #50 meluluskan empat test: dua migrasi SQLite v1→v2 dan dua POS checkout.
 
-Dependency baseline kini dipin ke artifact Run #96 dan direproduksi identik pada Run #98: 459 komponen, 754 checksum, XML SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`. File belum dikomit dan strict dependency verification belum lulus. Signed AAB tidak dibuat pada PR.
+Dependency baseline kini dipin ke artifact Run #96 dan direproduksi identik pada Run #98 dan #99: 459 komponen, 754 checksum, XML SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`. File belum dikomit dan strict dependency verification belum lulus. Signed AAB tidak dibuat pada PR.
 
 ## Konfigurasi promosi dan dukungan
 
