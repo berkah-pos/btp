@@ -503,11 +503,12 @@ jobs:
           SOURCE="$RUNNER_TEMP/dependency-baseline/gradle/verification-metadata.xml"
           test -s "$SOURCE"
           git fetch origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME"
-          git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$GITHUB_REF_NAME" || {
-            echo "Feature branch no longer contains the triggering commit; refusing a stale baseline commit."
+          CURRENT_BRANCH_SHA="$(git rev-parse "refs/remotes/origin/$GITHUB_REF_NAME")"
+          if [[ "$CURRENT_BRANCH_SHA" != "$GITHUB_SHA" ]]; then
+            echo "Feature branch advanced after this workflow was dispatched; refusing a stale baseline commit."
             exit 1
-          }
-          git reset --hard "refs/remotes/origin/$GITHUB_REF_NAME"
+          fi
+          git reset --hard "$CURRENT_BRANCH_SHA"
           if [[ -f gradle/verification-metadata.xml ]]; then
             python3 scripts/validate-dependency-baseline.py gradle/verification-metadata.xml \
               --expected-sha256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3 \

@@ -12,7 +12,7 @@
 
 ## Latest audit checkpoint — 28 November 2026
 
-**Android CI [run #108](https://github.com/berkah-pos/btp/actions/runs/46062668259)** completed successfully on source head `3ded0051bae6b127e039c8208c49ee3efa23d081`:
+**Android CI [run #111](https://github.com/berkah-pos/btp/actions/runs/46066169926)** completed successfully on source head `07d4f67a10f2fc2714f0a53c366ae724814991cc`:
 - `testDebugUnitTest`: **35 tests, 0 failures, 0 errors, 0 skipped**, verified from seven JUnit XML files.
 - `compileDebugAndroidTestKotlin`: successful.
 - Debug lint: **0 errors, 3 warnings** (`OldTargetApi` at target API 36; `AndroidGradlePluginVersion` recommends newer Gradle 9.9.3 and AGP 9.5.3/9.3.3).
@@ -22,20 +22,20 @@
 - Signed AAB, reviewed-baseline strict verification, and clean strict verification were skipped; no release AAB is claimed.
 
 Artifacts:
-- [Debug APK, JUnit/lint reports, Room schemas, and release audit](https://github.com/berkah-pos/btp/actions/runs/46062668259/artifacts/15229935589).
-- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/46062668259/artifacts/15228669616).
+- [Debug APK, JUnit/lint reports, Room schemas, and release audit](https://github.com/berkah-pos/btp/actions/runs/46066169926/artifacts/15230114223).
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/46066169926/artifacts/15230783541).
 
-**POS and Room Instrumentation Tests [run #59](https://github.com/berkah-pos/btp/actions/runs/46062668290)** completed successfully on the API 36 hosted emulator:
+**POS and Room Instrumentation Tests [run #61](https://github.com/berkah-pos/btp/actions/runs/46066169924)** completed successfully on the API 36 hosted emulator:
 - `connectedDebugAndroidTest`: **5 tests, 0 failures, 0 errors, 0 skipped**.
 - Two historical v1 SQLite fixtures migrated through production `MIGRATION_1_2`; Room validated schema v2.
 - Three checkout tests cover duplicate-line aggregation, rollback after a conditional stock-decrement failure, and concurrent checkout of the last stock unit.
-- [POS/Room instrumentation JUnit report and emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46062668290/artifacts/15230360257).
+- [POS/Room instrumentation JUnit report and emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46066169924/artifacts/15230593958).
 
-All three strict UTF-8 backup-decoder tests passed in Android CI #108.
+All three strict UTF-8 backup-decoder tests passed in Android CI #111.
 
 ## 16 KB page-size checks
 
-The quality job runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and audits native ELF alignment. Debug ZIP alignment and all four packaged 64-bit native library checks **passed** on Run #108. The signed AAB check has not run because PR workflows deliberately skip release signing.
+The quality job runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and audits native ELF alignment. Debug ZIP alignment and all four packaged 64-bit native library checks **passed** on Run #111. The signed AAB check has not run because PR workflows deliberately skip release signing.
 
 ## Organization Play Console account
 
@@ -76,13 +76,13 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 
 ## Dependency verification
 
-The reviewed candidate is pinned to Android CI Run #108 on source commit `3ded0051bae6b127e039c8208c49ee3efa23d081`:
-- Source run: [Android CI #108](https://github.com/berkah-pos/btp/actions/runs/46062668259), workflow ID `432452966`, run ID `46062668259`, branch `feat/basic-pos-mvp`; quality job succeeded.
-- Source artifact: `berkah-pos-debug-108`, artifact ID `15229935589`, archive SHA-256 `f1c8367699e8fc5172909b87b09cf8618fe36066977aa36c2b42b5b68932875f`.
-- The archive digest was independently checked after download. Its `gradle/verification-metadata.xml` SHA-256 is `6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3`, with **578 components / 960 unique SHA-256 artifact entries**.
+The reviewed candidate is pinned to Android CI Run #110 on source commit `403fcf21a3b57037f6b24319431727ceda98e36a`:
+- Source run: [Android CI #110](https://github.com/berkah-pos/btp/actions/runs/46064751388), workflow ID `432452966`, run ID `46064751388`, branch `feat/basic-pos-mvp`; quality job `140727247533` succeeded.
+- Source artifact: `berkah-pos-debug-110`, artifact ID `15230362895`, archive SHA-256 `93c62c7389f631186775b8c2fcc9345015cbd066fe1bdc990d3b6632c36238fb`.
+- The archive digest was independently checked after download. Its `gradle/verification-metadata.xml` SHA-256 is `6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3`, with **578 components / 960 unique SHA-256 artifact entries**. Android CI #111 produced the same metadata hash and inventory.
 - Structural validation found no duplicate component/artifact coordinates, malformed SHA-256 values, or unexpected checksum origins. `verify-metadata=true`; `verify-signatures=false`.
-- Compared with Run #106 (AGP 9.5.3, 462/758), Run #108 (AGP 9.3.1, 578/960) adds 175 components, removes 59, and adds one artifact hash to a shared component. Most changes are build/AGP and Android Test Platform dependency graph changes. The separate release runtime inventory does not show added app runtime SDKs.
-- The workflow guard is now re-pinned to Run #108, its artifact digest, metadata SHA, and 578/960 inventory. The baseline is not committed and `--dependency-verification=strict` has **not passed**.
+- Compared with Run #106 (AGP 9.5.3, 462/758), Run #110 (AGP 9.3.1, 578/960) adds 175 components, removes 59, and adds one artifact hash to a shared component. Most changes are build/AGP and Android Test Platform dependency graph changes. The separate release runtime inventory does not show added app runtime SDKs.
+- The workflow guard is pinned to Run #110, its source commit, quality job, archive digest, metadata SHA, and 578/960 inventory. The baseline is not committed and `--dependency-verification=strict` has **not passed**.
 - SHA-256 pinning is not publisher-signature authentication; signature verification remains disabled.
 
 ## Output dan retensi
@@ -100,4 +100,4 @@ Workflow menginstal Gradle 9.7.0 secara eksplisit pada GitHub-hosted runner, lal
 
 ## Dependency verification baseline
 
-The baseline candidate and provenance are the Run #108 artifact described in [Dependency verification](#dependency-verification). Its archive digest and 578/960 checksum inventory were independently checked. The guarded workflow is pinned to this exact source, but `gradle/verification-metadata.xml` remains absent from the branch and strict mode remains **NOT PASS**.
+The baseline candidate and provenance are the Run #110 artifact described in [Dependency verification](#dependency-verification). Its archive digest and 578/960 checksum inventory were independently checked. The guarded workflow is pinned to this exact source, but `gradle/verification-metadata.xml` remains absent from the branch and strict mode remains **NOT PASS**.
