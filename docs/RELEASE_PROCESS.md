@@ -39,7 +39,7 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 - Release AAB, SHA256SUMS, metadata, sertifikat upload, signature check, dan build report: artifact dengan retensi 90 hari.
 - AAB tidak dikomit ke source tree.
 - GitHub Free artifact storage repository: 500 MB; retensi maksimum public repository: 90 hari. Pantau pemakaian dan hapus artifact kedaluwarsa bila dibutuhkan.
-- Release artifact dapat diarsipkan sebagai GitHub Release private hanya setelah pengguna menyetujui distribusi arsip yang sesuai dengan visibilitas repository.
+- GitHub Release pada repository public akan bersifat public. Jangan menyimpan artefak rahasia atau data pelanggan di Releases. Gunakan Actions Artifacts sebagai distribusi build; setiap artefak release yang dibagikan dari repository ini harus dianggap dapat diakses publik.
 
 ## Signing dan Play App Signing
 AAB ditandatangani menggunakan upload key yang disimpan di GitHub Environment Secrets. Google Play App Signing harus diaktifkan/diterima di Play Console. Verifikasi certificate fingerprint dari AAB dan cocokkan dengan upload certificate yang terdaftar di Play Console. Jangan mengklaim signing terverifikasi sebelum output pemeriksaan tersedia.
