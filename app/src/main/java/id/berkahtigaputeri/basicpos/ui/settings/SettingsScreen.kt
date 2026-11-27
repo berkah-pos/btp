@@ -244,7 +244,7 @@ fun SettingsScreen(
             title = { Text("Kebijakan Privasi — Draf") },
             text = {
                 Text(
-                    "BERKAH POS Basic menyimpan profil usaha, produk, kategori, stok, transaksi, dan rincian struk di database SQLite pada perangkat. Fungsi utama tidak memerlukan akun atau server. Backup manual, bila digunakan, akan membuat file yang dipilih pengguna dan dapat dibagikan oleh pengguna. Tidak direncanakan analytics, iklan pihak ketiga, Firebase, atau SDK pengumpulan data.\n\nPengendali: BERKAH TIGA PUTERI. Alamat, kontak privasi, dan URL kebijakan publik belum disediakan. Dokumen ini belum layak menjadi Privacy Policy publik."
+                    "BERKAH POS Basic menyimpan profil usaha, kategori, produk, stok, transaksi, dan rincian struk di SQLite pada perangkat. Fungsi POS tidak memerlukan akun atau server dan manifest tidak mendeklarasikan izin INTERNET. Backup JSON mencakup data usaha dan transaksi, disimpan di lokasi yang dipilih pengguna, serta tidak dienkripsi oleh aplikasi. Restore mengganti data lokal setelah file divalidasi. Pengguna bertanggung jawab menjaga keamanan file backup. Struk hanya diteruskan melalui aplikasi berbagi yang dipilih pengguna. Aplikasi tidak menyertakan SDK iklan, analytics, Firebase, atau crash reporting.\n\nPengendali: BERKAH TIGA PUTERI. Alamat, kontak privasi, dan URL kebijakan publik belum disediakan. Dokumen ini belum layak menjadi Privacy Policy publik."
                 )
             },
             confirmButton = {
