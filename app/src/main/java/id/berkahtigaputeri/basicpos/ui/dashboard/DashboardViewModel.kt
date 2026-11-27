@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import id.berkahtigaputeri.basicpos.data.preferences.UserPreferencesRepository
 import id.berkahtigaputeri.basicpos.domain.model.DashboardSummary
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class 
 class DashboardViewModel(
     repository: PosRepository,
     preferencesRepository: UserPreferencesRepository
