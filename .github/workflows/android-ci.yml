@@ -108,6 +108,21 @@ jobs:
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: ./gradlew --no-daemon --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug
 
+      - name: Capture release manifest and runtime dependency inventory
+        run: |
+          set -euo pipefail
+          mkdir -p release-audit
+          ./gradlew --no-daemon :app:processReleaseMainManifest --console=plain
+          ./gradlew --no-daemon :app:dependencies --configuration releaseRuntimeClasspath --console=plain > release-audit/release-runtime-dependencies.txt
+          mapfile -t manifests < <(find app/build/intermediates -type f -name AndroidManifest.xml -path '*release*' | sort)
+          test "${#manifests[@]}" -gt 0 || {
+            echo "Merged release manifest was not found after processReleaseMainManifest."
+            exit 1
+          }
+          printf '%s\n' "${manifests[@]}" > release-audit/manifest-source-paths.txt
+          cp "${manifests[0]}" release-audit/merged-release-manifest.xml
+          sha256sum release-audit/* > release-audit/SHA256SUMS
+
       - name: Render Google Play listing graphics
         run: |
           set -euo pipefail
@@ -141,6 +156,7 @@ jobs:
             app/build/reports/
             app/build/test-results/
             app/schemas/
+            release-audit/
             gradle/verification-metadata.xml
             gradlew
             gradlew.bat
