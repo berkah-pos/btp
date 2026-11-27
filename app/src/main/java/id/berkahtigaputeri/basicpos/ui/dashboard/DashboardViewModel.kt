@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class 
 class DashboardViewModel(
     repository: PosRepository,
     preferencesRepository: UserPreferencesRepository
