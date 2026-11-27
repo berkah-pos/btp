@@ -120,6 +120,40 @@ class PosRepositoryImpl(
         )
     }
 
+    override suspend fun seedSampleProducts() {
+        database.withTransaction {
+            require(dao.getProductCountOnce() == 0L) {
+                "Data contoh hanya dapat ditambahkan saat daftar produk kosong."
+            }
+            val timestamp = System.currentTimeMillis()
+            dao.insertSampleProducts(
+                listOf(
+                    ProductEntity(
+                        name = "[CONTOH] Kopi Susu",
+                        sku = "CONTOH-001",
+                        priceRupiah = 15_000,
+                        stockQuantity = 20,
+                        updatedAtEpochMillis = timestamp
+                    ),
+                    ProductEntity(
+                        name = "[CONTOH] Teh Manis",
+                        sku = "CONTOH-002",
+                        priceRupiah = 8_000,
+                        stockQuantity = 25,
+                        updatedAtEpochMillis = timestamp
+                    ),
+                    ProductEntity(
+                        name = "[CONTOH] Roti Bakar",
+                        sku = "CONTOH-003",
+                        priceRupiah = 18_000,
+                        stockQuantity = 12,
+                        updatedAtEpochMillis = timestamp
+                    )
+                )
+            )
+        }
+    }
+
     override suspend fun deleteProduct(productId: Long) {
         val existing = dao.getProductById(productId) ?: return
         dao.deleteProduct(existing)
