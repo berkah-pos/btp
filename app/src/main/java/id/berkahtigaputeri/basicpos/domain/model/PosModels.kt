@@ -60,7 +60,8 @@ data class SaleReceipt(
     val subtotalRupiah: Long,
     val discountRupiah: Long,
     val taxRupiah: Long,
-    val items: List<SaleItem>
+    val items: List<SaleItem>,
+    val storeProfileSnapshot: StoreProfile? = null
 )
 
 data class DashboardSummary(
