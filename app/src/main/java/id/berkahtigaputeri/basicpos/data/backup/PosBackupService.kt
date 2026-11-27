@@ -43,9 +43,13 @@ class PosBackupService(
                 .toString(2)
         }
 
+        val payload = json.toByteArray(Charsets.UTF_8)
+        require(payload.size <= MAX_BACKUP_BYTES) {
+            "Ukuran backup melebihi batas 25 MB. Kurangi jumlah data sebelum mengekspor."
+        }
         val output = contentResolver.openOutputStream(uri, "wt")
             ?: throw IllegalStateException("File tujuan tidak dapat dibuka.")
-        output.bufferedWriter(Charsets.UTF_8).use { it.write(json) }
+        output.use { it.write(payload) }
     }
 
     suspend fun restoreFrom(uri: Uri): RestoreSummary = withContext(Dispatchers.IO) {
