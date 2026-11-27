@@ -53,6 +53,7 @@ fun ProductsScreen(
     var showProductDialog by remember { mutableStateOf(false) }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var deletingProduct by remember { mutableStateOf<Product?>(null) }
+    var showSampleConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -106,16 +107,28 @@ fun ProductsScreen(
             }
 
             if (products.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize().padding(top = 32.dp)) {
-                    Text(
-                        text = if (query.isBlank()) {
-                            "Belum ada produk. Tekan + untuk menambahkan produk pertama."
-                        } else {
-                            "Produk tidak ditemukan."
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                if (query.isBlank()) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Belum ada produk. Tekan + untuk menambahkan produk pertama.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(onClick = { showSampleConfirmation = true }) {
+                            Text("Coba dengan data contoh")
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize().padding(top = 32.dp)) {
+                        Text(
+                            "Produk tidak ditemukan.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -156,6 +169,27 @@ fun ProductsScreen(
             onSave = {
                 viewModel.saveCategory(it)
                 showCategoryDialog = false
+            }
+        )
+    }
+
+    if (showSampleConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showSampleConfirmation = false },
+            title = { Text("Tambahkan data contoh?") },
+            text = {
+                Text(
+                    "Tiga produk dengan awalan [CONTOH] akan ditambahkan ke katalog. Tidak ada transaksi atau penjualan contoh yang dibuat. Produk contoh dapat diedit atau dihapus."
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showSampleConfirmation = false
+                    viewModel.seedSampleProducts()
+                }) { Text("Tambahkan contoh") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSampleConfirmation = false }) { Text("Batal") }
             }
         )
     }
