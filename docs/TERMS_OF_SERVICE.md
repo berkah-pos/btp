@@ -9,7 +9,7 @@ BERKAH POS Basic adalah aplikasi kasir lokal untuk membantu pencatatan produk da
 Pengguna bertanggung jawab atas ketepatan nama produk, harga, stok, pajak, diskon, dan nominal pembayaran yang dimasukkan. Pengguna juga bertanggung jawab menyimpan backup secara aman dan memeriksa hasil pemulihan.
 
 ## 3. Penyimpanan data
-Data POS disimpan pada perangkat. Pengembang tidak menjamin pemulihan data yang hilang akibat kerusakan perangkat, penghapusan aplikasi, reset perangkat, atau kegagalan media penyimpanan. Pengguna disarankan menggunakan backup manual setelah fitur tersebut tersedia.
+Data POS disimpan pada perangkat. Pengembang tidak menjamin pemulihan data yang hilang akibat kerusakan perangkat, penghapusan aplikasi, reset perangkat, atau kegagalan media penyimpanan. Pengguna disarankan menggunakan fitur ekspor backup JSON secara berkala dan memeriksa apakah file dapat dipulihkan.
 
 ## 4. Penggunaan aplikasi
 Aplikasi tidak menggantikan kewajiban pengguna untuk memenuhi ketentuan perpajakan, pembukuan, perlindungan konsumen, dan ketentuan usaha yang berlaku.
