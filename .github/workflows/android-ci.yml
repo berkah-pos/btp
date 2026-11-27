@@ -236,6 +236,7 @@ jobs:
             app/build/reports/
             app/build/test-results/
             app/schemas/
+            gradle/verification-metadata.xml
             release-audit/
             gradlew
             gradlew.bat
