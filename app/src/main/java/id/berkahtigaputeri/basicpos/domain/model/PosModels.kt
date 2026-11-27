@@ -67,6 +67,7 @@ data class DashboardSummary(
     val totalSalesTodayRupiah: Long,
     val transactionCountToday: Long,
     val productCount: Long,
+    val lowStockThreshold: Long,
     val lowStockCount: Long,
     val lowStockProducts: List<Product>,
     val recentTransactions: List<SaleSummary>
