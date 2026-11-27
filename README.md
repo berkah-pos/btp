@@ -17,39 +17,39 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 
 ## Validasi cloud yang teramati
 
-**Android CI [run #58](https://github.com/berkah-pos/btp/actions/runs/45999675603)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk commit PR head `aeb015914455606e7b9c985a36e011dbcb3a6137`. Bukti dari GitHub job, log, dan artifact:
+**Android CI [run #75](https://github.com/berkah-pos/btp/actions/runs/46014464446)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk source head `1444da8ea1f61f10b72594fd1e3f4532f9323e4a`. Bukti dari empat JUnit XML, lint report, job log, dan artifact:
 
-- `testDebugUnitTest`: **24 test, 0 failure, 0 error, 0 skipped**, dihitung dari empat JUnit XML.
+- `testDebugUnitTest`: **24 test, 0 failure, 0 error, 0 skipped**.
+- `compileDebugAndroidTestKotlin`: **success**; sumber instrumentation berhasil dikompilasi.
 - `lintDebug`: **0 error, 1 warning** (`OldTargetApi` pada `targetSdk=36`).
 - `assembleDebug`: **success**; APK debug diunggah.
-- Pemeriksaan APK ZIP alignment 16 KiB dan audit native library berjalan sukses.
+- `zipalign -c -P 16 -v 4` dan audit ELF `PT_LOAD` 16 KiB: **success**; keempat library native 64-bit yang dipaketkan lulus.
 - Merged release manifest dan release runtime dependency inventory berhasil ditangkap.
-- App icon 512×512 dan feature graphic 1024×500 berhasil dirender dan diunggah.
-- Signed release AAB **SKIPPED** karena ini pull-request run. Tidak ada AAB bertanda tangan yang dihasilkan.
+- App icon dan feature graphic Google Play berhasil dirender dan diunggah.
+- Signed release AAB **SKIPPED** pada pull-request run; tidak ada AAB bertanda tangan yang dihasilkan.
 
 Artifacts:
-- [Debug APK, JUnit/lint reports, Room schemas, dependency metadata, dan release audit](https://github.com/berkah-pos/btp/actions/runs/45999675603/artifacts/15198380221) — retensi 14 hari.
-- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/45999675603/artifacts/15198001347) — retensi 90 hari.
+- [Debug APK, JUnit/lint reports, Room schemas, dependency metadata, dan release audit](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206156491) — retensi 14 hari.
+- [Play Store icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206301089) — retensi 90 hari.
 
-**Room Migration Tests [run #17](https://github.com/berkah-pos/btp/actions/runs/45999675609)** selesai **success** pada 27 November 2026 di GitHub-hosted `ubuntu-24.04` dengan Android API 36 emulator. Artifact JUnit terverifikasi menunjukkan:
+**Room Migration Tests [run #30](https://github.com/berkah-pos/btp/actions/runs/46014464219)** selesai **success** pada 27 November 2026 di GitHub-hosted `ubuntu-24.04` dengan Android API 36 emulator. JUnit XML dan instrumentation exit code mengonfirmasi:
 
 - `connectedDebugAndroidTest`: **2 test, 0 failure, 0 error, 0 skipped**; instrumentation exit code `0`.
 - `migratesOriginalKspVersionOneAndPreservesSalesAndReceiptItems`: lulus.
 - `migratesHistoricalVersionOneWithProductIdAndReceiptSnapshotsAlreadyPresent`: lulus.
-- Room membuka database versi 1 melalui `MIGRATION_1_2` dan memvalidasi schema versi 2; data transaksi/item lama, snapshot historis, kolom, dan indeks diperiksa.
+- Kedua fixture SQLite versi 1 dibuka melalui `MIGRATION_1_2` produksi dan schema v2 divalidasi oleh Room.
 
-Artifact:
-- [Room migration API 36 instrumentation report dan APK test](https://github.com/berkah-pos/btp/actions/runs/45999675609/artifacts/15197568120) — retensi 30 hari.
+Artifacts:
+- [Room migration JUnit report](https://github.com/berkah-pos/btp/actions/runs/46014464219/artifacts/15204627746).
+- [Room migration APKs dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46014464219/artifacts/15205094827).
 
-Run #14 sebelumnya berhasil boot emulator tetapi gagal sebelum assertion migrasi karena `AbstractMethodError` pada generated Kotlin Serialization serializer di jalur `MigrationTestHelper`. Perbaikan mengganti helper schema-bundle dengan fixture SQLite versi 1 yang eksplisit, lalu membuka fixture melalui Room database builder produksi. Run #17 membuktikan kedua bentuk database historis berhasil dimigrasikan.
-
-**Dependency verification review:** metadata dari artifact Run #58 memiliki SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`, dengan **462 komponen dan 758 entri checksum SHA-256 unik**. Seluruh 758 artefak yang sama dengan metadata Run #41 memiliki checksum identik; tiga entri Room Testing lama tidak lagi dibutuhkan setelah dependensi test helper dihapus. Metadata telah ditinjau untuk struktur, kelengkapan checksum, dan konsistensi antar-run. Ini bukan bukti signature publisher; konfigurasi Gradle masih `verify-signatures=false`. Baseline belum dikomit dan strict mode belum dijalankan; workflow manual yang dibatasi ke branch pengembangan disiapkan untuk commit baseline lalu quality build strict independen.
+**Dependency verification review:** metadata dari artifact Android CI Run #75 memiliki SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, dengan **459 komponen dan 754 entri checksum SHA-256 unik**. Pemeriksaan XML menemukan satu SHA-256 valid untuk setiap artifact, tanpa koordinat duplikat. Dibandingkan metadata Run #58, seluruh 754 koordinat/artifact yang masih dipakai memiliki checksum identik; empat entri lama yang tidak lagi dipakai telah hilang. Metadata mengaktifkan `verify-metadata=true`, tetapi `verify-signatures=false`: ini adalah integrity pinning, bukan autentikasi publisher. Baseline belum dikomit dan clean strict dependency verification **belum lulus**; job strict pada Run #75 dilewati.
 
 **Status yang belum diverifikasi:**
-- Strict Gradle dependency verification sampai clean strict build menyelesaikan semua task.
+- Clean Gradle dependency verification dengan `--dependency-verification=strict`.
 - Signed release AAB, upload-certificate verification, bundletool validation, dan release bundle 16 KiB check.
 - Startup/perilaku pada perangkat fisik, UI automation, Internal Testing, dan Google Play Pre-launch Report.
-- Application ID permanen, URL Privacy Policy publik, deklarasi Play Console, dan identitas organisasi.
+- Application ID permanen, URL Privacy Policy publik, deklarasi Play Console, dan verifikasi identitas organisasi.
 
 ## Keputusan teknis
 
@@ -59,7 +59,7 @@ Run #14 sebelumnya berhasil boot emulator tetapi gagal sebelum assertion migrasi
 - Room schema versi 2 diekspor oleh KSP dan dikomit di `app/schemas/`.
 - Migrasi Room 1 → 2 menambahkan lima kolom snapshot toko nullable pada `sales_transactions` tanpa menghapus tabel atau baris.
 - Schema Room v1 hasil ekspor KSP asli dan schema v2 tersedia di `app/schemas/`; schema v1 ditambahkan melalui commit `be1797ad5ff9eab6bca125d4fdb784589edb6647`.
-- `BerkahPosDatabaseMigrationTest` memuat dua skenario migrasi dari bentuk database v1 asli dan bentuk v1 historis antara. Kedua test benar-benar lulus pada API 36 emulator melalui Room Migration Tests [run #17](https://github.com/berkah-pos/btp/actions/runs/45999675609): 2 test, 0 failure/error/skipped.
+- `BerkahPosDatabaseMigrationTest` memuat dua skenario migrasi dari bentuk database v1 asli dan bentuk v1 historis antara. Kedua test benar-benar lulus pada API 36 emulator melalui Room Migration Tests [run #30](https://github.com/berkah-pos/btp/actions/runs/46014464219): 2 test, 0 failure/error/skipped.
 - Semua nominal uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend POS, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan pada source manifest.
 - Android `minSdk=24`, `compileSdk=37.1`, `targetSdk=36`.
@@ -72,11 +72,11 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 ## Riwayat dan review
 
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1), [PR #2 — koreksi dokumentasi pasca-merge](https://github.com/berkah-pos/btp/pull/2), dan [PR #3 — koreksi Android SDK/CI](https://github.com/berkah-pos/btp/pull/3) telah merged pada 27 November 2026.
-- [PR #4 — hardening fondasi, backup, dan Room migration test](https://github.com/berkah-pos/btp/pull/4) tetap berstatus draft. Source aplikasi pada head `aeb0159` divalidasi oleh [Android CI Run #58](https://github.com/berkah-pos/btp/actions/runs/45999675603) dan [Room Migration Tests Run #17](https://github.com/berkah-pos/btp/actions/runs/45999675609). Commit setelah head tersebut memperbarui workflow dan dokumentasi, tanpa mengubah source aplikasi.
+- [PR #4 — hardening fondasi, backup, dan Room migration test](https://github.com/berkah-pos/btp/pull/4) tetap berstatus draft. Source tree pada head `1444da8` divalidasi oleh [Android CI Run #75](https://github.com/berkah-pos/btp/actions/runs/46014464446) dan [Room Migration Tests Run #30](https://github.com/berkah-pos/btp/actions/runs/46014464219). Commit sinkronisasi `main` dan pembaruan dokumentasi/guard setelah head tersebut tidak mengubah source aplikasi; workflow PR berikutnya akan memvalidasi head terbaru.
 
 ## Cloud build
 
-Workflow `.github/workflows/android-ci.yml` memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Run #58 meluluskan unit tests, lint tanpa error, debug build, 16 KB ZIP/ELF audit, merged manifest, dan runtime dependency inventory. Signed release AAB hanya melalui `workflow_dispatch` manual pada `main`, GitHub Environment `android-release`, dan upload-key secrets; job release memeriksa `PAGE_ALIGNMENT_16K` dari bundletool serta ELF native library. Workflow menyediakan input manual terpisah untuk mengomit baseline dependency verification yang sudah ditinjau pada branch pengembangan, lalu menjalankan strict quality build pada runner bersih. Tidak ada self-hosted runner atau publikasi otomatis.
+Workflow `.github/workflows/android-ci.yml` memakai standard GitHub-hosted `ubuntu-24.04`, JDK 17, Android SDK API 37.1, Build Tools 36.0.0, dan Gradle 9.9.2. Android CI Run #75 meluluskan unit tests, lint tanpa error, debug build, 16 KB ZIP/ELF audit, merged manifest, dan runtime dependency inventory; Room Migration Tests Run #30 meluluskan dua migrasi pada API 36 emulator. Signed release AAB hanya melalui `workflow_dispatch` manual pada `main`, GitHub Environment `android-release`, dan upload-key secrets; job release memeriksa `PAGE_ALIGNMENT_16K` dari bundletool serta ELF native library. Input manual `commit_dependency_baseline=true` dibatasi ke `feat/basic-pos-mvp`, memvalidasi checksum/inventory metadata Run #75, lalu menjalankan clean strict quality build pada runner terpisah setelah baseline dikomit. Strict build tersebut belum dijalankan. Tidak ada self-hosted runner atau publikasi otomatis.
 
 Runner membangkitkan Gradle Wrapper sementara dari Gradle 9.9.2 yang dipasang oleh action resmi. Distribution SHA-256 dan SHA-256 wrapper JAR diperiksa sebelum wrapper dipakai; wrapper JAR/scripts tidak dikomit. Workflow `.github/workflows/room-migration-tests.yml` dipisahkan dari Android CI utama dan menjalankan migrasi di API 36 emulator. Run #17 telah meluluskan kedua skenario migrasi. Dependency metadata Run #58 (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`, 462 komponen, 758 hash) cocok pada seluruh 758 entri yang sama dengan Run #41; tiga entri lama khusus Room Testing hilang setelah dependensi test helper dihapus. Metadata sudah direview, tetapi belum dikomit dan strict verification belum lulus.
 

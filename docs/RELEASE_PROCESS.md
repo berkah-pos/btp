@@ -11,34 +11,35 @@
 
 ## Latest audit checkpoint — 27 November 2026
 
-**Android CI [run #58](https://github.com/berkah-pos/btp/actions/runs/45999675603)** completed successfully for PR head `aeb015914455606e7b9c985a36e011dbcb3a6137`:
-- 24 JVM unit tests: **0 failures, 0 errors, 0 skipped**, verified from four JUnit XML files.
+**Android CI [run #75](https://github.com/berkah-pos/btp/actions/runs/46014464446)** completed successfully for PR source head `1444da8ea1f61f10b72594fd1e3f4532f9323e4a`:
+- `testDebugUnitTest`: **24 tests, 0 failures, 0 errors, 0 skipped**, verified from four JUnit XML files.
+- `compileDebugAndroidTestKotlin`: successful.
 - Debug lint: **0 errors, 1 `OldTargetApi` warning** at target API 36.
 - Debug APK built and uploaded.
-- APK ZIP alignment and native ELF 16 KiB checks passed.
-- Merged release manifest and runtime dependency inventory captured.
+- `zipalign -c -P 16 -v 4` and packaged native ELF 16 KiB checks passed for all four 64-bit libraries.
+- Merged release manifest and release runtime dependency inventory captured.
 - Play Store icon and feature graphic rendered/uploaded.
 - Signed AAB job skipped, as expected for a pull-request run.
 
 Artifacts:
-- [Debug APK, unit/lint reports, Room schemas, dependency metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45999675603/artifacts/15198380221), 14-day retention.
-- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45999675603/artifacts/15198001347), 90-day retention.
+- [Debug APK, unit/lint reports, Room schemas, dependency metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206156491), 14-day retention.
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/46014464446/artifacts/15206301089), 90-day retention.
 
-**Room Migration Tests [run #17](https://github.com/berkah-pos/btp/actions/runs/45999675609)** completed successfully on the API 36 hosted emulator:
+**Room Migration Tests [run #30](https://github.com/berkah-pos/btp/actions/runs/46014464219)** completed successfully on the API 36 hosted emulator:
 - `connectedDebugAndroidTest`: **2 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code 0.
-- Original KSP v1 layout → v2: passed, with legacy sale and receipt item values preserved.
-- Historical intermediate v1 layout → v2: passed, retaining product ID and all existing receipt snapshots.
-- Room opened each v1 SQLite database through the production `MIGRATION_1_2` and validated the final schema.
+- Original KSP v1 layout → v2: passed, preserving legacy sales and receipt items.
+- Historical intermediate v1 layout → v2: passed, preserving product ID and receipt snapshots.
+- Both real SQLite v1 fixtures were opened through production `MIGRATION_1_2`; Room validated the resulting v2 schema.
 
-[Room migration JUnit report and APKs](https://github.com/berkah-pos/btp/actions/runs/45999675609/artifacts/15197568120), 30-day retention.
+Artifacts:
+- [Room migration JUnit report](https://github.com/berkah-pos/btp/actions/runs/46014464219/artifacts/15204627746).
+- [Room migration APKs and emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46014464219/artifacts/15205094827).
 
-The previous Room run #14 reached the instrumentation task but failed before migration assertions because `MigrationTestHelper` hit a Kotlin Serialization generated-serializer `AbstractMethodError`. The test implementation now creates the two historical SQLite v1 fixtures directly and uses `Room.databaseBuilder(...).addMigrations(MIGRATION_1_2)`; Run #17 verifies the real migration and Room schema validation.
-
-**Dependency verification review:** Run #58 produced metadata SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`, with 462 components and 758 unique SHA-256 artifact entries. All 758 entries shared with Run #41 match byte-for-byte; the only three entries present in the older inventory were Room Testing artifacts removed with the helper dependency. This is a reproducibility/integrity review, not publisher-signature proof (`verify-signatures=false`). The baseline is reviewed but not yet committed; clean strict verification is still pending.
+**Dependency verification review:** Run #75 generated metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, with **459 components and 754 unique SHA-256 artifact entries**. XML validation found one valid checksum per artifact and no duplicate coordinates. Compared with Run #58, all 754 current coordinates/artifacts have identical checksums; four obsolete entries from the older inventory were removed. This is reproducibility/integrity pinning, not publisher-signature proof (`verify-signatures=false`). The baseline is not committed and clean strict verification remains **NOT PASS**; the strict job was skipped on Run #75.
 
 ## 16 KB page-size checks
 
-The quality job now runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for any packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and runs the same ELF audit on the bundle. The debug ZIP and native ELF alignment checks **passed** on Run #58. The signed AAB check has not run because PR workflows deliberately skip release signing.
+The quality job runs `zipalign -c -P 16 -v 4` on the debug APK and checks `PT_LOAD` alignment for packaged `arm64-v8a` or `x86_64` shared libraries. The signed AAB job also requires bundletool to report `PAGE_ALIGNMENT_16K` and audits native ELF alignment. Debug ZIP alignment and all four packaged 64-bit native library checks **passed** on Run #75. The signed AAB check has not run because PR workflows deliberately skip release signing.
 
 ## Organization Play Console account
 
@@ -79,14 +80,14 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 
 ## Dependency verification
 
-- Bootstrap source: Android CI Run #58 artifact `berkah-pos-debug-58`.
-- Reviewed metadata SHA-256: `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`.
-- Inventory: **462 components / 758 unique SHA-256 artifact entries**, no missing or duplicate artifact hashes.
-- Independent comparison with the prior Run #41 metadata: all 758 shared component/artifact coordinates have identical checksums. The three entries removed from the older inventory belong to `androidx.room:room-testing` / `room-testing-android`, no longer used by instrumentation tests.
+- Bootstrap source: Android CI Run #75 artifact `berkah-pos-debug-75`.
+- Reviewed metadata SHA-256: `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`.
+- Inventory: **459 components / 754 unique SHA-256 artifact entries**, with one valid SHA-256 checksum per artifact and no duplicate coordinates.
+- Independent comparison with Run #58: all 754 shared component/artifact coordinates have identical checksums; four obsolete entries were removed (Kotlin Gradle plugin 2.2.10 module metadata and Compose plugin marker 2.4.21).
 - The metadata sets `verify-metadata=true` and `verify-signatures=false`. It pins artifact bytes for subsequent resolution; it does not authenticate publisher signatures or prove the initial downloads were signed by their publishers.
-- A guarded `workflow_dispatch` input `commit_dependency_baseline=true` is added to `.github/workflows/android-ci.yml`. It is restricted to `feat/basic-pos-mvp`, downloads the same-run quality artifact, checks the reviewed SHA-256 and XML inventory, and commits only `gradle/verification-metadata.xml` using a separate job with `contents: write`.
-- A separate clean GitHub-hosted runner then runs JVM tests, instrumentation source compilation, lint, debug build, release manifest processing, and the release runtime dependency report using `--dependency-verification=strict`.
-- Do not treat the baseline as completed until that clean strict job passes. Dependency graph changes require renewed metadata review before the baseline is updated.
+- The guarded `workflow_dispatch` input `commit_dependency_baseline=true` is restricted to `feat/basic-pos-mvp`, downloads the same-run quality artifact, validates this Run #75 SHA-256 and XML inventory, and commits only `gradle/verification-metadata.xml` in a separate job with `contents: write`.
+- A separate clean GitHub-hosted runner then runs JVM tests, instrumentation source compilation, lint, debug build, release manifest processing, and release runtime dependency reporting using `--dependency-verification=strict`.
+- The baseline is not yet committed. Strict dependency verification remains **NOT PASS** until the guarded baseline commit and subsequent clean strict-mode quality build both succeed. Dependency graph changes require renewed metadata review before the baseline is updated.
 
 ## Output dan retensi
 - Debug APK, hasil test, lint, dan laporan: artifact dengan retensi 14 hari.
@@ -103,4 +104,4 @@ Workflow menginstal Gradle 9.9.2 secara eksplisit pada GitHub-hosted runner, lal
 
 ## Dependency verification baseline
 
-`gradle/verification-metadata.xml` has been reviewed from Run #58 artifact (462 components, 758 unique SHA-256 entries, checksum `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`). All 758 shared entries match Run #41; the three older Room Testing-only entries were removed with the test-helper dependency. The baseline is not yet committed; strict dependency verification remains **NOT PASS** until the guarded commit workflow and a subsequent clean strict-mode quality build both succeed.
+`gradle/verification-metadata.xml` has been reviewed from Run #75 artifact (459 components, 754 unique SHA-256 entries, checksum `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`). All 754 current entries match Run #58; four obsolete plugin metadata entries were removed. The baseline is not yet committed; strict dependency verification remains **NOT PASS** until the guarded commit workflow and a subsequent clean strict-mode quality build both succeed.
