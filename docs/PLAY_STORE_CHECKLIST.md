@@ -59,7 +59,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #41 attempt 2.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #41.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #41.
-- [ ] Review dan commit `gradle/verification-metadata.xml`; jalankan ulang dengan strict dependency verification. Runs #22 and #26 produced byte-identical bootstrap metadata (SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`, 462 components, 758 SHA-256 entries), but it is not committed and strict verification remains skipped.
+- [ ] Review dan commit `gradle/verification-metadata.xml`; jalankan ulang dengan strict dependency verification. Run #38 dan #41 menghasilkan bootstrap metadata byte-identical (SHA-256 `45c3de7dd53c00bc4a35afd64a2067fa05d10fe8ab8cb7ef22e86342ebb941b0`, 464 komponen, 761 hash SHA-256). Reproducibility bukan bukti signature publisher; metadata belum dikomit dan strict verification masih dilewati.
 - [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #41.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
 - [ ] Bangun release AAB dengan upload key yang disimpan hanya di GitHub Environment Secrets.
