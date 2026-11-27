@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import id.berkahtigaputeri.basicpos.data.backup.PosBackupService
+import id.berkahtigaputeri.basicpos.data.preferences.UserPreferencesRepository
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 import kotlinx.coroutines.CancellationException
@@ -17,11 +18,15 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val repository: PosRepository,
-    private val backupService: PosBackupService
+    private val backupService: PosBackupService,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
     val profile: StateFlow<StoreProfile?> = repository
         .observeStoreProfile()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val lowStockThreshold: StateFlow<Long> = preferencesRepository.lowStockThreshold
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserPreferencesRepository.DEFAULT_LOW_STOCK_THRESHOLD)
 
     private val mutableMessage = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = mutableMessage.asStateFlow()
@@ -49,6 +54,19 @@ class SettingsViewModel(
                 mutableMessage.value = error.message ?: "Profil toko tidak dapat disimpan."
             } finally {
                 mutableSaving.value = false
+            }
+        }
+    }
+
+    fun saveLowStockThreshold(value: Long) {
+        viewModelScope.launch {
+            try {
+                preferencesRepository.setLowStockThreshold(value)
+                mutableMessage.value = "Ambang stok rendah berhasil disimpan."
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                mutableMessage.value = error.message ?: "Ambang stok tidak dapat disimpan."
             }
         }
     }
@@ -90,12 +108,13 @@ class SettingsViewModel(
 
     class Factory(
         private val repository: PosRepository,
-        private val backupService: PosBackupService
+        private val backupService: PosBackupService,
+        private val preferencesRepository: UserPreferencesRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
-                return SettingsViewModel(repository, backupService) as T
+                return SettingsViewModel(repository, backupService, preferencesRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
