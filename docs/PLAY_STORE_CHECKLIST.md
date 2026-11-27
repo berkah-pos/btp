@@ -1,8 +1,8 @@
 # Google Play release checklist
 
-Status: pre-release review remains **BLOCKED**. Latest Android quality evidence is GitHub Actions [run #79](https://github.com/berkah-pos/btp/actions/runs/46018281138), and latest Room migration evidence is [run #34](https://github.com/berkah-pos/btp/actions/runs/46018281201), both completed successfully on 27 November 2026 for source head `cbeba6fea7576b6557e9e1b935a8f66a8104db91`. Submission remains planned for a **Google Play Organization developer account**.
+Status: pre-release review remains **BLOCKED**. Latest fully successful Android quality workflow is [run #80](https://github.com/berkah-pos/btp/actions/runs/46019306696) for source head `5a96fc363e7dcdd4b765ac27b94274d9473c9e06`; latest successful Room migration run is [#35](https://github.com/berkah-pos/btp/actions/runs/46019306650). Later workflow and accessibility commits are awaiting fresh CI verification. Submission remains planned for a **Google Play Organization developer account**.
 
-## Latest verified Android CI evidence — Run #79
+## Latest verified Android CI evidence — Run #80
 
 - `testDebugUnitTest`: **29 tests, 0 failures, 0 errors, 0 skipped**, verified from five uploaded JUnit XML reports.
 - `compileDebugAndroidTestKotlin`: successful.
@@ -10,32 +10,32 @@ Status: pre-release review remains **BLOCKED**. Latest Android quality evidence 
 - `assembleDebug`: **success**; debug APK uploaded.
 - Debug APK ZIP alignment and all four packaged 64-bit native-library 16 KiB ELF checks: **success**.
 - Merged release manifest and release runtime dependency inventory: **captured successfully**.
-- Dependency metadata artifact: SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, **459 components / 754 unique SHA-256 artifact entries**.
 - Play Store app icon 512×512 and feature graphic 1024×500: rendered and uploaded successfully.
 - Signed release AAB: **SKIPPED** because this was a pull-request run. No signed release AAB or upload-certificate evidence exists.
 
 Artifacts:
-- [Debug APK, unit-test/lint reports, Room schemas, dependency metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15208270198) — 14-day retention.
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15207651178) — 90-day retention.
+- [Debug APK, unit-test/lint reports, Room schemas, dependency metadata, and release audit](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15208022108) — 14-day retention.
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15207772322) — 90-day retention.
 
-## Room migration instrumentation — Run #34
+## Room migration instrumentation — Run #35
 
 - `connectedDebugAndroidTest` executed on the API 36 cloud emulator and completed **success**.
 - JUnit XML confirms **2 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code is `0`.
 - Original Room v1 schema migration: **PASS**; sales and receipt item data were preserved.
-- Historical intermediate v1 migration: **PASS**; existing product ID and store receipt snapshots were preserved.
-- The tests open real SQLite v1 fixtures through Room's production `MIGRATION_1_2`; Room validates the resulting v2 schema.
+- Historical intermediate v1 migration: **PASS**; existing product ID and receipt snapshots were preserved.
+- Both real SQLite v1 fixtures were opened through production `MIGRATION_1_2`; Room validated the resulting v2 schema.
 
 Artifact:
-- [API 36 emulator JUnit report, APKs, and outputs](https://github.com/berkah-pos/btp/actions/runs/46018281201/artifacts/15207701214).
+- [API 36 emulator JUnit report, APKs, and outputs](https://github.com/berkah-pos/btp/actions/runs/46019306650/artifacts/15207827414).
 
 ## Dependency verification review
 
-- The Run #79 metadata contains 459 components and 754 unique SHA-256 artifact entries, with no missing or duplicate artifact hashes.
-- All 754 current coordinates/artifact names shared with the prior Run #58 metadata have identical SHA-256 values. Four obsolete Kotlin/Compose plugin metadata entries were removed from the current graph.
-- Metadata hash: `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`.
-- This is reproducibility and integrity-pinning review, **not publisher-signature verification**: metadata records Gradle-generated checksums and `verify-signatures=false`.
-- Strict dependency verification has **not yet passed**. The guarded manual workflow input validates this Run #79 baseline, commits it on `feat/basic-pos-mvp`, and then executes strict quality gates on a separate clean GitHub-hosted runner.
+- Run #80 metadata: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, 459 components / 754 unique SHA-256 artifact entries.
+- Refreshed metadata from independent Runs #81 and #82 was byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, 455 components / 745 unique SHA-256 artifact entries. Nine stale metadata entries were absent from the refreshed resolution; all 745 remaining entries retained the same checksum as Run #80.
+- The full #81/#82 dispatch workflows failed at the baseline guard because it still expected the previous Run #80 hash/inventory; their Android quality jobs succeeded. The guard was corrected in commit `b06c8f3`.
+- Commit `681cf52` makes metadata bootstrap always use `--refresh-dependencies` to avoid cache-dependent inventory drift.
+- Metadata enables `verify-metadata=true` but keeps `verify-signatures=false`. This is integrity pinning, **not publisher-signature verification**.
+- The reviewed baseline is not committed and clean `--dependency-verification=strict` has **not yet passed**. A guarded manual workflow dispatch is still required to commit the baseline and run the separate clean strict build.
 
 This is source/CI evidence only. It is **not** evidence of physical-device startup, full UI automation, Play Console submission, Internal Testing, Pre-launch Report, or Google Play approval.
 
@@ -45,7 +45,7 @@ This is source/CI evidence only. It is **not** evidence of physical-device start
 - [x] Syarat closed testing khusus akun Personal baru (12 tester/14 hari): **NOT APPLICABLE** untuk submission melalui akun Organization ini. Persyaratan resmi 12/14 hari dibatasi pada akun Personal yang dibuat setelah 13 November 2023. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [x] `targetSdk=36`; memenuhi minimum API 36 yang berlaku pada tanggal pemeriksaan.
 - [x] Merged release manifest: `minSdk=24`, `targetSdk=36`; compile SDK 37.1 pada konfigurasi build.
-- [x] Jalankan dan periksa dua Room migration instrumentation test dengan `connectedDebugAndroidTest` pada API 36 cloud emulator: Run #34, 2/2 lulus.
+- [x] Jalankan dan periksa dua Room migration instrumentation test dengan `connectedDebugAndroidTest` pada API 36 cloud emulator: Run #35, 2/2 lulus.
 - [ ] Siapkan screenshot aktual dari aplikasi hasil build; aset icon/feature graphic bukan pengganti screenshot aplikasi.
 
 ## Organization developer account verification
@@ -71,11 +71,11 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [ ] Verifikasi perilaku backup/restore dan transfer file pada perangkat/API yang didukung.
 
 ## Build dan signing
-- [x] Jalankan unit test debug variant: 24 lulus, 0 gagal pada Run #79.
+- [x] Jalankan unit test debug variant: 29 lulus, 0 gagal pada Run #79.
 - [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #79.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #79.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #79.
-- [x] Review bootstrap `gradle/verification-metadata.xml`: Run #79 menghasilkan 459 komponen dan 754 checksum unik; seluruh 754 entri yang sama dengan Run #58 memiliki hash identik. Metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`. Ini bukan bukti signature publisher (`verify-signatures=false`).
+- [x] Review bootstrap `gradle/verification-metadata.xml`: Run #79 menghasilkan 455 komponen dan 745 checksum unik; seluruh 754 entri yang sama dengan Run #58 memiliki hash identik. Metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`. Ini bukan bukti signature publisher (`verify-signatures=false`).
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
 - [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #79.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
@@ -101,7 +101,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Identitas legal perusahaan, alamat korespondensi, dan kontak privasi resmi belum diberikan untuk Privacy Policy.
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
-- Room migration instrumentation test 1 → 2 **PASS** pada Run #34 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
+- Room migration instrumentation test 1 → 2 **PASS** pada Run #35 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
 - Dependency verification metadata telah direview dari Run #79 tetapi belum dikomit; strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
