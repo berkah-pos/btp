@@ -22,6 +22,8 @@ import id.berkahtigaputeri.basicpos.ui.dashboard.DashboardScreen
 import id.berkahtigaputeri.basicpos.ui.dashboard.DashboardViewModel
 import id.berkahtigaputeri.basicpos.ui.products.ProductsScreen
 import id.berkahtigaputeri.basicpos.ui.products.ProductsViewModel
+import id.berkahtigaputeri.basicpos.ui.settings.SettingsScreen
+import id.berkahtigaputeri.basicpos.ui.settings.SettingsViewModel
 import id.berkahtigaputeri.basicpos.ui.transactions.TransactionsScreen
 import id.berkahtigaputeri.basicpos.ui.transactions.TransactionsViewModel
 
@@ -30,6 +32,7 @@ private object PosRoute {
     const val PRODUCTS = "products"
     const val CASHIER = "cashier"
     const val TRANSACTIONS = "transactions"
+    const val SETTINGS = "settings"
 }
 
 private data class NavigationDestination(
@@ -42,7 +45,8 @@ private val destinations = listOf(
     NavigationDestination(PosRoute.DASHBOARD, "Ringkasan", "⌂"),
     NavigationDestination(PosRoute.PRODUCTS, "Produk", "▦"),
     NavigationDestination(PosRoute.CASHIER, "Kasir", "＋"),
-    NavigationDestination(PosRoute.TRANSACTIONS, "Riwayat", "≡")
+    NavigationDestination(PosRoute.TRANSACTIONS, "Riwayat", "≡"),
+    NavigationDestination(PosRoute.SETTINGS, "Pengaturan", "⚙")
 )
 
 @Composable
@@ -102,6 +106,12 @@ fun PosNavigation() {
                     factory = TransactionsViewModel.Factory(application.container.posRepository)
                 )
                 TransactionsScreen(viewModel = transactionsViewModel)
+            }
+            composable(PosRoute.SETTINGS) {
+                val settingsViewModel: SettingsViewModel = viewModel(
+                    factory = SettingsViewModel.Factory(application.container.posRepository)
+                )
+                SettingsScreen(viewModel = settingsViewModel)
             }
         }
     }
