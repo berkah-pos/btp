@@ -58,10 +58,11 @@ jobs:
           cmdline-tools-version: 15859902
           packages: "platform-tools platforms;android-37 build-tools;37.0.0"
 
-      - name: Set up Gradle 9.6.0
+      - name: Set up Gradle 9.8.2
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
+          cache-provider: basic
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Bootstrap Gradle wrapper
@@ -114,14 +115,23 @@ jobs:
           cmdline-tools-version: 15859902
           packages: "platform-tools platforms;android-37 build-tools;37.0.0"
 
-      - name: Set up Gradle 9.6.0
+      - name: Set up Gradle 9.8.2
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
+          cache-provider: basic
           cache-read-only: true
 
       - name: Bootstrap Gradle wrapper
         run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
+
+      - name: Require reviewed dependency verification baseline
+        run: |
+          set -euo pipefail
+          test -s gradle/verification-metadata.xml || {
+            echo "Release blocked: review the CI bootstrap artifact and commit gradle/verification-metadata.xml first."
+            exit 1
+          }
 
       - name: Configure upload keystore
         env:
@@ -132,14 +142,6 @@ jobs:
           printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/berkah-upload.jks"
           test -s "$RUNNER_TEMP/berkah-upload.jks"
           echo "ANDROID_UPLOAD_KEYSTORE_PATH=$RUNNER_TEMP/berkah-upload.jks" >> "$GITHUB_ENV"
-
-      - name: Require reviewed dependency verification baseline
-        run: |
-          set -euo pipefail
-          test -s gradle/verification-metadata.xml || {
-            echo "Release blocked: review the CI bootstrap artifact and commit gradle/verification-metadata.xml first."
-            exit 1
-          }
 
       - name: Build signed AAB using strict dependency verification
         env:
