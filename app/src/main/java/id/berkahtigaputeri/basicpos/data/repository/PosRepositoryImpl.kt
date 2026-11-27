@@ -44,6 +44,9 @@ class PosRepositoryImpl(
     override fun observeRecentTransactions(limit: Int): Flow<List<SaleSummary>> =
         dao.observeRecentTransactions(limit.coerceIn(1, 100)).map { rows -> rows.map(::toDomain) }
 
+    override fun observeTransactions(query: String): Flow<List<SaleSummary>> =
+        dao.observeTransactions(query.trim()).map { rows -> rows.map(::toDomain) }
+
     override fun observeLowStockProducts(threshold: Long, limit: Int): Flow<List<Product>> =
         dao.observeLowStockProducts(threshold.coerceAtLeast(0), limit.coerceIn(1, 100))
             .map { rows -> rows.map(::toDomain) }
@@ -222,6 +225,18 @@ class PosRepositoryImpl(
     override suspend fun getTransactionItems(transactionId: Long): List<SaleItem> =
         dao.getTransactionItems(transactionId).map(::toDomain)
 
+    override suspend fun getTransactionReceipt(transactionId: Long): SaleReceipt? {
+        val transaction = dao.getTransactionById(transactionId) ?: return null
+        val items = dao.getTransactionItems(transactionId).map(::toDomain)
+        return SaleReceipt(
+            sale = toDomain(transaction),
+            subtotalRupiah = transaction.subtotalRupiah,
+            discountRupiah = transaction.discountRupiah,
+            taxRupiah = transaction.taxRupiah,
+            items = items
+        )
+    }
+
     private fun toDomain(row: ProductEntity) = Product(
         id = row.id,
         name = row.name,
@@ -243,6 +258,9 @@ class PosRepositoryImpl(
         id = row.id,
         transactionNumber = row.transactionNumber,
         createdAtEpochMillis = row.createdAtEpochMillis,
+        subtotalRupiah = row.subtotalRupiah,
+        discountRupiah = row.discountRupiah,
+        taxRupiah = row.taxRupiah,
         totalRupiah = row.totalRupiah,
         paidRupiah = row.paidRupiah,
         changeRupiah = row.changeRupiah

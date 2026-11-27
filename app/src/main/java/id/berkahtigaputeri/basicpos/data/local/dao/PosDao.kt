@@ -56,6 +56,14 @@ interface PosDao {
     @Query("SELECT * FROM sales_transactions ORDER BY createdAtEpochMillis DESC LIMIT :limit")
     fun observeRecentTransactions(limit: Int): Flow<List<SalesTransactionEntity>>
 
+    @Query("""SELECT * FROM sales_transactions
+        WHERE :query = '' OR transactionNumber LIKE '%' || :query || '%' COLLATE NOCASE
+        ORDER BY createdAtEpochMillis DESC""")
+    fun observeTransactions(query: String): Flow<List<SalesTransactionEntity>>
+
+    @Query("SELECT * FROM sales_transactions WHERE id = :transactionId LIMIT 1")
+    suspend fun getTransactionById(transactionId: Long): SalesTransactionEntity?
+
     @Query("SELECT COALESCE(SUM(totalRupiah), 0) FROM sales_transactions WHERE createdAtEpochMillis >= :startInclusive AND createdAtEpochMillis < :endExclusive")
     fun observeSalesBetween(startInclusive: Long, endExclusive: Long): Flow<Long>
 

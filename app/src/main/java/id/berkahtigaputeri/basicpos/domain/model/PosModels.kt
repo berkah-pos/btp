@@ -26,6 +26,9 @@ data class SaleSummary(
     val id: Long,
     val transactionNumber: String,
     val createdAtEpochMillis: Long,
+    val subtotalRupiah: Long,
+    val discountRupiah: Long,
+    val taxRupiah: Long,
     val totalRupiah: Long,
     val paidRupiah: Long,
     val changeRupiah: Long

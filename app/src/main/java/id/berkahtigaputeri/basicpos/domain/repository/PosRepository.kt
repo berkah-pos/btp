@@ -16,6 +16,7 @@ interface PosRepository {
     fun observeCategories(): Flow<List<Category>>
     fun observeStoreProfile(): Flow<StoreProfile?>
     fun observeRecentTransactions(limit: Int = 20): Flow<List<SaleSummary>>
+    fun observeTransactions(query: String = ""): Flow<List<SaleSummary>>
     fun observeLowStockProducts(threshold: Long = 5, limit: Int = 20): Flow<List<Product>>
 
     suspend fun saveProduct(product: Product)
@@ -24,4 +25,5 @@ interface PosRepository {
     suspend fun saveStoreProfile(profile: StoreProfile)
     suspend fun checkout(request: CheckoutRequest): SaleReceipt
     suspend fun getTransactionItems(transactionId: Long): List<SaleItem>
+    suspend fun getTransactionReceipt(transactionId: Long): SaleReceipt?
 }
