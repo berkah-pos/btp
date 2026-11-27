@@ -1,6 +1,6 @@
 # Google Play release checklist
 
-Status awal: seluruh pemeriksaan release berstatus NOT TESTED sampai didukung hasil build dan pemeriksaan Play Console.
+Status release: pemeriksaan berikut tetap NOT TESTED kecuali bila ada bukti spesifik. Baseline CI run [45969254895](https://github.com/berkah-pos/btp/actions/runs/45969254895) pada PR #3 mencatat 16 unit test lulus, lint 0 error/8 warning, dan debug APK berhasil dibuat. CI terbaru PR #4 (run [45972354170](https://github.com/berkah-pos/btp/actions/runs/45972354170)) masih berjalan pada saat dokumen ini diperbarui; hasil baseline tidak dianggap sebagai validasi commit PR #4.
 
 ## Identitas dan kompatibilitas
 - [ ] Konfirmasi applicationId candidate `id.berkahtigaputeri.basicpos` dan periksa keunikan di Play Console.
@@ -41,4 +41,6 @@ Status awal: seluruh pemeriksaan release berstatus NOT TESTED sampai didukung ha
 - Identitas legal/kontak perusahaan belum tersedia.
 - Privacy Policy HTTPS URL belum tersedia.
 - Signing key belum disiapkan.
-- Belum ada build, test, lint, internal testing, atau Pre-launch Report.
+- Migration test Room 1 → 2 belum tersedia karena schema v1 hasil KSP historis belum ditemukan.
+- Dependency verification metadata belum dikomit sebagai baseline yang telah ditinjau; CI masih memakai bootstrap checksum.
+- Belum ada signed release AAB, startup test perangkat, UI automation, internal testing, atau Pre-launch Report.
