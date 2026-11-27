@@ -117,7 +117,7 @@ fun DashboardScreen(
                     val products = summary?.lowStockProducts.orEmpty()
                     if (products.isEmpty()) {
                         Text(
-                            text = "Belum ada produk dengan stok 5 unit atau kurang.",
+                            text = "Belum ada produk dengan stok ${summary?.lowStockThreshold ?: 5L} unit atau kurang.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
