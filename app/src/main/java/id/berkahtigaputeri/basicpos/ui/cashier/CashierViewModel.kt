@@ -25,7 +25,6 @@ data class CashierCartItem(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class 
 class CashierViewModel(
     private val repository: PosRepository
 ) : ViewModel() {
