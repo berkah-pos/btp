@@ -1,5 +1,11 @@
 import org.gradle.api.GradleException
 
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
+}
+
 fun String.asBuildConfigLiteral(): String =
     "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
@@ -11,12 +17,6 @@ require(saasUrl.isEmpty() || saasUrl.startsWith("https://", ignoreCase = true)) 
 }
 require(supportEmail.isEmpty() || (supportEmail.contains("@") && supportEmail.none(Char::isWhitespace))) {
     "btpSupportEmail must be a valid email address."
-}
-
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
 }
 
 val uploadKeystorePath = providers.environmentVariable("ANDROID_UPLOAD_KEYSTORE_PATH").orNull
