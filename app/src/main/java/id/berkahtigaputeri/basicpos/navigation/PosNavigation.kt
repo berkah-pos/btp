@@ -1,5 +1,6 @@
 package id.berkahtigaputeri.basicpos.navigation
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -7,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -16,6 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import id.berkahtigaputeri.basicpos.BerkahPosApplication
+import id.berkahtigaputeri.basicpos.ui.cashier.CashierScreen
+import id.berkahtigaputeri.basicpos.ui.cashier.CashierViewModel
 import id.berkahtigaputeri.basicpos.ui.dashboard.DashboardScreen
 import id.berkahtigaputeri.basicpos.ui.dashboard.DashboardViewModel
 import id.berkahtigaputeri.basicpos.ui.products.ProductsScreen
@@ -24,6 +26,7 @@ import id.berkahtigaputeri.basicpos.ui.products.ProductsViewModel
 private object PosRoute {
     const val DASHBOARD = "dashboard"
     const val PRODUCTS = "products"
+    const val CASHIER = "cashier"
 }
 
 private data class NavigationDestination(
@@ -34,7 +37,8 @@ private data class NavigationDestination(
 
 private val destinations = listOf(
     NavigationDestination(PosRoute.DASHBOARD, "Ringkasan", "⌂"),
-    NavigationDestination(PosRoute.PRODUCTS, "Produk", "▦")
+    NavigationDestination(PosRoute.PRODUCTS, "Produk", "▦"),
+    NavigationDestination(PosRoute.CASHIER, "Kasir", "＋")
 )
 
 @Composable
@@ -82,6 +86,12 @@ fun PosNavigation() {
                     factory = ProductsViewModel.Factory(application.container.posRepository)
                 )
                 ProductsScreen(viewModel = productsViewModel)
+            }
+            composable(PosRoute.CASHIER) {
+                val cashierViewModel: CashierViewModel = viewModel(
+                    factory = CashierViewModel.Factory(application.container.posRepository)
+                )
+                CashierScreen(viewModel = cashierViewModel)
             }
         }
     }
