@@ -17,29 +17,28 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 
 ## Validasi cloud yang teramati
 
-GitHub Actions [run #41](https://github.com/berkah-pos/btp/actions/runs/45989244818) selesai **success** pada percobaan ke-2 tanggal 27 November 2026. Run ini memvalidasi PR #4 pada head `1365bab63bb91032b56bb4279f6dec212574d778`; runner membangun merge commit `e4074059ef147bc64302431c7cee579679d169da` terhadap `main` `45c289590772a136b83a73b528d3651ed8f26aae`.
-
-Hasil yang diverifikasi dari job, log, dan artifact:
+**Android CI [run #50](https://github.com/berkah-pos/btp/actions/runs/45992766270)** selesai dengan kesimpulan **success** pada 27 November 2026 untuk PR head `0ab07e7c5f4a77307d1349029fbbf73452c85c80`. Bukti dari log dan artifact:
 
 - `testDebugUnitTest`: **24 test, 0 failure, 0 error, 0 skipped**, dihitung dari empat JUnit XML.
-- `compileDebugAndroidTestKotlin`: **success**; source instrumentation test migrasi Room berhasil dikompilasi, tetapi belum dieksekusi pada emulator.
-- `lintDebug`: **0 error, 1 warning** (`OldTargetApi` pada `targetSdk=36`).
-- `assembleDebug`: **BUILD SUCCESSFUL**; APK debug berukuran 14.944.217 byte.
-- Pemeriksaan APK ZIP alignment 16 KB: **success**. Empat native library arm64-v8a/x86_64 yang dikemas juga lulus pemeriksaan ELF LOAD alignment 16 KiB.
-- Merged release manifest dan release runtime dependency inventory berhasil diunggah untuk audit. Manifest hanya mendeklarasikan permission signature milik aplikasi untuk dynamic receiver; tidak ada INTERNET atau permission kontak, telepon, kamera, lokasi, dan broad-storage. Inventory yang ditangkap tidak menunjukkan Firebase, analytics, Crashlytics, SDK iklan, OkHttp, atau Retrofit.
-- Source app icon 512×512 dan feature graphic 1024×500 berhasil dirender dan diunggah.
+- `compileDebugAndroidTestKotlin`: **success**; source instrumentation test Room berhasil dikompilasi, tetapi belum dieksekusi.
+- `lintDebug`: **0 error, 1 warning** (`OldTargetApi`, karena `targetSdk=36`).
+- `assembleDebug`: **success**; APK debug berukuran 14.944.217 byte.
+- Pemeriksaan APK ZIP alignment 16 KiB berhasil; keempat ELF LOAD segment pada native library arm64-v8a/x86_64 yang dikemas juga lulus.
+- Merged release manifest dan release runtime dependency inventory berhasil ditangkap; app icon dan feature graphic Play Store berhasil dibuat dan diunggah.
+- Signed release AAB **SKIPPED** karena run berasal dari pull request. Tidak ada signed AAB atau publikasi yang dihasilkan.
 
 Artifacts:
-- [Debug APK, JUnit/lint reports, Room schemas, wrapper, verification metadata bootstrap, dan release audit](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15193663522) — retensi 14 hari.
-- [Play Store app icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15192494773) — retensi 90 hari.
+- [Debug APK, JUnit/lint reports, Room schemas, bootstrap dependency metadata, dan release audit](https://github.com/berkah-pos/btp/actions/runs/45992766270/artifacts/15195500151) — retensi 14 hari.
+- [Play Store app icon dan feature graphic](https://github.com/berkah-pos/btp/actions/runs/45992766270/artifacts/15194771833) — retensi 90 hari.
 
-**Belum lulus / belum dijalankan:**
-- Release AAB job **SKIPPED** pada PR; tidak ada signed AAB, upload-certificate verification, atau release SHA256.
-- Strict dependency verification **SKIPPED**. File `gradle/verification-metadata.xml` dari run adalah bootstrap SHA-256 metadata untuk review, bukan baseline tepercaya yang sudah dikomit.
-- Instrumentation test Room 1 → 2 belum dieksekusi dengan `connectedDebugAndroidTest`. File schema v1 asli dan test source sudah ada; workflow emulator terpisah ditambahkan pada branch PR sebagai `.github/workflows/room-migration-tests.yml`, tetapi belum ada hasil emulator yang boleh dinyatakan PASS.
-- Belum ada bukti startup/perilaku pada perangkat fisik, UI automation, Internal Testing, atau Google Play Pre-launch Report.
+**Room migration workflow:** [Run #9](https://github.com/berkah-pos/btp/actions/runs/45992766223) gagal sebelum `connectedDebugAndroidTest` dijalankan. Artifact diagnostik menunjukkan proses emulator x86_64 tidak memiliki izin baca/tulis ke `/dev/kvm`; emulator melaporkan bahwa akselerasi hardware diperlukan. Ini kegagalan lingkungan runner, bukan kegagalan assertion migrasi. Commit workflow `f1585bd` menambahkan akses ACL khusus untuk user runner (dengan fallback terbatas pada device ephemeral), pemeriksaan akselerator, dan batas waktu ADB. [Run #10](https://github.com/berkah-pos/btp/actions/runs/45997083558) memverifikasi perbaikan tersebut. Migrasi 1 → 2 **belum dinyatakan lulus** sampai test instrumentation benar-benar selesai dan laporan test menunjukkan success.
 
-Hasil Run #41 berlaku untuk merge commit yang disebutkan di atas. Commit sesudahnya yang menambah workflow Room terpisah tidak mengubah source aplikasi yang diuji oleh Run #41.
+Schema v1 asli hasil KSP telah dikomit melalui [commit `be1797a`](https://github.com/berkah-pos/btp/commit/be1797ad5ff9eab6bca125d4fdb784589edb6647); schema v2 dan test migrasi untuk schema asli serta bentuk v1 historis juga tersedia di repository.
+
+**Status yang belum diverifikasi:**
+- Strict Gradle dependency verification masih **SKIPPED**. Metadata SHA-256 dari CI masih bootstrap TOFU dan belum disetujui/dikomit sebagai baseline tepercaya.
+- Signed release AAB, signature/certificate verification, dan release bundle 16 KiB check belum dijalankan.
+- Belum ada uji startup/perilaku pada perangkat fisik, UI automation, Internal Testing, atau Google Play Pre-launch Report.
 
 ## Keputusan teknis
 
