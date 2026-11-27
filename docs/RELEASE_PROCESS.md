@@ -8,6 +8,14 @@
 - Workflow dibatasi permission `contents: read`; secret hanya tersedia di job release melalui Environment.
 - Build tidak pernah memublikasikan otomatis ke Google Play.
 
+## Public repository variables
+
+Optional repository Actions Variables:
+- `BTP_SAAS_URL`: HTTPS URL for the BERKAH TIGA PUTERI SaaS information page.
+- `BTP_SUPPORT_EMAIL`: official support email address.
+
+The Gradle build accepts these through `ORG_GRADLE_PROJECT_btpSaasUrl` and `ORG_GRADLE_PROJECT_btpSupportEmail`. Both default to empty; the app displays no external destination until real values are configured. The SaaS URL is restricted to HTTPS. Do not populate these variables with a placeholder or an unverified company address.
+
 ## GitHub Environment `android-release`
 Buat dan konfigurasi environment melalui Settings → Environments → android-release:
 1. Batasi deployment branches/tags agar hanya branch `main` yang diizinkan.
