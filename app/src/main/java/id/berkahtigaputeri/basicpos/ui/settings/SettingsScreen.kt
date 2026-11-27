@@ -22,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,6 +48,7 @@ fun SettingsScreen(
     val message by viewModel.message.collectAsState()
     val saving by viewModel.isSaving.collectAsState()
     val backupBusy by viewModel.isBackupBusy.collectAsState()
+    val lowStockThreshold by viewModel.lowStockThreshold.collectAsState()
     val uriHandler = LocalUriHandler.current
 
     var showRestoreConfirmation by remember { mutableStateOf(false) }
@@ -66,7 +69,13 @@ fun SettingsScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var receiptFooter by remember { mutableStateOf("") }
     var validationMessage by remember { mutableStateOf<String?>(null) }
+    var lowStockThresholdText by remember { mutableStateOf("5") }
+    var thresholdValidationMessage by remember { mutableStateOf<String?>(null) }
     var legalDocument by remember { mutableStateOf<LegalDocument?>(null) }
+
+    LaunchedEffect(lowStockThreshold) {
+        lowStockThresholdText = lowStockThreshold.toString()
+    }
 
     LaunchedEffect(profile) {
         storeName = profile?.storeName.orEmpty()
@@ -197,6 +206,44 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+
+            Text("Pengaturan stok", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Produk dengan stok sama dengan atau di bawah ambang ini akan ditandai sebagai stok rendah pada ringkasan usaha.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            OutlinedTextField(
+                value = lowStockThresholdText,
+                onValueChange = {
+                    lowStockThresholdText = it.filter(Char::isDigit)
+                    thresholdValidationMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = { Text("Ambang stok rendah (unit)") }
+            )
+            if (thresholdValidationMessage != null) {
+                Text(
+                    thresholdValidationMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Button(
+                onClick = {
+                    val parsed = lowStockThresholdText.toLongOrNull()
+                    when {
+                        parsed == null -> thresholdValidationMessage = "Masukkan angka antara 0 dan 1.000.000."
+                        parsed !in 0L..1_000_000L -> thresholdValidationMessage = "Ambang stok harus antara 0 dan 1.000.000."
+                        else -> viewModel.saveLowStockThreshold(parsed)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = lowStockThresholdText.toLongOrNull() in 0L..1_000_000L
+            ) {
+                Text("Simpan pengaturan stok")
             }
 
             Text("Backup dan pemulihan", style = MaterialTheme.typography.titleLarge)
