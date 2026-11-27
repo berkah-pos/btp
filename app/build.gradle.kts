@@ -11,9 +11,10 @@ fun String.asBuildConfigLiteral(): String =
 
 val candidateApplicationId = "id.berkahtigaputeri.basicpos"
 val applicationIdValue = providers.gradleProperty("btpApplicationId")
-    .orElse(candidateApplicationId)
-    .get()
-    .trim()
+    .orNull
+    ?.trim()
+    ?.takeIf(String::isNotBlank)
+    ?: candidateApplicationId
 val saasUrl = providers.gradleProperty("btpSaasUrl").orElse("").get().trim()
 val supportEmail = providers.gradleProperty("btpSupportEmail").orElse("").get().trim()
 
