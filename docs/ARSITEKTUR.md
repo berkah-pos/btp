@@ -56,4 +56,4 @@ Automatic Android backup dinonaktifkan melalui `android:allowBackup=false`. Untu
 Fondasi menggunakan `AppContainer` manual. Tidak ada Hilt/Dagger untuk menghindari dependency dan plugin tambahan yang belum diperlukan.
 
 ## Identitas aplikasi
-Candidate namespace/applicationId saat ini: `id.berkahtigaputeri.basicpos`. Harus diperiksa ketersediaannya dan disetujui sebelum release pertama; applicationId tidak boleh diganti setelah publikasi pertama.
+Application ID permanen yang dipilih dari domain `berkahtigaputeri.co.id`: `id.co.berkahtigaputeri.basicpos`. Namespace Kotlin internal tetap `id.berkahtigaputeri.basicpos`; Android Gradle Plugin mendukung pemisahan `namespace` dari `applicationId`. Periksa ketersediaan package dan pastikan belum ada publikasi pertama dengan ID lama di Play Console sebelum signed release. Set repository Actions Variable `BTP_APPLICATION_ID` persis ke application ID ini. Jangan mengubah applicationId setelah publikasi pertama.
