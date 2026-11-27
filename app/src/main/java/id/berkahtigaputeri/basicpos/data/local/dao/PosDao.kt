@@ -44,6 +44,48 @@ interface PosDao {
     @Query("SELECT * FROM store_profile WHERE id = 1 LIMIT 1")
     fun observeStoreProfile(): Flow<StoreProfileEntity?>
 
+    @Query("SELECT * FROM store_profile WHERE id = 1 LIMIT 1")
+    suspend fun getStoreProfileForBackup(): StoreProfileEntity?
+
+    @Query("SELECT * FROM categories ORDER BY id ASC")
+    suspend fun getAllCategoriesForBackup(): List<CategoryEntity>
+
+    @Query("SELECT * FROM products ORDER BY id ASC")
+    suspend fun getAllProductsForBackup(): List<ProductEntity>
+
+    @Query("SELECT * FROM sales_transactions ORDER BY id ASC")
+    suspend fun getAllTransactionsForBackup(): List<SalesTransactionEntity>
+
+    @Query("SELECT * FROM transaction_items ORDER BY id ASC")
+    suspend fun getAllTransactionItemsForBackup(): List<TransactionItemEntity>
+
+    @Query("DELETE FROM transaction_items")
+    suspend fun deleteAllTransactionItems()
+
+    @Query("DELETE FROM sales_transactions")
+    suspend fun deleteAllTransactions()
+
+    @Query("DELETE FROM products")
+    suspend fun deleteAllProducts()
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories()
+
+    @Query("DELETE FROM store_profile")
+    suspend fun deleteAllStoreProfiles()
+
+    @Insert
+    suspend fun insertCategoriesForBackup(rows: List<CategoryEntity>)
+
+    @Insert
+    suspend fun insertProductsForBackup(rows: List<ProductEntity>)
+
+    @Insert
+    suspend fun insertTransactionsForBackup(rows: List<SalesTransactionEntity>)
+
+    @Insert
+    suspend fun insertTransactionItemsForBackup(rows: List<TransactionItemEntity>)
+
     @Upsert
     suspend fun upsertStoreProfile(profile: StoreProfileEntity)
 
