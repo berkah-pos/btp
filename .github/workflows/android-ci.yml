@@ -40,6 +40,7 @@ permissions:
 env:
   ORG_GRADLE_PROJECT_btpSaasUrl: ${{ vars.BTP_SAAS_URL }}
   ORG_GRADLE_PROJECT_btpSupportEmail: ${{ vars.BTP_SUPPORT_EMAIL }}
+  ORG_GRADLE_PROJECT_btpApplicationId: ${{ vars.BTP_APPLICATION_ID }}
 
 concurrency:
   group: android-${{ github.workflow }}-${{ github.ref }}
@@ -156,6 +157,16 @@ jobs:
       - name: Bootstrap Gradle wrapper
         run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
 
+      - name: Require confirmed Play Console application ID
+        env:
+          BTP_APPLICATION_ID: ${{ vars.BTP_APPLICATION_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$BTP_APPLICATION_ID" || {
+            echo "Release blocked: configure BTP_APPLICATION_ID only after confirming the permanent ID in Play Console."
+            exit 1
+          }
+
       - name: Require reviewed dependency verification baseline
         run: |
           set -euo pipefail
@@ -201,11 +212,13 @@ jobs:
           sha256sum "$AAB" > SHA256SUMS
 
       - name: Prepare release metadata
+        env:
+          BTP_APPLICATION_ID: ${{ vars.BTP_APPLICATION_ID }}
         run: |
           set -euo pipefail
           cat > release-metadata.json <<EOF
           {
-            "applicationId": "id.berkahtigaputeri.basicpos",
+            "applicationId": "$BTP_APPLICATION_ID",
             "versionName": "0.1.0",
             "versionCode": 1,
             "targetSdk": 36,
