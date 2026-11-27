@@ -17,18 +17,22 @@ Fondasi MVP POS tersedia pada `main` melalui [PR #1](https://github.com/berkah-p
 
 ## Validasi cloud yang teramati
 
-Run [45975233350](https://github.com/berkah-pos/btp/actions/runs/45975233350) pada 27 November 2026 memvalidasi head PR #4, commit `7e371fd29482b3e81359c73b4d34fd5945c42bf2`:
+Run [#26](https://github.com/berkah-pos/btp/actions/runs/45983299284) pada 27 November 2026 selesai **success** untuk head PR #4, commit `c8da7f1654c1641cd37d0bc91631476921d5a4d2`:
 
-- `testDebugUnitTest`: **16 test, 0 failure, 0 error, 0 skipped**.
+- `testDebugUnitTest`: **24 test, 0 failure, 0 error, 0 skipped**, diverifikasi dari empat XML test-result yang diunggah.
 - `lintDebug`: **0 error, 1 warning** (`OldTargetApi`, karena `targetSdk=36`).
-- `assembleDebug`: **BUILD SUCCESSFUL**; debug APK dan laporan test/lint berhasil diunggah.
+- `assembleDebug`: **BUILD SUCCESSFUL**; APK debug dan laporan test/lint berhasil diunggah.
+- Merged release manifest dan release runtime dependency inventory berhasil ditangkap sebagai artifact audit.
 - Render app icon 512×512 dan feature graphic 1024×500 berhasil; keduanya diunggah sebagai Actions Artifact.
+- Job signed release AAB: **SKIPPED** karena run berasal dari pull request. Tidak ada AAB release atau publikasi yang dihasilkan.
 
-Job signed release AAB dilewati karena run berasal dari pull request. Tidak ada AAB release atau publikasi yang dihasilkan.
+Artifacts:
+- [Debug APK, test/lint reports, schema v2, verification metadata, dan release audit](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190830767) — retensi 14 hari.
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45983299284/artifacts/15190362585) — retensi 90 hari.
 
-**Dependency verification belum aktif dalam mode strict.** Run tersebut menggunakan bootstrap `--write-verification-metadata sha256`; metadata diunggah sebagai artifact untuk review, tetapi belum dikomit sebagai baseline tepercaya. Step strict verification dilewati karena file belum ada di repository. Jangan menganggap hash bootstrap dalam satu run sebagai verifikasi independen.
+**Dependency verification belum aktif dalam mode strict.** Run #26 menggunakan bootstrap `--write-verification-metadata sha256`; metadata diunggah untuk review, tetapi belum dikomit sebagai baseline tepercaya. Step strict verification dilewati karena file belum tersedia pada branch. Jangan menganggap hash bootstrap dalam satu run sebagai verifikasi independen.
 
-Belum ada bukti startup pada perangkat fisik/emulator, UI automation, internal testing, atau Google Play Pre-launch Report. Hasil di atas berlaku untuk commit PR #4 yang disebutkan, bukan otomatis untuk commit lain.
+Hasil run #26 berlaku untuk commit yang disebutkan, bukan otomatis untuk commit berikutnya. Belum ada bukti startup pada perangkat fisik/emulator, UI automation, internal testing, atau Google Play Pre-launch Report.
 
 ## Keputusan teknis
 
