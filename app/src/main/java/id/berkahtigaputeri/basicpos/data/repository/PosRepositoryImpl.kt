@@ -210,6 +210,9 @@ class PosRepositoryImpl(
                     id = transactionId,
                     transactionNumber = transactionNumber,
                     createdAtEpochMillis = createdAt,
+                    subtotalRupiah = subtotal,
+                    discountRupiah = request.discountRupiah,
+                    taxRupiah = request.taxRupiah,
                     totalRupiah = total,
                     paidRupiah = request.paidRupiah,
                     changeRupiah = change
