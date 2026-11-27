@@ -36,7 +36,7 @@ object CheckoutCalculator {
             require(line.quantity > 0) { "Jumlah item harus lebih dari nol." }
             Math.multiplyExact(line.unitPriceRupiah, line.quantity)
         }
-        val subtotal = lineTotals.fold(0L, Math::addExact)
+        val subtotal = lineTotals.fold(0L) { total, lineTotal -> Math.addExact(total, lineTotal) }
         require(discountRupiah <= subtotal) {
             "Diskon tidak boleh melebihi subtotal."
         }
