@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import id.berkahtigaputeri.basicpos.domain.model.Category
 import id.berkahtigaputeri.basicpos.domain.model.Product
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
+class 
 class ProductsViewModel(
     private val repository: PosRepository
 ) : ViewModel() {
