@@ -30,7 +30,7 @@ Branch `feat/basic-pos-mvp` saat ini berisi implementasi sumber untuk:
 
 ## Identitas aplikasi
 
-Candidate applicationId: `id.berkahtigaputeri.basicpos`. Periksa keunikan dan konfirmasi melalui Play Console sebelum rilis pertama; jangan mengubah applicationId setelah aplikasi dipublikasikan.
+Candidate applicationId: `id.berkahtigaputeri.basicpos`. Debug build menggunakan kandidat ini. Sebelum signed release, konfirmasi ID permanen melalui Play Console dan isi GitHub Actions Repository Variable `BTP_APPLICATION_ID`; release workflow akan gagal bila belum diisi. Jangan mengubah applicationId setelah publikasi pertama.
 
 ## Branch dan review
 
