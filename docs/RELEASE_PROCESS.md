@@ -87,14 +87,15 @@ Keystore harus dibuat/dipegang pemilik aplikasi melalui proses aman. Jangan pern
 
 ## Dependency verification
 
-- Bootstrap source: Android CI Runs #81/#82 refreshed debug artifacts.
-- Reviewed metadata SHA-256: `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`.
-- Inventory: **459 components / 754 unique SHA-256 artifact entries**, with one valid SHA-256 checksum per artifact and no duplicate coordinates.
-- Independent comparison with Run #58: all 754 shared component/artifact coordinates have identical checksums; four obsolete entries were removed (Kotlin Gradle plugin 2.2.10 module metadata and Compose plugin marker 2.4.21).
-- The metadata sets `verify-metadata=true` and `verify-signatures=false`. It pins artifact bytes for subsequent resolution; it does not authenticate publisher signatures or prove the initial downloads were signed by their publishers.
-- The guarded `workflow_dispatch` input `commit_dependency_baseline=true` is restricted to `feat/basic-pos-mvp`, downloads the same-run quality artifact, validates this Run #79 SHA-256 and XML inventory, and commits only `gradle/verification-metadata.xml` in a separate job with `contents: write`.
+- Bootstrap source: refreshed metadata from Android CI dispatch Runs #81 and #82.
+- Reviewed metadata SHA-256: `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`.
+- Inventory: **455 components / 745 unique SHA-256 artifact entries**, with one valid SHA-256 checksum per artifact and no duplicate coordinates.
+- Run #80 generated the previous cached inventory (459 components / 754 entries). The refreshed Runs #81/#82 are byte-identical; nine stale entries are absent and all 745 shared artifact checksums are unchanged.
+- The metadata sets `verify-metadata=true` and `verify-signatures=false`. It pins artifact bytes for subsequent resolution; it does not authenticate publisher signatures or prove that initial downloads were signed by their publishers.
+- The guarded `workflow_dispatch` input `commit_dependency_baseline=true` is restricted to `feat/basic-pos-mvp`, downloads the same-run quality artifact, validates the exact refreshed checksum/inventory, and commits only `gradle/verification-metadata.xml` in a separate job with `contents: write`.
+- Bootstrap now always uses `--refresh-dependencies` so the generated inventory does not depend on whether the hosted runner has stale module metadata in cache.
 - A separate clean GitHub-hosted runner then runs JVM tests, instrumentation source compilation, lint, debug build, release manifest processing, and release runtime dependency reporting using `--dependency-verification=strict`.
-- The baseline is not yet committed. Strict dependency verification remains **NOT PASS** until the guarded baseline commit and subsequent clean strict-mode quality build both succeed. Dependency graph changes require renewed metadata review before the baseline is updated.
+- The baseline is not yet committed. Strict dependency verification remains **NOT PASS** until the guarded baseline commit and subsequent clean strict-mode quality build both succeed.
 
 ## Output dan retensi
 - Debug APK, hasil test, lint, dan laporan: artifact dengan retensi 14 hari.
@@ -111,4 +112,5 @@ Workflow menginstal Gradle 9.9.2 secara eksplisit pada GitHub-hosted runner, lal
 
 ## Dependency verification baseline
 
-`gradle/verification-metadata.xml` has been reviewed from Run #79 artifact (455 components, 745 unique SHA-256 entries, checksum `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`). All 754 current entries match Run #58; four obsolete plugin metadata entries were removed. The baseline is not yet committed; strict dependency verification remains **NOT PASS** until the guarded commit workflow and a subsequent clean strict-mode quality build both succeed.
+`gradle/verification-metadata.xml` has been reviewed from refreshed Runs #81/#82 (455 components, 745 unique SHA-256 entries, checksum `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`). The two artifacts are byte-identical; all 745 shared entries match Run #80 and nine stale entries are absent. The guard was corrected in commit `b06c8f3`, and bootstrap always refreshes dependencies in commit `681cf52`. The baseline is not yet committed; strict dependency verification remains **NOT PASS** until the guarded commit workflow and a subsequent clean strict-mode quality build both succeed.
+

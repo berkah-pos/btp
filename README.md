@@ -77,7 +77,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 ## Riwayat dan review
 
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1), [PR #2 — koreksi dokumentasi pasca-merge](https://github.com/berkah-pos/btp/pull/2), dan [PR #3 — koreksi Android SDK/CI](https://github.com/berkah-pos/btp/pull/3) telah merged pada 27 November 2026.
-- [PR #4 — hardening fondasi, backup, Room migration, dan aksesibilitas](https://github.com/berkah-pos/btp/pull/4) tetap **open, draft, dan belum merged**. Head terakhir yang tercatat adalah `2d974040`; validasi Android CI dan Room untuk perubahan aksesibilitas tersebut masih berjalan. Tidak ada perubahan langsung ke `main`.
+- [PR #4 — hardening fondasi, backup, Room migration, dan aksesibilitas](https://github.com/berkah-pos/btp/pull/4) tetap **open, draft, dan belum merged**. Head PR saat ini mencakup label TalkBack kontekstual dan pengumuman live region; validasi Android CI dan Room untuk perubahan tersebut masih berjalan. Tidak ada perubahan langsung ke `main`.
 
 ## Cloud build
 

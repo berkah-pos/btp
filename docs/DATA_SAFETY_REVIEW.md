@@ -17,10 +17,10 @@ The release manifest sets `android:allowBackup="false"`, uses explicit full-back
 The Run #80 `releaseRuntimeClasspath` inventory contains AndroidX/Jetpack, Compose, Activity, Splashscreen, Navigation, Lifecycle, Room/SQLite, DataStore, Kotlin/Coroutines, Okio, Guava ListenableFuture, annotations, and JSpecify. No Firebase, analytics, Crashlytics, advertising SDK, OkHttp, Retrofit, or other HTTP client was identified in the captured graph. Re-check the exact release graph if dependencies, manifest, or application code change.
 
 Artifacts:
-- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15208022108).
-- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46018281138/artifacts/15207772322).
+- [Debug APK and release audit](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15208022108).
+- [Play Store icon and feature graphic](https://github.com/berkah-pos/btp/actions/runs/46019306696/artifacts/15207772322).
 
-This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #79 completed 29 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
+This is a debug-variant source/build audit, not a signed AAB inspection. The release-signing job was skipped for the PR event. Run #80 completed 29 unit tests (0 failures/errors/skips), lint (0 errors, 1 warning), debug APK build, and the 16 KiB APK/native-library checks. It does not prove signed AAB compliance or device behavior.
 
 ## Observasi implementasi
 

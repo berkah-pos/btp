@@ -30,12 +30,14 @@ Artifact:
 
 ## Dependency verification review
 
-- Run #80 metadata: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, 459 components / 754 unique SHA-256 artifact entries.
-- Refreshed metadata from independent Runs #81 and #82 was byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, 455 components / 745 unique SHA-256 artifact entries. Nine stale metadata entries were absent from the refreshed resolution; all 745 remaining entries retained the same checksum as Run #80.
+- Run #80 metadata: SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, **459 components / 754 unique SHA-256 artifact entries**.
+- Refreshed metadata from independent Runs #81 and #82 was byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, **455 components / 745 unique SHA-256 artifact entries**. Nine stale metadata entries were absent from the refreshed resolution; all 745 remaining entries retained the same checksum as Run #80.
 - The full #81/#82 dispatch workflows failed at the baseline guard because it still expected the previous Run #80 hash/inventory; their Android quality jobs succeeded. The guard was corrected in commit `b06c8f3`.
 - Commit `681cf52` makes metadata bootstrap always use `--refresh-dependencies` to avoid cache-dependent inventory drift.
 - Metadata enables `verify-metadata=true` but keeps `verify-signatures=false`. This is integrity pinning, **not publisher-signature verification**.
 - The reviewed baseline is not committed and clean `--dependency-verification=strict` has **not yet passed**. A guarded manual workflow dispatch is still required to commit the baseline and run the separate clean strict build.
+
+This is source/CI evidence only.
 
 This is source/CI evidence only. It is **not** evidence of physical-device startup, full UI automation, Play Console submission, Internal Testing, Pre-launch Report, or Google Play approval.
 
@@ -71,11 +73,11 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [ ] Verifikasi perilaku backup/restore dan transfer file pada perangkat/API yang didukung.
 
 ## Build dan signing
-- [x] Jalankan unit test debug variant: 29 lulus, 0 gagal pada Run #79.
+- [x] Jalankan unit test debug variant: 29 lulus, 0 gagal pada Run #80.
 - [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #79.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #79.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #79.
-- [x] Review bootstrap `gradle/verification-metadata.xml`: Run #79 menghasilkan 455 komponen dan 745 checksum unik; seluruh 754 entri yang sama dengan Run #58 memiliki hash identik. Metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`. Ini bukan bukti signature publisher (`verify-signatures=false`).
+- [x] Review refreshed metadata Runs #81/#82: 455 komponen dan 745 checksum unik; seluruh 745 entri bersama memiliki checksum sama dengan Run #80, dan sembilan entri stale tidak lagi dipakai. Metadata SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`. Ini bukan bukti signature publisher (`verify-signatures=false`).
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
 - [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #79.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
