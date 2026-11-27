@@ -9,6 +9,8 @@ import id.berkahtigaputeri.basicpos.data.local.entity.StoreProfileEntity
 import id.berkahtigaputeri.basicpos.data.local.entity.TransactionItemEntity
 import id.berkahtigaputeri.basicpos.domain.model.Category
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
+import id.berkahtigaputeri.basicpos.domain.model.CheckoutCalculator
+import id.berkahtigaputeri.basicpos.domain.model.CheckoutLineAmount
 import id.berkahtigaputeri.basicpos.domain.model.DashboardSummary
 import id.berkahtigaputeri.basicpos.domain.model.Product
 import id.berkahtigaputeri.basicpos.domain.model.SaleItem
@@ -164,8 +166,18 @@ class PosRepositoryImpl(
                 product to quantity
             }
 
-            val saleItems = products.map { (product, quantity) ->
-                val lineTotal = Math.multiplyExact(product.priceRupiah, quantity)
+            val totals = CheckoutCalculator.calculate(
+                lines = products.map { (product, quantity) ->
+                    CheckoutLineAmount(
+                        unitPriceRupiah = product.priceRupiah,
+                        quantity = quantity
+                    )
+                },
+                discountRupiah = request.discountRupiah,
+                taxRupiah = request.taxRupiah,
+                paidRupiah = request.paidRupiah
+            )
+            val saleItems = products.mapIndexed { index, (product, quantity) ->
                 TransactionItemEntity(
                     transactionId = 0,
                     productId = product.id,
@@ -173,24 +185,12 @@ class PosRepositoryImpl(
                     skuSnapshot = product.sku,
                     unitPriceRupiah = product.priceRupiah,
                     quantity = quantity,
-                    lineTotalRupiah = lineTotal
+                    lineTotalRupiah = totals.lineTotalsRupiah[index]
                 )
             }
-
-            val subtotal = saleItems.fold(0L) { total, item ->
-                Math.addExact(total, item.lineTotalRupiah)
-            }
-            require(request.discountRupiah <= subtotal) {
-                "Diskon tidak boleh melebihi subtotal."
-            }
-            val total = Math.addExact(
-                Math.subtractExact(subtotal, request.discountRupiah),
-                request.taxRupiah
-            )
-            require(request.paidRupiah >= total) {
-                "Uang pembayaran masih kurang."
-            }
-            val change = Math.subtractExact(request.paidRupiah, total)
+            val subtotal = totals.subtotalRupiah
+            val total = totals.totalRupiah
+            val change = totals.changeRupiah
             val createdAt = System.currentTimeMillis()
             val transactionNumber = createTransactionNumber(createdAt)
 
