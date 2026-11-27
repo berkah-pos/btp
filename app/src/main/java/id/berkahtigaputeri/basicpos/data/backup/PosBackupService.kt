@@ -76,7 +76,13 @@ class PosBackupService(
             "Versi cadangan tidak didukung aplikasi ini."
         }
 
-        val profile = root.optJSONObject("storeProfile")?.toProfile()
+        require(root.has("storeProfile")) { "Bagian profil toko tidak ditemukan di cadangan." }
+        val rawProfile = root.get("storeProfile")
+        val profile = when {
+            rawProfile === JSONObject.NULL -> null
+            rawProfile is JSONObject -> rawProfile.toProfile()
+            else -> throw IllegalArgumentException("Profil toko pada cadangan harus berupa objek atau null.")
+        }
         val categories = root.getJSONArray("categories").decode(MAX_CATEGORIES) { it.toCategory() }
         val products = root.getJSONArray("products").decode(MAX_PRODUCTS) { it.toProduct() }
         val transactions = root.getJSONArray("transactions").decode(MAX_TRANSACTIONS) { it.toTransaction() }
@@ -110,7 +116,11 @@ class PosBackupService(
         transactions: List<SalesTransactionEntity>,
         items: List<TransactionItemEntity>
     ) {
-        require(profile == null || (profile.id == 1 && profile.storeName.isNotBlank())) {
+        require(profile == null || (
+            profile.id == 1 &&
+                profile.storeName.isNotBlank() &&
+                profile.updatedAtEpochMillis >= 0
+        )) {
             "Profil toko pada file cadangan tidak valid."
         }
 
@@ -119,13 +129,14 @@ class PosBackupService(
         uniqueIds(transactions.map { it.id }, "transaksi")
         uniqueIds(items.map { it.id }, "item transaksi")
 
-        require(categories.all { it.name.isNotBlank() } &&
+        require(categories.all { it.name.isNotBlank() && it.createdAtEpochMillis >= 0 } &&
             categories.map { it.name.trim().lowercase(Locale.ROOT) }.toSet().size == categories.size
         ) { "Nama kategori kosong atau ganda." }
 
         val categoryIds = categories.map { it.id }.toSet()
         require(products.all {
             it.name.isNotBlank() && it.priceRupiah >= 0 && it.stockQuantity >= 0 &&
+                it.updatedAtEpochMillis >= 0 &&
                 (it.categoryId == null || it.categoryId in categoryIds)
         }) { "Data produk atau referensi kategori tidak valid." }
 
