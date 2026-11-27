@@ -38,13 +38,13 @@ Google Play currently requires new Android apps and updates to target at least A
 5. `data/preferences`: preferensi ringan melalui DataStore.
 
 ## Data lokal
-Room menyimpan profil toko, kategori, produk, penjualan, dan snapshot item transaksi. Snapshot item mempertahankan nama/SKU/harga saat checkout agar struk lama tidak berubah ketika master produk diedit atau dihapus.
+Room database versi 2 menyimpan profil toko, kategori, produk, penjualan, snapshot identitas toko per transaksi, dan snapshot item transaksi. Snapshot identitas toko mempertahankan nama/alamat/kontak/footer pada saat checkout; snapshot item mempertahankan nama/SKU/harga. Perubahan profil atau master produk tidak mengubah struk historis. Migrasi 1 → 2 menambahkan kolom nullable tanpa menghapus transaksi yang sudah ada.
 
 DAO menyediakan pencarian produk/nomor transaksi, ringkasan agregat penjualan harian, hitungan stok rendah, serta transaksi atomik untuk stok dan checkout. Penjualan harian menggunakan rentang kalender lokal dan dihitung ulang pada pergantian tengah malam.
 
 Preferences DataStore menyimpan ambang stok rendah pengguna (0–1.000.000 unit, default 5). Dashboard mengamati DataStore dan menjalankan query Room dengan ambang tersebut.
 
-Automatic Android backup dinonaktifkan pada manifest. Backup JSON manual tersedia melalui Android Storage Access Framework dan mencakup ambang stok rendah dari DataStore. Restore memvalidasi format, jumlah data, ID/referensi, SKU, nominal transaksi, subtotal item, dan rentang preferensi sebelum mengganti database dalam satu transaksi Room. Nilai DataStore diperbarui terpisah; bila transaksi Room gagal, nilai preferensi lama dipulihkan sebagai kompensasi. Room dan DataStore tidak berbagi satu transaksi ACID. Ukuran backup dibatasi 25 MB. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab menyimpannya secara aman.
+Automatic Android backup dinonaktifkan pada manifest. Backup JSON versi 3 tersedia melalui Android Storage Access Framework dan mencakup ambang stok rendah dari DataStore serta snapshot identitas toko per transaksi. Restore tetap menerima versi 2; transaksi lama tanpa snapshot toko tetap ditandai tidak memiliki snapshot dan tidak diisi dari profil toko terbaru. Restore memvalidasi format, jumlah data, ID/referensi, SKU, nominal transaksi, snapshot toko, subtotal item, dan rentang preferensi sebelum mengganti database dalam satu transaksi Room. Nilai DataStore diperbarui terpisah; bila transaksi Room gagal, nilai preferensi lama dipulihkan sebagai kompensasi. Room dan DataStore tidak berbagi satu transaksi ACID. Ukuran backup dibatasi 25 MB. File backup tidak dienkripsi oleh aplikasi; pengguna bertanggung jawab menyimpannya secara aman.
 
 ## Dependency injection
 Fondasi menggunakan `AppContainer` manual. Tidak ada Hilt/Dagger untuk menghindari dependency dan plugin tambahan yang belum diperlukan.
