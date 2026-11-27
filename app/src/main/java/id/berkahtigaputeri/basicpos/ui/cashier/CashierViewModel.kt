@@ -3,6 +3,7 @@ package id.berkahtigaputeri.basicpos.ui.cashier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutLine
 import id.berkahtigaputeri.basicpos.domain.model.CheckoutRequest
 import id.berkahtigaputeri.basicpos.domain.model.Product
@@ -107,8 +108,8 @@ class CashierViewModel(
 
         viewModelScope.launch {
             mutableSubmitting.value = true
-            runCatching {
-                repository.checkout(
+            try {
+                val savedReceipt = repository.checkout(
                     CheckoutRequest(
                         lines = currentCart.map {
                             CheckoutLine(productId = it.product.id, quantity = it.quantity)
@@ -118,14 +119,16 @@ class CashierViewModel(
                         paidRupiah = paidRupiah
                     )
                 )
-            }.onSuccess { savedReceipt ->
                 mutableCart.value = emptyList()
                 mutableReceipt.value = savedReceipt
                 mutableMessage.value = "Transaksi berhasil disimpan."
-            }.onFailure { error ->
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
                 mutableMessage.value = error.message ?: "Transaksi tidak dapat disimpan."
+            } finally {
+                mutableSubmitting.value = false
             }
-            mutableSubmitting.value = false
         }
     }
 
