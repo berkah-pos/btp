@@ -19,10 +19,15 @@ class BerkahPosApplication : Application() {
             BerkahPosDatabase::class.java,
             "berkah-pos.db"
         ).build()
+        val preferencesRepository = UserPreferencesRepository(applicationContext)
         container = AppContainer(
             posRepository = PosRepositoryImpl(database),
-            backupService = PosBackupService(database, contentResolver),
-            preferencesRepository = UserPreferencesRepository(applicationContext)
+            preferencesRepository = UserPreferencesRepository(applicationContext),
+            backupService = PosBackupService(
+                database = database,
+                contentResolver = contentResolver,
+                preferencesRepository = preferencesRepository
+            )
         )
     }
 }
