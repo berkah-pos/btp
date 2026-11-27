@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -109,7 +110,7 @@ fun ProductsScreen(
             if (products.isEmpty()) {
                 if (query.isBlank()) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(top = 32.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
@@ -122,7 +123,7 @@ fun ProductsScreen(
                         }
                     }
                 } else {
-                    Box(modifier = Modifier.fillMaxSize().padding(top = 32.dp)) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f).padding(top = 32.dp)) {
                         Text(
                             "Produk tidak ditemukan.",
                             style = MaterialTheme.typography.bodyLarge,
@@ -132,7 +133,7 @@ fun ProductsScreen(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(products, key = { it.id }) { product ->
@@ -272,7 +273,12 @@ private fun ProductEditorDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (product == null) "Tambah produk" else "Edit produk") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 440.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(9.dp)
+            ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
