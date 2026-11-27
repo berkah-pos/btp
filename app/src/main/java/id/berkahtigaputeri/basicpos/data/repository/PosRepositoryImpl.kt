@@ -85,6 +85,7 @@ class PosRepositoryImpl(
                 )
             }
         }
+    }
 
     private fun currentLocalDayWindow(): Flow<Pair<Long, Long>> = flow {
         while (true) {
