@@ -182,7 +182,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-audit
-          ./gradlew --no-daemon :app:processReleaseMainManifest bundleRelease --console=plain
+          ./gradlew --no-daemon :app:processReleaseMainManifest --console=plain
           ./gradlew --no-daemon :app:dependencies --configuration releaseRuntimeClasspath --console=plain > release-audit/release-runtime-dependencies.txt
           mapfile -t manifests < <(find app/build/intermediates -type f -name AndroidManifest.xml -path '*release*' | sort)
           test "${#manifests[@]}" -gt 0 || {
@@ -374,7 +374,7 @@ jobs:
           set -euo pipefail
           ./gradlew --no-daemon --dependency-verification=strict \\
             testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug \\
-            :app:processReleaseMainManifest --console=plain
+            :app:processReleaseMainManifest bundleRelease --console=plain
           ./gradlew --no-daemon --dependency-verification=strict \\
             :app:dependencies --configuration releaseRuntimeClasspath --console=plain
 
