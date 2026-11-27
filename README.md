@@ -68,7 +68,7 @@ Commit `8269159635b6ebfc8ec1a45a1a35a9423f1e61cc` menserialisasi backup/export, 
 - Room schema versi 2 diekspor oleh KSP dan dikomit di `app/schemas/`.
 - Migrasi Room 1 → 2 menambahkan lima kolom snapshot toko nullable pada `sales_transactions` tanpa menghapus tabel atau baris.
 - Schema Room v1 hasil ekspor KSP asli dan schema v2 tersedia di `app/schemas/`; schema v1 ditambahkan melalui commit `be1797ad5ff9eab6bca125d4fdb784589edb6647`.
-- `BerkahPosDatabaseMigrationTest` memuat dua skenario migrasi dari bentuk database v1 asli dan bentuk v1 historis antara. Kedua test benar-benar lulus pada API 36 emulator melalui Room Migration Tests [run #35](https://github.com/berkah-pos/btp/actions/runs/46019306650): 2 test, 0 failure/error/skipped.
+- `BerkahPosDatabaseMigrationTest` memuat dua skenario migrasi dari bentuk database v1 asli dan bentuk v1 historis antara. Kedua test benar-benar lulus pada API 36 emulator melalui Room Migration Tests [run #42](https://github.com/berkah-pos/btp/actions/runs/46026654721): 2 test, 0 failure/error/skipped.
 - Semua nominal uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend POS, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan yang dideklarasikan pada source manifest.
 - Android `minSdk=24`, `compileSdk=37.1`, `targetSdk=36`.
@@ -81,7 +81,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 ## Riwayat dan review
 
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1), [PR #2 — koreksi dokumentasi pasca-merge](https://github.com/berkah-pos/btp/pull/2), dan [PR #3 — koreksi Android SDK/CI](https://github.com/berkah-pos/btp/pull/3) telah merged pada 27 November 2026.
-- [PR #4 — hardening fondasi, backup, Room migration, dan aksesibilitas](https://github.com/berkah-pos/btp/pull/4) tetap **open, draft, dan belum merged**. Head PR saat ini mencakup label TalkBack kontekstual dan pengumuman live region; validasi Android CI dan Room untuk perubahan tersebut masih berjalan. Tidak ada perubahan langsung ke `main`.
+- [PR #4 — hardening fondasi, backup, Room migration, dan aksesibilitas](https://github.com/berkah-pos/btp/pull/4) tetap **open, draft, dan belum merged**. Android CI #89 dan Room #42 lulus pada source head `b8bdd55`; commit `8269159` menambahkan serialisasi operasi backup/pemulihan dan dua unit test gate. Head terbaru `166259b` sedang diverifikasi oleh Android CI #92 dan Room #44. Tidak ada perubahan langsung ke `main`.
 
 ## Cloud build
 
