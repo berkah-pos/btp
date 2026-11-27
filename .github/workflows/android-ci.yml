@@ -114,7 +114,9 @@ jobs:
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
         run: |
           set -euo pipefail
-          for attempt in 1 2 3; do
+          retry_delays=(15 30 60 90)
+          max_attempts=5
+          for attempt in $(seq 1 "$max_attempts"); do
             LOG_FILE="$RUNNER_TEMP/quality-gates-${attempt}.log"
             EXTRA_ARGS=(--refresh-dependencies)
             if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug --console=plain 2>&1 | tee "$LOG_FILE"; then
@@ -124,12 +126,13 @@ jobs:
               echo "Quality gate failed for a reason other than transient Compose plugin resolution; not retrying."
               exit 1
             fi
-            if [ "$attempt" -lt 3 ]; then
-              echo "Compose plugin repository resolution failed; retrying with refreshed dependency metadata (attempt $((attempt + 1))/3)."
-              sleep 15
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              delay="${retry_delays[$((attempt - 1))]}"
+              echo "Compose plugin repository resolution failed; retrying with refreshed dependency metadata in ${delay}s (attempt $((attempt + 1))/${max_attempts})."
+              sleep "$delay"
             fi
           done
-          echo "Compose plugin resolution failed after three attempts."
+          echo "Compose plugin resolution failed after ${max_attempts} attempts and bounded backoff."
           exit 1
 
       - name: Validate refreshed dependency metadata against the reviewed baseline
