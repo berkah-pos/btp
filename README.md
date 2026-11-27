@@ -61,7 +61,7 @@ Artifacts:
 
 ## Identitas aplikasi
 
-Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release, pemilik aplikasi harus mengonfirmasi ID permanen melalui Play Console dan mengisi GitHub Actions Repository Variable `BTP_APPLICATION_ID`. Jangan mengubah applicationId setelah publikasi pertama.
+Candidate/permanent applicationId yang dipilih dari domain `berkahtigaputeri.co.id`: `id.co.berkahtigaputeri.basicpos`. Namespace Kotlin internal tetap `id.berkahtigaputeri.basicpos` agar tidak perlu memindahkan source package. Pastikan ID tersedia dan belum dipakai aplikasi yang sudah dipublikasikan di Play Console; set GitHub Actions Repository Variable `BTP_APPLICATION_ID` persis ke ID tersebut sebelum signed release. Jangan mengubah applicationId setelah publikasi pertama.
 
 ## Riwayat dan review
 
