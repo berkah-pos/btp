@@ -20,15 +20,16 @@ Instrumentation test ada pada `app/src/androidTest/java/id/berkahtigaputeri/basi
 
 ## Verification status
 
-- POS and Room Instrumentation Tests [run #64](https://github.com/berkah-pos/btp/actions/runs/46068726094) completed **success** on the API 36 GitHub-hosted emulator.
+- POS and Room Instrumentation Tests [run #66](https://github.com/berkah-pos/btp/actions/runs/46076835597) completed **success** on the API 36 GitHub-hosted emulator.
 - JUnit XML confirms **5 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code 0.
 - `migratesOriginalKspVersionOneAndPreservesSalesAndReceiptItems` passed.
 - `migratesHistoricalVersionOneWithProductIdAndReceiptSnapshotsAlreadyPresent` passed.
 - `checkoutAggregatesDuplicateLinesAndKeepsHistoricalReceiptSnapshot` passed: duplicate lines became one receipt line, stock and totals were correct, and the old store identity remained on the receipt after profile update.
 - `failedStockUpdateRollsBackEarlierDecrementsAndDoesNotCreateReceipt` passed: the second conditional update was forced to affect zero rows; the first stock decrement rolled back and no transaction was created.
 - `concurrentCheckoutsCannotSellTheLastUnitTwice` passed: two concurrent requests for the final unit produced one receipt, one rejection, zero stock, and exactly one transaction.
-- [JUnit report and emulator artifacts](https://github.com/berkah-pos/btp/actions/runs/46068726094/artifacts/15232217427).
+- [JUnit report and emulator artifacts](https://github.com/berkah-pos/btp/actions/runs/46076835597/artifacts/15236175799).
 - The two migration tests open genuine SQLite v1 fixtures through production `MIGRATION_1_2`; Room validates schema v2.
+- The other three tests exercise repository checkout behavior, including a concurrent final-stock race.
 
 Jangan membuat ulang atau mengubah schema v1 secara manual. Gunakan fixture KSP asli yang sudah dikomit.
 
