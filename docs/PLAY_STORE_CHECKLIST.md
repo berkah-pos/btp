@@ -77,7 +77,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #58.
 - [x] Review bootstrap `gradle/verification-metadata.xml`: Run #58 menghasilkan 462 komponen dan 758 checksum unik; seluruh 758 entri yang sama dengan Run #41 memiliki hash identik. Metadata SHA-256 `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`. Ini bukan bukti signature publisher (`verify-signatures=false`).
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
-- [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #41.
+- [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #58.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
 - [ ] Bangun release AAB dengan upload key yang disimpan hanya di GitHub Environment Secrets.
 - [ ] Validasi AAB dengan bundletool.
