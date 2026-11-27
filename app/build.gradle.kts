@@ -9,9 +9,17 @@ plugins {
 fun String.asBuildConfigLiteral(): String =
     "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
+val candidateApplicationId = "id.berkahtigaputeri.basicpos"
+val applicationIdValue = providers.gradleProperty("btpApplicationId")
+    .orElse(candidateApplicationId)
+    .get()
+    .trim()
 val saasUrl = providers.gradleProperty("btpSaasUrl").orElse("").get().trim()
 val supportEmail = providers.gradleProperty("btpSupportEmail").orElse("").get().trim()
 
+require(applicationIdValue.matches(Regex("[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+"))) {
+    "btpApplicationId must be a valid multi-segment Android application ID."
+}
 require(saasUrl.isEmpty() || saasUrl.startsWith("https://", ignoreCase = true)) {
     "btpSaasUrl must be an HTTPS URL."
 }
@@ -36,8 +44,8 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        // Candidate ID; verify Play Console availability and approve before first publication.
-        applicationId = "id.berkahtigaputeri.basicpos"
+        // Debug defaults to the candidate. Signed release requires BTP_APPLICATION_ID to be configured.
+        applicationId = applicationIdValue
         minSdk = 24
         targetSdk = 36
         versionCode = 1
