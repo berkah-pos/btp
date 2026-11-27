@@ -20,6 +20,7 @@ interface PosRepository {
     fun observeLowStockProducts(threshold: Long = 5, limit: Int = 20): Flow<List<Product>>
 
     suspend fun saveProduct(product: Product)
+    suspend fun seedSampleProducts()
     suspend fun deleteProduct(productId: Long)
     suspend fun saveCategory(category: Category)
     suspend fun saveStoreProfile(profile: StoreProfile)
