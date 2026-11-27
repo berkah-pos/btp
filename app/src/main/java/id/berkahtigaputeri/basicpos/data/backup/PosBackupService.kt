@@ -82,9 +82,10 @@ class PosBackupService(
             "Format file bukan cadangan BERKAH POS."
         }
         val schemaVersionValue = root.get("schemaVersion")
-        require(schemaVersionValue is Number &&
-            schemaVersionValue.toString().toLongOrNull() == SCHEMA_VERSION.toLong()
-        ) {
+        val backupSchemaVersion = (schemaVersionValue as? Number)
+            ?.toString()
+            ?.toLongOrNull()
+        require(backupSchemaVersion in SUPPORTED_SCHEMA_VERSIONS) {
             "Versi cadangan tidak didukung aplikasi ini."
         }
 
@@ -354,6 +355,8 @@ class PosBackupService(
     companion object {
         private const val FORMAT_NAME = "BERKAH_POS_BACKUP"
         private const val SCHEMA_VERSION = 3
+        // Version 2 predates transaction-level store snapshots; missing snapshot keys decode as null.
+        private val SUPPORTED_SCHEMA_VERSIONS = setOf(2L, SCHEMA_VERSION.toLong())
         private const val MAX_BACKUP_BYTES = 25 * 1024 * 1024
         private const val MAX_CATEGORIES = 5_000
         private const val MAX_PRODUCTS = 50_000
