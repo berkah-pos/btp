@@ -14,7 +14,7 @@ Fondasi Android tahap pertama sedang dibangun pada branch `feat/basic-pos-mvp`. 
 - Semua uang disimpan sebagai integer Rupiah (`Long`), bukan Float/Double.
 - Tidak ada akun, backend, Firebase, analytics, crash reporting, iklan pihak ketiga, atau permission jaringan pada fondasi.
 - Android minSdk 24, compileSdk 37, targetSdk 36.
-- AGP 9.5.3, Gradle 9.6.0, Kotlin 2.4.21, JDK 17.
+- AGP 9.6.0, Gradle 9.8.2, Kotlin 2.4.20, JDK 17.
 - GitHub Actions menggunakan standard GitHub-hosted runner `ubuntu-24.04`.
 
 ## Identitas aplikasi
