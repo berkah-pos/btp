@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
+      - feat/basic-pos-mvp
     paths:
       - "app/**"
       - "gradle/**"
       - "docs/store-assets/**"
-
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
