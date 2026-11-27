@@ -75,15 +75,29 @@ jobs:
           fi
           test -s "$ANDROID_SDK_ROOT/platforms/android-37/android.jar"
 
-      - name: Set up Gradle 9.8.2
+      - name: Set up Gradle 9.9.2
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "9.8.2"
+          gradle-version: "9.9.2"
           cache-provider: basic
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Bootstrap Gradle wrapper
-        run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
+        run: |
+          set -euo pipefail
+          mv settings.gradle.kts "$RUNNER_TEMP/settings.gradle.kts"
+          mv build.gradle.kts "$RUNNER_TEMP/build.gradle.kts"
+          restore_project_files() {
+            mv "$RUNNER_TEMP/settings.gradle.kts" settings.gradle.kts
+            mv "$RUNNER_TEMP/build.gradle.kts" build.gradle.kts
+          }
+          trap restore_project_files EXIT
+          gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
+            --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          test -s gradle/wrapper/gradle-wrapper.jar
+          test -s gradlew
+          test -s gradlew.bat
+          echo "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
       - name: Run strict quality gates against reviewed dependency hashes
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
@@ -127,6 +141,10 @@ jobs:
             app/build/test-results/
             app/schemas/
             gradle/verification-metadata.xml
+            gradlew
+            gradlew.bat
+            gradle/wrapper/gradle-wrapper.jar
+            gradle/wrapper/gradle-wrapper.properties
           if-no-files-found: warn
           retention-days: 14
 
@@ -165,15 +183,29 @@ jobs:
           fi
           test -s "$ANDROID_SDK_ROOT/platforms/android-37/android.jar"
 
-      - name: Set up Gradle 9.8.2
+      - name: Set up Gradle 9.9.2
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "9.8.2"
+          gradle-version: "9.9.2"
           cache-provider: basic
           cache-read-only: true
 
       - name: Bootstrap Gradle wrapper
-        run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
+        run: |
+          set -euo pipefail
+          mv settings.gradle.kts "$RUNNER_TEMP/settings.gradle.kts"
+          mv build.gradle.kts "$RUNNER_TEMP/build.gradle.kts"
+          restore_project_files() {
+            mv "$RUNNER_TEMP/settings.gradle.kts" settings.gradle.kts
+            mv "$RUNNER_TEMP/build.gradle.kts" build.gradle.kts
+          }
+          trap restore_project_files EXIT
+          gradle --no-daemon wrapper --gradle-version 9.9.2 --distribution-type bin \
+            --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
+          test -s gradle/wrapper/gradle-wrapper.jar
+          test -s gradlew
+          test -s gradlew.bat
+          echo "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
       - name: Require confirmed Play Console application ID
         env:
