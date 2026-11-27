@@ -30,12 +30,12 @@ Artifact:
 
 ## Dependency verification review
 
-- Run #80 metadata: SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, **459 components / 754 unique SHA-256 artifact entries**.
-- Refreshed metadata from independent Runs #81 and #82 was byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, **455 components / 745 unique SHA-256 artifact entries**. Nine stale metadata entries were absent from the refreshed resolution; all 745 remaining entries retained the same checksum as Run #80.
-- The full #81/#82 dispatch workflows failed at the baseline guard because it still expected the previous Run #80 hash/inventory; their Android quality jobs succeeded. The guard was corrected in commit `b06c8f3`.
-- Commit `681cf52` makes metadata bootstrap always use `--refresh-dependencies` to avoid cache-dependent inventory drift.
-- Metadata enables `verify-metadata=true` but keeps `verify-signatures=false`. This is integrity pinning, **not publisher-signature verification**.
-- The reviewed baseline is not committed and clean `--dependency-verification=strict` has **not yet passed**. A guarded manual workflow dispatch is still required to commit the baseline and run the separate clean strict build.
+- Run #80's earlier cached metadata: SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`, **459 components / 754 unique SHA-256 artifact entries**.
+- Reviewed refreshed metadata from Runs #81 and #82 is byte-identical: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`, **455 components / 745 unique SHA-256 artifact entries**. All 745 shared coordinate hashes match Run #80; nine older entries are absent after refreshed resolution.
+- Run #81 quality passed; its baseline gate failed because it still expected Run #80's older checksum. The debug artifact XML was the refreshed candidate, not a corrupt download.
+- The workflow now validates each new resolution against the reviewed hash, pins Run #81's source run/commit/artifact digest, and uploads a separate baseline-only artifact with provenance. The commit job checks the current-run artifact digest and source provenance again before staging only the XML.
+- Metadata retains `verify-metadata=true` and `verify-signatures=false`. This is checksum integrity pinning, **not publisher-signature verification**.
+- The reviewed baseline is not committed and clean `--dependency-verification=strict` has **not yet passed**. The guarded workflow must commit the validated file and complete its separate clean strict build.
 
 This is source/CI evidence only.
 
@@ -77,7 +77,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - [x] Jalankan lint debug (0 error; 1 warning OldTargetApi) pada Run #80.
 - [x] Bangun debug APK pada GitHub-hosted runner; artifact diunggah pada Run #80.
 - [x] Capture merged release manifest dan release runtime dependency inventory pada Run #80.
-- [x] Review refreshed metadata Runs #81/#82: 455 komponen dan 745 checksum unik; seluruh 745 entri bersama memiliki checksum sama dengan Run #80, dan sembilan entri stale tidak lagi dipakai. Metadata SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`. Ini bukan bukti signature publisher (`verify-signatures=false`).
+- [x] Review refreshed metadata Runs #81/#82: 455 komponen dan 745 checksum unik; seluruh 745 entri bersama memiliki checksum sama dengan Run #80, dan sembilan entri lama tidak lagi muncul. Metadata SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba`. Run #81 source artifact archive SHA-256 `c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16`.
 - [ ] Commit baseline metadata ke branch feature dan jalankan clean strict dependency verification; workflow guarded manual disiapkan, tetapi belum dijalankan.
 - [x] Verify debug APK 16 KB ZIP alignment and packaged 64-bit ELF LOAD alignment pada Run #80.
 - [ ] Verify the signed release AAB reports `PAGE_ALIGNMENT_16K` and passes the native ELF audit when an authorized release build is eventually run.
@@ -104,7 +104,7 @@ Google states that D-U-N-S registration is free and can take up to 30 days. Star
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
 - Room migration instrumentation test 1 → 2 **PASS** pada Run #35 (2 test, 0 failure/error/skipped) di API 36 emulator. Run #14 sebelumnya gagal di jalur serializer `MigrationTestHelper`; test kini memakai fixture SQLite historis dan Room production migration.
-- Dependency baseline refreshed Runs #81/#82 telah direview dan guard diperbaiki; baseline belum dikomit dan strict gate belum PASS.
+- Dependency baseline refreshed Runs #81/#82 telah direview; workflow kini memakai dedicated artifact dengan source provenance dan validasi SHA-256, tetapi baseline belum dikomit dan strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada bukti startup/device/UI test, Internal Testing, atau Pre-launch Report. Unit test JVM dan build CI tidak menggantikan pemeriksaan tersebut.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.

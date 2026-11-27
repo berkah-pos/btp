@@ -42,13 +42,15 @@ Artifacts:
 Artifact:
 - [Room migration JUnit report, APKs, dan emulator outputs](https://github.com/berkah-pos/btp/actions/runs/46019306650/artifacts/15207827414).
 
-**Dependency verification — diagnosis dan koreksi guard**
+**Dependency verification — reviewed baseline provenance**
 
-- Android CI Run #80 menghasilkan metadata SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6` (459 komponen, 754 hash).
-- Dua dispatch Run #81 dan #82 menghasilkan metadata refreshed yang **byte-identical**: SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba` (455 komponen, 745 hash). Sembilan entri lama tidak lagi muncul pada dependency resolution yang di-refresh; seluruh 745 entri bersama mempertahankan checksum yang sama.
-- Full workflow #81/#82 gagal hanya pada job commit baseline karena guard masih mengharapkan checksum/inventory lama; quality job keduanya berhasil. Tidak ada kegagalan kompilasi pada kedua run tersebut.
-- Commit `b06c8f3` memperbarui checksum/inventory guard ke metadata refreshed. Commit `681cf52` membuat bootstrap selalu menggunakan `--refresh-dependencies` agar hasil baseline tidak bergantung pada cache runner.
-- Metadata memakai `verify-metadata=true`, tetapi `verify-signatures=false`: checksum pinning bukan autentikasi publisher. Baseline belum dikomit dan clean `--dependency-verification=strict` **belum lulus**; dispatch guarded berikutnya masih diperlukan.
+- Reviewed metadata source: Android CI Run #81 (Run #82 produced byte-identical XML), source commit `5a96fc363e7dcdd4b765ac27b94274d9473c9e06`. Run #81's quality job passed; only the baseline checksum guard failed.
+- Canonical refreshed metadata SHA-256: `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba` (**455 components / 745 unique artifact hashes**).
+- Run #80's earlier cached metadata had SHA-256 `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6` (459 / 754). All 745 shared coordinates retained identical hashes; nine older entries disappeared after refreshed resolution. The reviewed baseline remains the exact Run #81/#82 file, not an automatically regenerated replacement.
+- Run #81's source artifact is pinned to artifact ID `15207933387` and archive SHA-256 `c941ebb850ce5d6f2337c2ce224acd928d243e08cf14d906ad244b4fd8820c16`.
+- Before preparing the baseline artifact, the quality job now validates its current resolution against the reviewed XML SHA-256 and exact inventory. New dependency checksums are not approved automatically.
+- A read-only preparation job verifies the source workflow run, branch, commit SHA, successful quality job, artifact ID/digest, and XML SHA-256; it then uploads a dedicated baseline-only artifact with a provenance manifest. The commit job revalidates the current-run artifact digest, source provenance, and XML inventory before staging only `gradle/verification-metadata.xml`.
+- Metadata keeps `verify-metadata=true` and the existing `verify-signatures=false` setting. SHA-256 pinning is not publisher-signature authentication. The baseline is not committed yet, and clean `--dependency-verification=strict` remains **NOT PASS** until the guarded workflow completes.
 
 **Status yang belum diverifikasi pada head terbaru:**
 - Clean Gradle dependency verification dengan `--dependency-verification=strict`.
@@ -87,7 +89,7 @@ Signed release AAB hanya melalui `workflow_dispatch` manual pada `main`, GitHub 
 
 Runner membangkitkan Gradle Wrapper sementara dari Gradle 9.9.2 yang dipasang action resmi. Distribution SHA-256 dan SHA-256 wrapper JAR diperiksa sebelum wrapper dipakai; wrapper JAR/scripts tidak dikomit. Workflow `.github/workflows/room-migration-tests.yml` terpisah dari Android CI utama dan menjalankan migrasi di API 36 emulator.
 
-Bootstrap dependency metadata kini selalu menggunakan `--refresh-dependencies`. Guard manual `commit_dependency_baseline=true` dibatasi ke `feat/basic-pos-mvp`, memvalidasi SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba` dan inventori 455 komponen/745 artifact, lalu mengomit hanya `gradle/verification-metadata.xml`. Setelah itu clean strict quality build dijalankan pada runner terpisah. Baseline belum dikomit dan strict verification belum lulus.
+Bootstrap dependency metadata tetap memakai `--refresh-dependencies`. Guard manual `commit_dependency_baseline=true` dibatasi ke `feat/basic-pos-mvp`: quality harus menghasilkan metadata yang cocok persis dengan reviewed SHA-256 `9adc4cacddb4fd405061e425103a801240f1f0db2c42a22ac9ed8dede7bd76ba` (455 komponen/745 artifact); job read-only kemudian membuat dedicated baseline artifact dari Run #81 setelah memverifikasi provenance dan archive digest; job dengan `contents: write` memverifikasi ulang artifact dan hanya mengomit `gradle/verification-metadata.xml`. Clean strict build berjalan pada runner terpisah. Baseline belum dikomit dan strict verification belum lulus.
 
 ## Konfigurasi promosi dan dukungan
 
