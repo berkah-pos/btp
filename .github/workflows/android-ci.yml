@@ -182,7 +182,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-audit
-          ./gradlew --no-daemon :app:processReleaseMainManifest --console=plain
+          ./gradlew --no-daemon :app:processReleaseMainManifest bundleRelease --console=plain
           ./gradlew --no-daemon :app:dependencies --configuration releaseRuntimeClasspath --console=plain > release-audit/release-runtime-dependencies.txt
           mapfile -t manifests < <(find app/build/intermediates -type f -name AndroidManifest.xml -path '*release*' | sort)
           test "${#manifests[@]}" -gt 0 || {
@@ -362,8 +362,11 @@ jobs:
               --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
           )
           install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
           install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
           chmod +x gradlew
+          test -s gradle/wrapper/gradle-wrapper.properties
           echo "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
       - name: Run full strict quality and release-runtime dependency gates
