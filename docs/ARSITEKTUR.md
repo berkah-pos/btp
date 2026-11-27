@@ -2,10 +2,10 @@
 
 ## Versi toolchain yang dipatok
 
-- Android Gradle Plugin: 9.5.3
-- Gradle: 9.6.0
+- Android Gradle Plugin: 9.6.0
+- Gradle: 9.8.2
 - JDK: 17
-- Kotlin / Compose Compiler plugin: 2.4.21
+- Built-in Kotlin / Compose Compiler plugin: 2.4.20
 - Kotlin Symbol Processing: 2.3.14
 - Compose BOM: 2026.09.00
 - Kotlin Coroutines: 1.11.0
