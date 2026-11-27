@@ -72,7 +72,7 @@ Candidate applicationId: `id.berkahtigaputeri.basicpos`. Sebelum signed release,
 ## Riwayat dan review
 
 - [PR #1 — Android foundation](https://github.com/berkah-pos/btp/pull/1), [PR #2 — koreksi dokumentasi pasca-merge](https://github.com/berkah-pos/btp/pull/2), dan [PR #3 — koreksi Android SDK/CI](https://github.com/berkah-pos/btp/pull/3) telah merged pada 27 November 2026.
-- [PR #4 — hardening fondasi, backup, dan Room migration test](https://github.com/berkah-pos/btp/pull/4) tetap berstatus draft. Source aplikasi pada PR divalidasi oleh [Run #41 attempt 2](https://github.com/berkah-pos/btp/actions/runs/45989244818); commit setelah run tersebut hanya memperbarui workflow dan dokumentasi.
+- [PR #4 — hardening fondasi, backup, dan Room migration test](https://github.com/berkah-pos/btp/pull/4) tetap berstatus draft. Source aplikasi pada head `aeb0159` divalidasi oleh [Android CI Run #58](https://github.com/berkah-pos/btp/actions/runs/45999675603) dan [Room Migration Tests Run #17](https://github.com/berkah-pos/btp/actions/runs/45999675609). Commit setelah head tersebut memperbarui workflow dan dokumentasi, tanpa mengubah source aplikasi.
 
 ## Cloud build
 
