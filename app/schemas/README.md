@@ -20,7 +20,7 @@ Instrumentation test ada pada `app/src/androidTest/java/id/berkahtigaputeri/basi
 
 ## Verification status
 
-- POS and Room Instrumentation Tests [run #50](https://github.com/berkah-pos/btp/actions/runs/46038433756) completed **success** on the API 36 GitHub-hosted emulator.
+- POS and Room Instrumentation Tests [run #53](https://github.com/berkah-pos/btp/actions/runs/46050284322) completed **success** on the API 36 GitHub-hosted emulator.
 - JUnit XML confirms **4 tests, 0 failures, 0 errors, 0 skipped**; instrumentation exit code 0.
 - `migratesOriginalKspVersionOneAndPreservesSalesAndReceiptItems` passed.
 - `migratesHistoricalVersionOneWithProductIdAndReceiptSnapshotsAlreadyPresent` passed.
