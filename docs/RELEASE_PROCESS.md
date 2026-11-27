@@ -103,4 +103,4 @@ Workflow menginstal Gradle 9.9.2 secara eksplisit pada GitHub-hosted runner, lal
 
 ## Dependency verification baseline
 
-`gradle/verification-metadata.xml` has not yet been committed. Run #38 and #41 generated identical metadata, but strict dependency verification is still **NOT PASS** until the baseline is reviewed, committed, and a subsequent strict-mode quality build succeeds.
+`gradle/verification-metadata.xml` has been reviewed from Run #58 artifact (462 components, 758 unique SHA-256 entries, checksum `3a9e25b7fb3c0ed4eb21bae8f74e83d1cd2f4c157f03a870e942b6550d0b15c0`). All 758 shared entries match Run #41; the three older Room Testing-only entries were removed with the test-helper dependency. The baseline is not yet committed; strict dependency verification remains **NOT PASS** until the guarded commit workflow and a subsequent clean strict-mode quality build both succeed.
