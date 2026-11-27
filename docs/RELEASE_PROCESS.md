@@ -11,21 +11,25 @@
 
 ## Latest audit checkpoint
 
-GitHub Actions [run #41, attempt 2](https://github.com/berkah-pos/btp/actions/runs/45989244818), completed successfully on 27 November 2026 for PR head `1365bab63bb91032b56bb4279f6dec212574d778` (runner merge commit `e4074059ef147bc64302431c7cee579679d169da`):
-- 24 debug JVM unit tests, no failures/errors/skips.
-- `compileDebugAndroidTestKotlin` passed; Room instrumentation sources compiled, but emulator tests did not run.
+GitHub Actions [run #50](https://github.com/berkah-pos/btp/actions/runs/45992766270) completed successfully on 27 November 2026 for PR head `0ab07e7c5f4a77307d1349029fbbf73452c85c80`:
+- 24 debug JVM unit tests, no failures/errors/skips (verified from four JUnit XML files).
+- `compileDebugAndroidTestKotlin` passed; Room instrumentation sources compiled, but the migration tests did not run.
 - Debug lint: 0 errors and 1 `OldTargetApi` warning at target API 36.
-- Debug APK built and uploaded.
-- 16 KB ZIP alignment passed; all four packaged native ELF LOAD segments reported aligned.
+- Debug APK built and uploaded (14,944,217 bytes).
+- 16 KiB APK ZIP alignment passed; all four packaged native ELF LOAD segments passed.
 - Merged release manifest and runtime dependency inventory captured.
 - Play Store app icon and feature graphic rendered/uploaded.
 - Signed AAB job was skipped because this was a pull-request run.
 
 Artifacts:
-- [Debug APK, test/lint reports, schema fixtures, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15193663522), 14-day retention.
-- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45989244818/artifacts/15192494773), 90-day retention.
+- [Debug APK, test/lint reports, Room schemas, verification metadata, release audit](https://github.com/berkah-pos/btp/actions/runs/45992766270/artifacts/15195500151), 14-day retention.
+- [Play Store listing graphics](https://github.com/berkah-pos/btp/actions/runs/45992766270/artifacts/15194771833), 90-day retention.
 
-These artifacts are evidence for the source at PR head `1365bab...`, not for the later workflow/documentation-only commits unless the app workflow is run again.
+These artifacts validate PR head `0ab07e7...`. Later commits changed the Room workflow and documentation; they did not change application source or release configuration.
+
+The Room migration workflow [run #9](https://github.com/berkah-pos/btp/actions/runs/45992766223) failed before instrumentation tests because the x86_64 emulator could not access `/dev/kvm`. The uploaded startup diagnostic explicitly reported missing KVM permissions and required hardware acceleration. Commit `f1585bd` adds a per-run ACL for the hosted runner user, checks emulator acceleration, and bounds ADB device wait. [Run #10](https://github.com/berkah-pos/btp/actions/runs/45997083558) is the verification attempt; the migration remains **NOT PASS** until `connectedDebugAndroidTest` completes and both migration tests pass.
+
+The original KSP Room v1 schema is committed at [`be1797a`](https://github.com/berkah-pos/btp/commit/be1797ad5ff9eab6bca125d4fdb784589edb6647), with schema v2 and tests for the original and intermediate v1 layouts. This resolves the earlier fixture-availability blocker; execution on the emulator remains pending.
 
 ## 16 KB page-size checks
 
