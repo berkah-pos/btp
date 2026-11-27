@@ -1,5 +1,8 @@
 package id.berkahtigaputeri.basicpos.ui.settings
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +43,19 @@ fun SettingsScreen(
     val profile by viewModel.profile.collectAsState()
     val message by viewModel.message.collectAsState()
     val saving by viewModel.isSaving.collectAsState()
+    val backupBusy by viewModel.isBackupBusy.collectAsState()
+
+    var showRestoreConfirmation by remember { mutableStateOf(false) }
+    val exportBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) viewModel.exportBackup(uri)
+    }
+    val importBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) viewModel.restoreBackup(uri)
+    }
 
     var storeName by remember { mutableStateOf("") }
     var ownerName by remember { mutableStateOf("") }
@@ -165,6 +181,30 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            Text("Backup dan pemulihan", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Cadangan mencakup profil toko, kategori, produk, stok, transaksi, dan rincian struk. File disimpan di lokasi yang Anda pilih.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Button(
+                onClick = { exportBackupLauncher.launch("berkah-pos-backup.json") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy
+            ) {
+                Text(if (backupBusy) "Memproses..." else "Ekspor backup JSON")
+            }
+            TextButton(
+                onClick = { showRestoreConfirmation = true },
+                enabled = !backupBusy
+            ) {
+                Text("Pulihkan dari file JSON")
+            }
+            Text(
+                "Pemulihan akan mengganti seluruh data POS lokal dengan isi file cadangan. Simpan backup terbaru sebelum melanjutkan.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+
             Text("Informasi hukum", style = MaterialTheme.typography.titleLarge)
             TextButton(onClick = { legalDocument = LegalDocument.PRIVACY }) {
                 Text("Kebijakan Privasi")
@@ -206,5 +246,30 @@ fun SettingsScreen(
             }
         )
         null -> Unit
+    }
+
+    if (showRestoreConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showRestoreConfirmation = false },
+            title = { Text("Ganti data POS lokal?") },
+            text = {
+                Text(
+                    "Data profil toko, produk, stok, kategori, dan transaksi saat ini akan diganti oleh isi file backup. Operasi hanya diterapkan setelah file lolos validasi."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRestoreConfirmation = false
+                        importBackupLauncher.launch(arrayOf("application/json", "text/json"))
+                    }
+                ) { Text("Pilih file backup") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestoreConfirmation = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
