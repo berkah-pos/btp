@@ -56,16 +56,17 @@ class PosRepositoryImpl(
         dao.observeLowStockProducts(threshold.coerceAtLeast(0), limit.coerceIn(1, 100))
             .map { rows -> rows.map(::toDomain) }
 
-    override fun observeDashboardSummary(): Flow<DashboardSummary> =
-        currentLocalDayWindow().flatMapLatest { (start, end) ->
+    override fun observeDashboardSummary(lowStockThreshold: Long): Flow<DashboardSummary> {
+        val threshold = lowStockThreshold.coerceIn(0L, 1_000_000L)
+        return currentLocalDayWindow().flatMapLatest { (start, end) ->
             val salesSummary = combine(
                 dao.observeSalesBetween(start, end),
                 dao.observeTransactionCountBetween(start, end)
             ) { sales, transactions -> sales to transactions }
 
             val lowStockSummary = combine(
-                dao.observeLowStockCount(DEFAULT_LOW_STOCK_THRESHOLD),
-                dao.observeLowStockProducts(threshold = DEFAULT_LOW_STOCK_THRESHOLD, limit = 5)
+                dao.observeLowStockCount(threshold),
+                dao.observeLowStockProducts(threshold = threshold, limit = 5)
             ) { count, preview -> count to preview }
 
             combine(
