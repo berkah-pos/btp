@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <rect width="1024" height="500" fill="#F3F7F4"/>
+  <circle cx="910" cy="70" r="210" fill="#E0EEE8"/>
+  <circle cx="960" cy="438" r="160" fill="#E7F0EC"/>
+  <rect x="78" y="84" width="300" height="300" rx="54" fill="#126B55"/>
+  <path d="M135 148h186v24H135z" fill="#FFC857"/>
+  <path d="M147 195h48v142h-48zM211 195h48v142h-48zM275 195h38v36h-38zM275 248h38v36h-38zM275 301h38v36h-38z" fill="#FFFFFF"/>
+  <text x="438" y="207" font-family="Arial, sans-serif" font-size="64" font-weight="700" fill="#126B55">BERKAH POS</text>
+  <text x="442" y="274" font-family="Arial, sans-serif" font-size="34" font-weight="600" fill="#263C34">Kasir offline untuk UMKM</text>
+  <text x="442" y="332" font-family="Arial, sans-serif" font-size="23" fill="#53675E">Produk • Stok • Transaksi • Struk</text>
+  <text x="442" y="392" font-family="Arial, sans-serif" font-size="20" fill="#126B55">BERKAH TIGA PUTERI</text>
+</svg>
