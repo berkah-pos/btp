@@ -2,6 +2,7 @@ package id.berkahtigaputeri.basicpos
 
 import android.app.Application
 import androidx.room.Room
+import id.berkahtigaputeri.basicpos.data.backup.PosBackupService
 import id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase
 import id.berkahtigaputeri.basicpos.data.repository.PosRepositoryImpl
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
@@ -18,11 +19,13 @@ class BerkahPosApplication : Application() {
             "berkah-pos.db"
         ).build()
         container = AppContainer(
-            posRepository = PosRepositoryImpl(database)
+            posRepository = PosRepositoryImpl(database),
+            backupService = PosBackupService(database, contentResolver)
         )
     }
 }
 
 class AppContainer(
-    val posRepository: PosRepository
+    val posRepository: PosRepository,
+    val backupService: PosBackupService
 )
