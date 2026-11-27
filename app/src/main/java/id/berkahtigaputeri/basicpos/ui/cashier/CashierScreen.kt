@@ -109,7 +109,11 @@ fun CashierScreen(
                 }
             } else {
                 items(products, key = { "product-${it.id}" }) { product ->
-                    CashierProductCard(product = product, onAdd = { viewModel.addProduct(product) })
+                    CashierProductCard(
+                        product = product,
+                        isSubmitting = isSubmitting,
+                        onAdd = { viewModel.addProduct(product) }
+                    )
                 }
             }
 
@@ -140,17 +144,17 @@ fun CashierScreen(
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TextButton(onClick = {
                                     viewModel.changeQuantity(item.product.id, -1)
-                                }) { Text("−") }
+                                }, enabled = !isSubmitting) { Text("−") }
                                 Text(
                                     item.quantity.toString(),
                                     modifier = Modifier.padding(top = 10.dp)
                                 )
                                 TextButton(onClick = {
                                     viewModel.changeQuantity(item.product.id, 1)
-                                }) { Text("+") }
+                                }, enabled = !isSubmitting) { Text("+") }
                                 TextButton(onClick = {
                                     viewModel.removeProduct(item.product.id)
-                                }) { Text("Hapus") }
+                                }, enabled = !isSubmitting) { Text("Hapus") }
                             }
                             Text(
                                 text = "Jumlah: ${runCatching {
@@ -171,6 +175,7 @@ fun CashierScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = !isSubmitting,
                     label = { Text("Diskon (Rupiah, opsional)") }
                 )
                 OutlinedTextField(
@@ -179,6 +184,7 @@ fun CashierScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = !isSubmitting,
                     label = { Text("Pajak (Rupiah, opsional)") }
                 )
                 OutlinedTextField(
@@ -187,6 +193,7 @@ fun CashierScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = !isSubmitting,
                     label = { Text("Uang diterima") }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -270,6 +277,7 @@ fun CashierScreen(
 @Composable
 private fun CashierProductCard(
     product: Product,
+    isSubmitting: Boolean,
     onAdd: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -288,7 +296,7 @@ private fun CashierProductCard(
             }
             TextButton(
                 onClick = onAdd,
-                enabled = product.stockQuantity > 0
+                enabled = product.stockQuantity > 0 && !isSubmitting
             ) { Text("Tambah") }
         }
     }
