@@ -69,6 +69,7 @@ class CashierViewModel(
     }
 
     fun addProduct(product: Product) {
+        if (mutableSubmitting.value) return
         val current = mutableCart.value
         val existing = current.firstOrNull { it.product.id == product.id }
         val nextQuantity = runCatching {
@@ -92,6 +93,7 @@ class CashierViewModel(
     }
 
     fun changeQuantity(productId: Long, delta: Long) {
+        if (mutableSubmitting.value) return
         mutableCart.value = mutableCart.value.mapNotNull { item ->
             if (item.product.id != productId) return@mapNotNull item
             val next = runCatching { Math.addExact(item.quantity, delta) }.getOrNull()
@@ -111,6 +113,7 @@ class CashierViewModel(
     }
 
     fun removeProduct(productId: Long) {
+        if (mutableSubmitting.value) return
         mutableCart.value = mutableCart.value.filterNot { it.product.id == productId }
     }
 
