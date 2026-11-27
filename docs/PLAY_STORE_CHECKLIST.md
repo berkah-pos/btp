@@ -1,6 +1,6 @@
 # Google Play release checklist
 
-Status: pre-release review remains **BLOCKED**. The latest evidence is GitHub Actions run [#22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `eb8309247e76f2bc73faac6d67809ff65652fc61`, on 27 November 2026.
+Status: pre-release review remains **BLOCKED**. The latest technical evidence is GitHub Actions run [#22](https://github.com/berkah-pos/btp/actions/runs/45981321510), commit `eb8309247e76f2bc73faac6d67809ff65652fc61`, on 27 November 2026. The owner has confirmed that submission will use a **Google Play Organization developer account**.
 
 ## Latest verified CI evidence
 
@@ -22,10 +22,24 @@ This is CI and source-level evidence. It is **not** evidence of signed AAB valid
 
 ## Identitas dan kompatibilitas
 - [ ] Konfirmasi applicationId candidate `id.berkahtigaputeri.basicpos` dan periksa keunikan di Play Console.
+- [x] Tipe akun untuk submission: **Organization** (dikonfirmasi pemilik proyek; verifikasi account profile tetap harus diselesaikan di Play Console).
+- [x] Syarat closed testing khusus akun Personal baru (12 tester/14 hari): **NOT APPLICABLE** untuk submission melalui akun Organization ini. Persyaratan resmi 12/14 hari dibatasi pada akun Personal yang dibuat setelah 13 November 2023. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [x] `targetSdk=36`; memenuhi minimum API 36 yang berlaku pada tanggal pemeriksaan.
 - [x] Merged release manifest: `minSdk=24`, `targetSdk=36`; compile SDK 37.1 pada konfigurasi build.
 - [ ] Uji startup, navigasi, transaksi, backup/restore, dan share struk pada perangkat/API yang didukung.
 - [ ] Siapkan screenshot aktual dari aplikasi hasil build; aset icon/feature graphic bukan pengganti screenshot aplikasi.
+
+## Organization developer account verification
+Google Play's current organization onboarding requires the organization identity in the linked Google payments profile, including a **D-U-N-S number**, legal organization name, and address. Keep the legal name and address in the Google payments profile consistent with the Dun & Bradstreet profile. Google may also require:
+- [ ] D-U-N-S number for BERKAH TIGA PUTERI's legal organization (government-organization exception does not apply unless the account is a qualifying government entity).
+- [ ] Official legal organization document (for example, business registration/incorporation evidence accepted for the registered country).
+- [ ] Government-issued identity document for a person authorized to represent the organization.
+- [ ] Verified organization phone number and organization website.
+- [ ] Verified developer contact email and phone number; keep them operational.
+- [ ] Google payments profile linked and verified; organization legal name/address match the D-U-N-S profile.
+- [ ] Public developer profile contact details reviewed, including the organization phone number and email displayed on Google Play.
+
+Google states that D-U-N-S registration is free and can take up to 30 days. Start this identity work early. Read [required organization account information](https://support.google.com/googleplay/android-developer/answer/13628312) and [organization identity verification](https://support.google.com/android-developer-console/answer/16641416).
 
 ## Keamanan dan privasi
 - [x] Inspeksi merged release manifest: tidak ada INTERNET atau permission sensitif; satu app-defined signature permission.
@@ -55,19 +69,18 @@ This is CI and source-level evidence. It is **not** evidence of signed AAB valid
 - [ ] Siapkan screenshot aktual, support contact, dan website.
 - [ ] Lengkapi target audience, content rating, Ads, Data Safety, dan App access di Play Console.
 - [ ] Jelaskan bahwa reviewer tidak memerlukan akun dan fungsi POS inti berjalan offline.
-- [ ] Kirim ke Internal Testing.
+- [ ] Kirim ke Internal Testing untuk QA (rekomendasi kualitas, bukan persyaratan closed testing personal 12/14 hari).
 - [ ] Periksa Pre-launch Report dan uji startup/alur utama pada perangkat.
-- [ ] Konfirmasi jenis akun developer dan tanggal pembuatannya. Jika akun **personal** dibuat setelah 13 November 2023, Google Play mewajibkan closed test dengan minimal **12 tester yang terus opted-in selama 14 hari berturut-turut** sebelum mengajukan production access. Internal testing tidak menggantikan syarat closed test. Lihat [persyaratan testing resmi Google Play](https://support.google.com/googleplay/android-developer/answer/14151465).
 - [ ] Selesaikan semua blocker sebelum mengajukan production.
 
 ## Blocker yang sudah diketahui
 - Application ID masih kandidat dan belum dikonfirmasi/terdaftar di Play Console.
-- Identitas legal perusahaan, alamat korespondensi, dan kontak privasi resmi belum diberikan.
+- D-U-N-S number, linked/verified Google payments profile, organization legal documents, authorized representative ID, verified organization phone, and organization website have not yet been confirmed.
+- Identitas legal perusahaan, alamat korespondensi, dan kontak privasi resmi belum diberikan untuk Privacy Policy.
 - Privacy Policy belum di-host di URL HTTPS publik.
 - Upload key dan empat GitHub Environment secrets belum tersedia.
 - Schema Room v1 KSP historis belum ditemukan. Migration test 1 → 2 tidak boleh menggunakan schema v1 buatan.
 - Dependency verification metadata belum direview/commit; strict gate belum PASS.
 - Signed release AAB, signature verification, dan release SHA-256 belum tersedia.
 - Belum ada startup/device/UI test, internal testing, atau Pre-launch Report.
-- Jenis akun/tanggal pembuatan akun developer belum dikonfirmasi; syarat closed test 12/14 hari perlu dipastikan apakah berlaku.
 - Data Safety, Ads, target audience, content rating, dan reviewer access declaration belum diselesaikan di Play Console.
