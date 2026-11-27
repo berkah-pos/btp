@@ -33,7 +33,7 @@ Artifacts:
 ## Dependency verification review
 
 - The Run #75 metadata contains 459 components and 754 unique SHA-256 artifact entries, with no missing or duplicate artifact hashes.
-- All 754 current coordinates/artifact names shared with the prior Run #75 metadata have identical SHA-256 values. Four obsolete Kotlin/Compose plugin metadata entries were removed from the current graph.
+- All 754 current coordinates/artifact names shared with the prior Run #58 metadata have identical SHA-256 values. Four obsolete Kotlin/Compose plugin metadata entries were removed from the current graph.
 - Metadata hash: `b75c079d854746d701e5312fd11745038d7f1d2052d6818c81e8f69ff812eec6`.
 - This is reproducibility and integrity-pinning review, **not publisher-signature verification**: metadata records Gradle-generated checksums and `verify-signatures=false`.
 - Strict dependency verification has **not yet passed**. The guarded manual workflow input has been aligned to validate this Run #75 baseline, commit it on `feat/basic-pos-mvp`, and then execute strict quality gates on a separate clean GitHub-hosted runner.
