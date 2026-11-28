@@ -753,24 +753,61 @@ jobs:
           test -n "$ANDROID_UPLOAD_KEY_PASSWORD"
           ./gradlew --no-daemon --dependency-verification=strict bundleRelease
 
-      - name: Validate bundle and signature
+      - name: Validate bundle signature and upload certificate identity
+        env:
+          ANDROID_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
         run: |
           set -euo pipefail
+          export LC_ALL=C
           AAB="app/build/outputs/bundle/release/app-release.aab"
           test -s "$AAB"
-          curl --fail --silent --show-error --location \
+
+          BUNDLETOOL_SHA256="a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
             "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
             --output "$RUNNER_TEMP/bundletool.jar"
+          printf '%s  %s\\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+
           java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
           java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
           grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
-            echo "Release AAB does not request 16 KB native-library ZIP alignment."
+            echo "::error::Release AAB does not request 16 KB native-library ZIP alignment."
             exit 1
           }
           bash scripts/check-native-libraries-16kb.sh "$AAB"
-          jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/signature-check.txt"
-          grep -q "jar verified." "$RUNNER_TEMP/signature-check.txt"
-          keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/upload-certificate.txt"
+
+          jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/jarsigner-verify.txt" 2>&1 || {
+            echo "::error::AAB JAR signature verification failed."
+            exit 1
+          }
+          grep -q "jar verified." "$RUNNER_TEMP/jarsigner-verify.txt" || {
+            echo "::error::jarsigner did not confirm a verified AAB signature."
+            exit 1
+          }
+
+          EXPECTED_CERT_SHA256="$(printf '%s' "${ANDROID_UPLOAD_CERT_SHA256:-}" | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')"
+          if [[ ! "$EXPECTED_CERT_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "::error::Set the android-release Environment variable ANDROID_UPLOAD_CERT_SHA256 to the authorized upload certificate SHA-256 fingerprint."
+            exit 1
+          fi
+
+          keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/upload-certificate-details.txt"
+          mapfile -t ACTUAL_CERT_FINGERPRINTS < <(
+            awk '/SHA256:/ { fingerprint = $2; gsub(/:/, "", fingerprint); print tolower(fingerprint) }' \
+              "$RUNNER_TEMP/upload-certificate-details.txt"
+          )
+          if (( ${#ACTUAL_CERT_FINGERPRINTS[@]} != 1 )); then
+            echo "::error::Expected exactly one AAB signer certificate SHA-256 fingerprint."
+            exit 1
+          fi
+          ACTUAL_CERT_SHA256="${ACTUAL_CERT_FINGERPRINTS[0]}"
+          if [[ "$ACTUAL_CERT_SHA256" != "$EXPECTED_CERT_SHA256" ]]; then
+            echo "::error::AAB signer certificate does not match ANDROID_UPLOAD_CERT_SHA256."
+            exit 1
+          fi
+
+          printf 'jar_signature=verified\\nupload_certificate_sha256=%s\\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/signature-check.txt"
+          printf '%s\\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/upload-certificate.txt"
           sha256sum "$AAB" > SHA256SUMS
 
       - name: Prepare release metadata
