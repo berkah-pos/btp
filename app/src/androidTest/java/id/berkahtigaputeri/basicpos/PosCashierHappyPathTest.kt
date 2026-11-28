@@ -84,7 +84,7 @@ class PosCashierHappyPathTest {
         }
         val transactionRows = composeRule.onAllNodesWithTag("transactions.row")
         transactionRows.assertCountEquals(1)
-        transactionRows.onFirst().performClick()
+        composeRule.onNodeWithTag("transactions.row").performClick()
 
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithTag("transactions.receipt.title").fetchSemanticsNodes().isNotEmpty()
