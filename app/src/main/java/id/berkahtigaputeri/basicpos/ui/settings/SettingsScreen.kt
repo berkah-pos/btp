@@ -36,6 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import id.berkahtigaputeri.basicpos.BuildConfig
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.domain.model.StoreProfile
 
 private enum class LegalDocument { PRIVACY, TERMS }
@@ -107,6 +111,7 @@ fun SettingsScreen(
                 value = storeName,
                 onValueChange = { storeName = it; validationMessage = null },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nama toko *") }
             )
@@ -114,6 +119,7 @@ fun SettingsScreen(
                 value = ownerName,
                 onValueChange = { ownerName = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nama pemilik (opsional)") }
             )
@@ -121,12 +127,14 @@ fun SettingsScreen(
                 value = address,
                 onValueChange = { address = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 label = { Text("Alamat (opsional)") }
             )
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 label = { Text("Nomor telepon (opsional)") }
             )
@@ -134,10 +142,15 @@ fun SettingsScreen(
                 value = receiptFooter,
                 onValueChange = { receiptFooter = it },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 label = { Text("Catatan bawah struk (opsional)") }
             )
             if (validationMessage != null) {
-                Text(validationMessage!!, color = MaterialTheme.colorScheme.error)
+                Text(
+                    validationMessage!!,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                    color = MaterialTheme.colorScheme.error
+                )
             }
             Button(
                 onClick = {
@@ -156,17 +169,25 @@ fun SettingsScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !saving
+                enabled = !saving && !backupBusy
             ) {
                 if (saving) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.semantics {
+                            contentDescription = "Menyimpan profil toko"
+                        }
+                    )
                 } else {
                     Text("Simpan profil toko")
                 }
             }
 
             if (message != null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(message!!)
                         TextButton(onClick = viewModel::dismissMessage) {
@@ -183,7 +204,7 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                "Layanan SaaS perusahaan dapat membantu pengelolaan operasional usaha. BERKAH POS Basic pada tahap ini tetap berjalan secara lokal, gratis, dan tanpa akun.",
+                "Layanan SaaS perusahaan dapat membantu pengelolaan operasional usaha. Basic POS pada tahap ini tetap berjalan secara lokal, gratis, dan tanpa akun.",
                 style = MaterialTheme.typography.bodyMedium
             )
             if (BuildConfig.SAAS_URL.isNotBlank()) {
@@ -221,6 +242,7 @@ fun SettingsScreen(
                     thresholdValidationMessage = null
                 },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !backupBusy,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 label = { Text("Ambang stok rendah (unit)") }
@@ -228,6 +250,7 @@ fun SettingsScreen(
             if (thresholdValidationMessage != null) {
                 Text(
                     thresholdValidationMessage!!,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -242,7 +265,7 @@ fun SettingsScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = lowStockThresholdText.toLongOrNull()?.let { it in 0L..1_000_000L } == true
+                enabled = !backupBusy && lowStockThresholdText.toLongOrNull()?.let { it in 0L..1_000_000L } == true
             ) {
                 Text("Simpan pengaturan stok")
             }
@@ -307,7 +330,7 @@ Email privasi/dukungan: belum disediakan.
 URL kebijakan publik HTTPS: belum tersedia.
 
 Data yang disimpan
-BERKAH POS menyimpan profil toko, nama pemilik, alamat, nomor telepon, catatan struk, kategori, produk, SKU, harga, stok, transaksi, rincian item, dan preferensi ambang stok rendah pada perangkat melalui SQLite/Room dan Preferences DataStore.
+Basic POS menyimpan profil toko, nama pemilik, alamat, nomor telepon, catatan struk, kategori, produk, SKU, harga, stok, transaksi, rincian item, dan preferensi ambang stok rendah pada perangkat melalui SQLite/Room dan Preferences DataStore.
 
 Pengiriman dan akun
 Fungsi POS inti tidak membutuhkan akun atau server. Source manifest tidak mendeklarasikan izin INTERNET. Tidak direncanakan Firebase, analytics, crash reporting, iklan pihak ketiga, atau SDK pengumpulan data. Dependency graph dan merged manifest release masih harus diperiksa.
@@ -346,7 +369,7 @@ Dokumen ini belum merupakan Privacy Policy publik dan tidak boleh dikirim sebaga
                         """Status: DRAF — perlu pemeriksaan dan persetujuan pengelola.
 
 1. Ruang lingkup
-BERKAH POS Basic adalah aplikasi pencatatan kasir lokal yang dapat digunakan tanpa akun atau server.
+Basic POS adalah aplikasi pencatatan kasir lokal yang dapat digunakan tanpa akun atau server.
 
 2. Tanggung jawab pengguna
 Pengguna bertanggung jawab atas ketepatan nama produk, harga, stok, pajak, diskon, dan nominal pembayaran yang dimasukkan.

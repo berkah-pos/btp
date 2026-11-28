@@ -1,0 +1,20 @@
+name: CI Admission Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  admission:
+    name: Verify GitHub Actions admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Report workflow admission
+        run: echo "GitHub Actions accepted the pull request workflow."

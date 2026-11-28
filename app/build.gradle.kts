@@ -9,12 +9,18 @@ plugins {
 fun String.asBuildConfigLiteral(): String =
     "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
-val candidateApplicationId = "id.berkahtigaputeri.basicpos"
-val applicationIdValue = providers.gradleProperty("btpApplicationId")
+val candidateApplicationId = "id.co.berkahtigaputeri.btp"
+val configuredApplicationId = providers.gradleProperty("btpApplicationId")
     .orNull
     ?.trim()
     ?.takeIf(String::isNotBlank)
-    ?: candidateApplicationId
+val applicationIdValue = configuredApplicationId ?: candidateApplicationId
+
+if (applicationIdValue != candidateApplicationId) {
+    throw GradleException(
+        "BTP_APPLICATION_ID must match the domain-derived permanent ID: $candidateApplicationId"
+    )
+}
 val saasUrl = providers.gradleProperty("btpSaasUrl").orElse("").get().trim()
 val supportEmail = providers.gradleProperty("btpSupportEmail").orElse("").get().trim()
 
@@ -42,7 +48,11 @@ if (hasAnySigningValue && !hasCompleteSigningValues) {
 
 android {
     namespace = "id.berkahtigaputeri.basicpos"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         // Debug defaults to the candidate. Signed release requires BTP_APPLICATION_ID to be configured.
@@ -51,7 +61,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "id.berkahtigaputeri.basicpos.BerkahPosTestRunner"
         buildConfigField("String", "SAAS_URL", saasUrl.asBuildConfigLiteral())
         buildConfigField("String", "SUPPORT_EMAIL", supportEmail.asBuildConfigLiteral())
     }
@@ -84,6 +94,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -92,6 +103,11 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+
+    sourceSets {
+        // Migration tests use a historical SQLite fixture and Room's real migration validation.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 
     lint {

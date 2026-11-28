@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -61,6 +62,7 @@ fun PosNavigation() {
             NavigationBar {
                 destinations.forEach { destination ->
                     NavigationBarItem(
+                        modifier = Modifier.testTag("nav.${destination.route}"),
                         selected = currentRoute == destination.route,
                         onClick = {
                             navController.navigate(destination.route) {
@@ -90,7 +92,11 @@ fun PosNavigation() {
                         application.container.preferencesRepository
                     )
                 )
-                DashboardScreen(viewModel = dashboardViewModel)
+                DashboardScreen(
+                    viewModel = dashboardViewModel,
+                    onAddFirstProduct = { navController.navigate(PosRoute.PRODUCTS) },
+                    onOpenCashier = { navController.navigate(PosRoute.CASHIER) }
+                )
             }
             composable(PosRoute.PRODUCTS) {
                 val productsViewModel: ProductsViewModel = viewModel(

@@ -8,20 +8,24 @@ import id.berkahtigaputeri.basicpos.data.preferences.UserPreferencesRepository
 import id.berkahtigaputeri.basicpos.data.repository.PosRepositoryImpl
 import id.berkahtigaputeri.basicpos.domain.repository.PosRepository
 
-class BerkahPosApplication : Application() {
+open class BerkahPosApplication : Application() {
+    protected open val databaseName: String = "berkah-pos.db"
+    protected open val preferencesName: String = UserPreferencesRepository.DEFAULT_DATASTORE_NAME
+    protected lateinit var database: BerkahPosDatabase
+
     lateinit var container: AppContainer
         private set
 
     override fun onCreate() {
         super.onCreate()
-        val database = Room.databaseBuilder(
+        database = Room.databaseBuilder(
             applicationContext,
             BerkahPosDatabase::class.java,
-            "berkah-pos.db"
+            databaseName
         )
             .addMigrations(BerkahPosDatabase.MIGRATION_1_2)
             .build()
-        val preferencesRepository = UserPreferencesRepository(applicationContext)
+        val preferencesRepository = UserPreferencesRepository(applicationContext, preferencesName)
         container = AppContainer(
             posRepository = PosRepositoryImpl(database),
             preferencesRepository = preferencesRepository,

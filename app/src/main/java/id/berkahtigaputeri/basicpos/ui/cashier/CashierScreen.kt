@@ -30,6 +30,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.Product
@@ -142,19 +147,31 @@ fun CashierScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                TextButton(onClick = {
-                                    viewModel.changeQuantity(item.product.id, -1)
-                                }, enabled = !isSubmitting) { Text("−") }
+                                TextButton(
+                                    onClick = { viewModel.changeQuantity(item.product.id, -1) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Kurangi jumlah ${item.product.name}"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("−") }
                                 Text(
                                     item.quantity.toString(),
                                     modifier = Modifier.padding(top = 10.dp)
                                 )
-                                TextButton(onClick = {
-                                    viewModel.changeQuantity(item.product.id, 1)
-                                }, enabled = !isSubmitting) { Text("+") }
-                                TextButton(onClick = {
-                                    viewModel.removeProduct(item.product.id)
-                                }, enabled = !isSubmitting) { Text("Hapus") }
+                                TextButton(
+                                    onClick = { viewModel.changeQuantity(item.product.id, 1) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Tambah jumlah ${item.product.name}"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("+") }
+                                TextButton(
+                                    onClick = { viewModel.removeProduct(item.product.id) },
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "Hapus ${item.product.name} dari keranjang"
+                                    },
+                                    enabled = !isSubmitting
+                                ) { Text("Hapus") }
                             }
                             Text(
                                 text = "Jumlah: ${runCatching {
@@ -190,7 +207,7 @@ fun CashierScreen(
                 OutlinedTextField(
                     value = paidText,
                     onValueChange = { paidText = it.filter(Char::isDigit) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("cashier.paid"),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     enabled = !isSubmitting,
@@ -209,7 +226,7 @@ fun CashierScreen(
                             viewModel.checkout(discount!!, tax!!, paid)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("cashier.checkout"),
                     enabled = cart.isNotEmpty() &&
                         !isSubmitting &&
                         cartHasCurrentStock &&
@@ -221,7 +238,11 @@ fun CashierScreen(
                         paid >= total
                 ) {
                     if (isSubmitting) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.semantics {
+                                contentDescription = "Menyimpan transaksi"
+                            }
+                        )
                     } else {
                         Text("Simpan transaksi")
                     }
@@ -230,7 +251,11 @@ fun CashierScreen(
 
             if (message != null) {
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { liveRegion = LiveRegionMode.Polite }
+                    ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -247,15 +272,25 @@ fun CashierScreen(
     receipt?.let { saved ->
         AlertDialog(
             onDismissRequest = viewModel::clearReceipt,
-            title = { Text("Transaksi tersimpan") },
+            title = { Text("Transaksi tersimpan", modifier = Modifier.testTag("cashier.receipt.title")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     val receiptProfile = saved.storeProfileSnapshot
-                    Text(receiptProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+                    Text(receiptProfile?.storeName ?: "Basic POS", style = MaterialTheme.typography.titleMedium)
                     receiptProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
                     receiptProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
-                    Text(saved.sale.transactionNumber)
-                    Text("Total: ${Rupiah.from(saved.sale.totalRupiah).formatIdr()}")
+                    Text(saved.sale.transactionNumber, modifier = Modifier.testTag("cashier.receipt.transaction"))
+                    saved.items.forEach { item ->
+                        val itemTag = item.sku ?: item.productId?.toString() ?: "unknown"
+                        Text(
+                            text = "${item.productName} × ${item.quantity}",
+                            modifier = Modifier.testTag("cashier.receipt.item.$itemTag")
+                        )
+                    }
+                    Text(
+                        "Total: ${Rupiah.from(saved.sale.totalRupiah).formatIdr()}",
+                        modifier = Modifier.testTag("cashier.receipt.total")
+                    )
                     Text("Dibayar: ${Rupiah.from(saved.sale.paidRupiah).formatIdr()}")
                     Text("Kembalian: ${Rupiah.from(saved.sale.changeRupiah).formatIdr()}")
                     Text("${saved.items.size} jenis produk")
@@ -268,7 +303,7 @@ fun CashierScreen(
                     discountText = "0"
                     taxText = "0"
                     paidText = ""
-                }) { Text("Selesai") }
+                }, modifier = Modifier.testTag("cashier.receipt.done")) { Text("Selesai") }
             }
         )
     }
@@ -296,6 +331,11 @@ private fun CashierProductCard(
             }
             TextButton(
                 onClick = onAdd,
+                modifier = Modifier
+                    .testTag("cashier.add.${product.sku ?: product.id}")
+                    .semantics {
+                        contentDescription = "Tambah ${product.name} ke keranjang"
+                    },
                 enabled = product.stockQuantity > 0 && !isSubmitting
             ) { Text("Tambah") }
         }

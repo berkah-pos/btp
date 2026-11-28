@@ -7,8 +7,8 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "scripts/**"
       - "docs/store-assets/**"
-
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -19,8 +19,8 @@ on:
     paths:
       - "app/**"
       - "gradle/**"
+      - "scripts/**"
       - "docs/store-assets/**"
-
       - ".github/workflows/android-ci.yml"
       - "build.gradle.kts"
       - "settings.gradle.kts"
@@ -71,33 +71,167 @@ jobs:
           cmdline-tools-version: 15859902
           packages: "platform-tools build-tools;36.0.0"
 
-      - name: Install Android 17 SDK platform
+      - name: Install Android 17 API 37.1 stable platform
         run: |
           set -euo pipefail
-          sdkmanager --install "platforms;android-37.0" --channel=3
-          test -s "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
-          if [[ ! -e "$ANDROID_SDK_ROOT/platforms/android-37" ]]; then
-            ln -s android-37.0 "$ANDROID_SDK_ROOT/platforms/android-37"
-          fi
-          test -s "$ANDROID_SDK_ROOT/platforms/android-37/android.jar"
+          sdkmanager --install "platforms;android-37.1" --channel=0
+          test -s "$ANDROID_SDK_ROOT/platforms/android-37.1/android.jar"
 
-      - name: Set up Gradle 9.8.2
+      - name: Set up Gradle 9.7.0
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "9.8.2"
+          gradle-version: "9.7.0"
           cache-provider: basic
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Bootstrap Gradle wrapper
-        run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.7.0 --distribution-type bin \
+              --gradle-distribution-sha256-sum 84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
+          test -s gradle/wrapper/gradle-wrapper.jar
+          test -s gradlew
+          test -s gradlew.bat
+          echo "7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
       - name: Run strict quality gates against reviewed dependency hashes
         if: ${{ hashFiles('gradle/verification-metadata.xml') != '' }}
-        run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest lintDebug assembleDebug
+        run: ./gradlew --no-daemon --dependency-verification=strict testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug :app:bundleRelease
 
-      - name: Bootstrap dependency hashes and run first quality gates
+      - name: Bootstrap SHA-256 dependency hashes from refreshed resolution, then run first quality gates
         if: ${{ hashFiles('gradle/verification-metadata.xml') == '' }}
-        run: ./gradlew --no-daemon --write-verification-metadata sha256 testDebugUnitTest lintDebug assembleDebug
+        run: |
+          set -euo pipefail
+          retry_delays=(15 30 60 90)
+          max_attempts=5
+          for attempt in $(seq 1 "$max_attempts"); do
+            LOG_FILE="$RUNNER_TEMP/quality-gates-${attempt}.log"
+            EXTRA_ARGS=(--refresh-dependencies)
+            if ./gradlew --no-daemon "${EXTRA_ARGS[@]}" --write-verification-metadata sha256 testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug :app:bundleRelease --console=plain 2>&1 | tee "$LOG_FILE"; then
+              exit 0
+            fi
+            if ! grep -Eiq "Could not resolve plugin artifact|Plugin \\[id: '(org\\.jetbrains\\.kotlin\\.plugin\\.compose|com\\.android\\.application)'" "$LOG_FILE"; then
+              echo "Quality gate failed for a reason other than transient Gradle plugin marker resolution; not retrying."
+              exit 1
+            fi
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              delay="${retry_delays[$((attempt - 1))]}"
+              echo "Gradle plugin marker repository resolution failed; retrying with refreshed dependency metadata in ${delay}s (attempt $((attempt + 1))/${max_attempts})."
+              sleep "$delay"
+            fi
+          done
+          echo "Gradle plugin marker resolution failed after ${max_attempts} attempts and bounded backoff."
+          exit 1
+
+      - name: Validate refreshed dependency metadata against the reviewed baseline
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_dependency_baseline == true && github.ref == 'refs/heads/feat/basic-pos-mvp' && hashFiles('gradle/verification-metadata.xml') != '' }}
+        run: |
+          set -euo pipefail
+          python3 scripts/validate-dependency-baseline.py \
+            gradle/verification-metadata.xml \
+            --expected-sha256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3 \
+            --expected-components 578 \
+            --expected-artifacts 960
+
+      - name: Checkout original Room v1 source for KSP schema export
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 75c7c538f8c6c38e014dbdb5edfa0c8f8fe40577
+          path: room-v1-source
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Generate authentic Room v1 schema using historical KSP build
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        run: |
+          set -euo pipefail
+          sdkmanager --install "platforms;android-36"
+          test -s "$ANDROID_SDK_ROOT/platforms/android-36/android.jar"
+          gradle --no-daemon --stacktrace -p room-v1-source :app:kspDebugKotlin
+          SCHEMA="room-v1-source/app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json"
+          test -s "$SCHEMA" || {
+            echo "Historical KSP build did not generate the expected Room v1 schema."
+            exit 1
+          }
+          mkdir -p room-v1-schema
+          cp "$SCHEMA" room-v1-schema/1.json
+          sha256sum room-v1-schema/1.json > room-v1-schema/SHA256SUMS
+          echo "Generated from historical source commit 75c7c538f8c6c38e014dbdb5edfa0c8f8fe40577"
+
+      - name: Upload authentic Room v1 KSP schema
+        if: ${{ !hashFiles('app/schemas/id.berkahtigaputeri.basicpos.data.local.BerkahPosDatabase/1.json') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-room-v1-ksp-${{ github.run_number }}
+          path: room-v1-schema/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Verify debug APK 16 KB page-size alignment
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 "$APK"
+          bash scripts/check-native-libraries-16kb.sh "$APK"
+
+      - name: Capture release manifest and runtime dependency inventory
+        run: |
+          set -euo pipefail
+          mkdir -p release-audit
+          ./gradlew --no-daemon :app:processReleaseMainManifest --console=plain
+          ./gradlew --no-daemon :app:dependencies --configuration releaseRuntimeClasspath --console=plain > release-audit/release-runtime-dependencies.txt
+          mapfile -t manifests < <(find app/build/intermediates -type f -name AndroidManifest.xml -path '*release*' | sort)
+          test "${#manifests[@]}" -gt 0 || {
+            echo "Merged release manifest was not found after processReleaseMainManifest."
+            exit 1
+          }
+          printf '%s\n' "${manifests[@]}" > release-audit/manifest-source-paths.txt
+          cp "${manifests[0]}" release-audit/merged-release-manifest.xml
+          sha256sum release-audit/* > release-audit/SHA256SUMS
+
+      - name: Validate unsigned release AAB and 16 KB alignment
+        run: |
+          set -euo pipefail
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          test -s "$AAB"
+          BUNDLETOOL_SHA256="a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+            "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
+            --output "$RUNNER_TEMP/bundletool.jar"
+          printf '%s  %s\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+          java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
+          grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
+            echo "Release AAB does not request 16 KB native-library ZIP alignment."
+            exit 1
+          }
+          bash scripts/check-native-libraries-16kb.sh "$AAB"
+          sha256sum "$AAB" > app/build/outputs/bundle/release/SHA256SUMS
+          cat app/build/outputs/bundle/release/SHA256SUMS
+
+      - name: Upload unsigned release AAB candidate
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-aab-candidate-${{ github.run_number }}
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/bundle/release/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Render Google Play listing graphics
         run: |
@@ -133,6 +267,388 @@ jobs:
             app/build/test-results/
             app/schemas/
             gradle/verification-metadata.xml
+            release-audit/
+            gradlew
+            gradlew.bat
+            gradle/wrapper/gradle-wrapper.jar
+            gradle/wrapper/gradle-wrapper.properties
+          if-no-files-found: warn
+          retention-days: 14
+
+  prepare-dependency-baseline:
+    name: Prepare dedicated reviewed dependency-baseline artifact
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_dependency_baseline == true && github.ref == 'refs/heads/feat/basic-pos-mvp' }}
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout validator at the triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Fetch and validate the pinned reviewed Run 110 source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SOURCE_RUN_ID=46064751388
+          SOURCE_ARTIFACT_ID=15230362895
+          SOURCE_ARCHIVE_SHA256=93c62c7389f631186775b8c2fcc9345015cbd066fe1bdc990d3b6632c36238fb
+          SOURCE_METADATA_SHA256=6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3
+
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" > "$RUNNER_TEMP/source-run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/jobs?per_page=100" > "$RUNNER_TEMP/source-jobs.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/artifacts?per_page=100" > "$RUNNER_TEMP/source-artifacts.json"
+
+          python3 - "$RUNNER_TEMP/source-run.json" "$RUNNER_TEMP/source-jobs.json" "$RUNNER_TEMP/source-artifacts.json" <<'PY'
+          import json
+          import sys
+          run = json.loads(open(sys.argv[1], encoding="utf-8").read())
+          jobs = json.loads(open(sys.argv[2], encoding="utf-8").read()).get("jobs", [])
+          artifacts = json.loads(open(sys.argv[3], encoding="utf-8").read()).get("artifacts", [])
+          expected = {
+              "id": 46064751388, "run_number": 110, "workflow_id": 432452966,
+              "path": ".github/workflows/android-ci.yml", "event": "pull_request",
+              "status": "completed", "conclusion": "success",
+              "head_branch": "feat/basic-pos-mvp",
+              "head_sha": "403fcf21a3b57037f6b24319431727ceda98e36a",
+          }
+          for key, value in expected.items():
+              if run.get(key) != value:
+                  raise SystemExit(f"Unexpected source run {key}: {run.get(key)!r}")
+          for key in ("repository", "head_repository"):
+              if run.get(key, {}).get("full_name") != "berkah-pos/btp":
+                  raise SystemExit(f"Unexpected source {key}")
+          quality = [j for j in jobs if j.get("name") == "Unit tests, lint, and debug build"]
+          baseline = [j for j in jobs if j.get("name") == "Commit reviewed dependency verification baseline"]
+          prepare = [j for j in jobs if j.get("name") == "Prepare dedicated reviewed dependency-baseline artifact"]
+          strict = [j for j in jobs if j.get("name") == "Clean strict dependency verification"]
+          release = [j for j in jobs if j.get("name") == "Signed release AAB"]
+          if len(quality) != 1 or quality[0].get("id") != 140727247533 or quality[0].get("conclusion") != "success":
+              raise SystemExit("Pinned source quality job did not pass")
+          if len(baseline) != 1 or baseline[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source must not have committed a baseline")
+          if len(prepare) != 1 or prepare[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly prepared a baseline artifact")
+          if len(strict) != 1 or strict[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly ran clean strict verification")
+          if len(release) != 1 or release[0].get("conclusion") != "skipped":
+              raise SystemExit("Pinned pull-request source unexpectedly created a signed release AAB")
+          selected = [a for a in artifacts if a.get("id") == 15230362895]
+          if len(selected) != 1:
+              raise SystemExit("Pinned Run 110 artifact ID not unique")
+          a = selected[0]
+          if a.get("name") != "berkah-pos-debug-110" or a.get("expired") is not False:
+              raise SystemExit("Pinned Run 110 artifact name/retention mismatch")
+          if a.get("digest") != "sha256:93c62c7389f631186775b8c2fcc9345015cbd066fe1bdc990d3b6632c36238fb":
+              raise SystemExit("Pinned Run 110 artifact archive digest mismatch")
+          if a.get("workflow_run", {}).get("id") != 46064751388 or a["workflow_run"].get("head_sha") != expected["head_sha"]:
+              raise SystemExit("Pinned artifact source run/commit mismatch")
+          PY
+
+          HEADERS="$RUNNER_TEMP/source-artifact.headers"
+          SOURCE_ZIP="$RUNNER_TEMP/source-debug-artifact.zip"
+          API_URL="https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$SOURCE_ARTIFACT_ID/zip"
+          curl --fail --silent --show-error --dump-header "$HEADERS" --output /dev/null \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" "$API_URL"
+          STATUS="$(awk '$1 ~ /^HTTP\// { code=$2 } END { print code }' "$HEADERS")"
+          test "$STATUS" = "302"
+          LOCATION="$(grep -i '^location:' "$HEADERS" | tail -n 1 | sed -E 's/^[^:]*:[[:space:]]*//; s/\r$//')"
+          case "$LOCATION" in https://*) ;; *) echo "Artifact redirect was not HTTPS."; exit 1 ;; esac
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' "$LOCATION" --output "$SOURCE_ZIP"
+          printf '%s  %s\n' "$SOURCE_ARCHIVE_SHA256" "$SOURCE_ZIP" | sha256sum --check
+          unzip -tqq "$SOURCE_ZIP"
+          mkdir -p "$RUNNER_TEMP/source-run-110"
+          unzip -q "$SOURCE_ZIP" -d "$RUNNER_TEMP/source-run-110"
+          SOURCE_XML="$RUNNER_TEMP/source-run-110/gradle/verification-metadata.xml"
+          test -s "$SOURCE_XML"
+          python3 scripts/validate-dependency-baseline.py "$SOURCE_XML" \
+            --expected-sha256 "$SOURCE_METADATA_SHA256" --expected-components 578 --expected-artifacts 960
+
+          DEST="$RUNNER_TEMP/dependency-baseline-artifact"
+          mkdir -p "$DEST/gradle"
+          install -D "$SOURCE_XML" "$DEST/gradle/verification-metadata.xml"
+          cat > "$DEST/PROVENANCE.txt" <<EOF
+          format=berkah-pos-dependency-baseline-v1
+          repository=berkah-pos/btp
+          source_workflow_id=432452966
+          source_run_id=46064751388
+          source_run_number=110
+          source_event=pull_request
+          source_branch=feat/basic-pos-mvp
+          source_commit_sha=403fcf21a3b57037f6b24319431727ceda98e36a
+          source_quality_job_id=140727247533
+          source_artifact_id=15230362895
+          source_artifact_name=berkah-pos-debug-110
+          source_artifact_digest=sha256:$SOURCE_ARCHIVE_SHA256
+          source_metadata_sha256=$SOURCE_METADATA_SHA256
+          component_count=578
+          artifact_count=960
+          trigger_run_id=$GITHUB_RUN_ID
+          trigger_run_number=$GITHUB_RUN_NUMBER
+          trigger_commit_sha=$GITHUB_SHA
+          trigger_ref=$GITHUB_REF
+          EOF
+
+      - name: Upload dedicated dependency-baseline artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-dependency-baseline-${{ github.run_number }}
+          path: ${{ runner.temp }}/dependency-baseline-artifact/
+          if-no-files-found: error
+          retention-days: 14
+
+  dependency-baseline:
+    name: Commit reviewed dependency verification baseline
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.commit_dependency_baseline == true && github.ref == 'refs/heads/feat/basic-pos-mvp' }}
+    needs: [quality, prepare-dependency-baseline]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    outputs:
+      baseline_commit_sha: ${{ steps.commit-baseline.outputs.commit_sha }}
+    steps:
+      - name: Checkout triggering feature-branch commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download and validate dedicated dependency-baseline artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_ARTIFACT_NAME: berkah-pos-dependency-baseline-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > "$RUNNER_TEMP/current-run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" > "$RUNNER_TEMP/current-artifacts.json"
+
+          ARTIFACT_INFO="$(python3 - "$RUNNER_TEMP/current-run.json" "$RUNNER_TEMP/current-artifacts.json" <<'PY'
+          import json, os, re, sys
+          run = json.loads(open(sys.argv[1], encoding="utf-8").read())
+          artifacts = json.loads(open(sys.argv[2], encoding="utf-8").read()).get("artifacts", [])
+          if run.get("id") != int(os.environ["GITHUB_RUN_ID"]):
+              raise SystemExit("Current workflow run ID mismatch")
+          if run.get("workflow_id") != 432452966 or run.get("event") != "workflow_dispatch":
+              raise SystemExit("Unexpected workflow or event for baseline commit")
+          if run.get("head_branch") != "feat/basic-pos-mvp" or run.get("head_sha") != os.environ["GITHUB_SHA"]:
+              raise SystemExit("Current workflow branch/commit provenance mismatch")
+          if run.get("repository", {}).get("full_name") != os.environ["GITHUB_REPOSITORY"]:
+              raise SystemExit("Current workflow repository mismatch")
+          matches = [a for a in artifacts if a.get("name") == os.environ["EXPECTED_ARTIFACT_NAME"]]
+          if len(matches) != 1:
+              raise SystemExit("Dedicated dependency-baseline artifact missing or duplicated")
+          a = matches[0]
+          if a.get("expired") is not False or not re.fullmatch(r"sha256:[0-9a-f]{64}", a.get("digest", "")):
+              raise SystemExit("Dedicated artifact is expired or has no valid SHA-256 digest")
+          wr = a.get("workflow_run", {})
+          if wr.get("id") != int(os.environ["GITHUB_RUN_ID"]) or wr.get("head_sha") != os.environ["GITHUB_SHA"] or wr.get("head_branch") != "feat/basic-pos-mvp":
+              raise SystemExit("Dedicated artifact does not belong to this commit/run")
+          print(a["id"])
+          print(a["digest"])
+          PY
+          )"
+          ARTIFACT_ID="$(printf '%s\n' "$ARTIFACT_INFO" | sed -n '1p')"
+          ARTIFACT_DIGEST="$(printf '%s\n' "$ARTIFACT_INFO" | sed -n '2p')"
+          test -n "$ARTIFACT_ID"
+          test -n "$ARTIFACT_DIGEST"
+
+          HEADERS="$RUNNER_TEMP/baseline-artifact.headers"
+          ARTIFACT_ZIP="$RUNNER_TEMP/dependency-baseline-artifact.zip"
+          API_URL="https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip"
+          curl --fail --silent --show-error --dump-header "$HEADERS" --output /dev/null \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" "$API_URL"
+          STATUS="$(awk '$1 ~ /^HTTP\// { code=$2 } END { print code }' "$HEADERS")"
+          test "$STATUS" = "302"
+          LOCATION="$(grep -i '^location:' "$HEADERS" | tail -n 1 | sed -E 's/^[^:]*:[[:space:]]*//; s/\r$//')"
+          case "$LOCATION" in https://*) ;; *) echo "Artifact redirect was not HTTPS."; exit 1 ;; esac
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' "$LOCATION" --output "$ARTIFACT_ZIP"
+          ARTIFACT_DIGEST_HEX="$(printf '%s' "$ARTIFACT_DIGEST" | sed 's/^sha256://')"
+          printf '%s  %s\n' "$ARTIFACT_DIGEST_HEX" "$ARTIFACT_ZIP" | sha256sum --check
+          unzip -tqq "$ARTIFACT_ZIP"
+          mkdir -p "$RUNNER_TEMP/dependency-baseline"
+          unzip -q "$ARTIFACT_ZIP" -d "$RUNNER_TEMP/dependency-baseline"
+
+          PROVENANCE="$RUNNER_TEMP/dependency-baseline/PROVENANCE.txt"
+          SOURCE="$RUNNER_TEMP/dependency-baseline/gradle/verification-metadata.xml"
+          test -s "$PROVENANCE"
+          test -s "$SOURCE"
+          python3 - "$PROVENANCE" <<'PY'
+          import os, sys
+          actual = {}
+          for line in open(sys.argv[1], encoding="utf-8").read().splitlines():
+              if not line or "=" not in line:
+                  raise SystemExit(f"Malformed provenance line: {line!r}")
+              key, value = line.split("=", 1)
+              if key in actual:
+                  raise SystemExit(f"Duplicate provenance field: {key}")
+              actual[key] = value
+          expected = {
+              "format": "berkah-pos-dependency-baseline-v1",
+              "repository": "berkah-pos/btp",
+              "source_workflow_id": "432452966",
+              "source_run_id": "46064751388",
+              "source_run_number": "110",
+              "source_event": "pull_request",
+              "source_branch": "feat/basic-pos-mvp",
+              "source_commit_sha": "403fcf21a3b57037f6b24319431727ceda98e36a",
+              "source_quality_job_id": "140727247533",
+              "source_artifact_id": "15230362895",
+              "source_artifact_name": "berkah-pos-debug-110",
+              "source_artifact_digest": "sha256:93c62c7389f631186775b8c2fcc9345015cbd066fe1bdc990d3b6632c36238fb",
+              "source_metadata_sha256": "6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3",
+              "component_count": "578",
+              "artifact_count": "960",
+              "trigger_run_id": os.environ["GITHUB_RUN_ID"],
+              "trigger_run_number": os.environ["GITHUB_RUN_NUMBER"],
+              "trigger_commit_sha": os.environ["GITHUB_SHA"],
+              "trigger_ref": os.environ["GITHUB_REF"],
+          }
+          if actual != expected:
+              raise SystemExit("Dependency-baseline provenance manifest did not match the pinned source and trigger context")
+          PY
+
+          python3 scripts/validate-dependency-baseline.py "$SOURCE" \
+            --expected-sha256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3 \
+            --expected-components 578 --expected-artifacts 960
+
+      - name: Commit baseline to feature branch
+        id: commit-baseline
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/basic-pos-mvp" || {
+            echo "Refusing to commit a dependency baseline outside feat/basic-pos-mvp."
+            exit 1
+          }
+          SOURCE="$RUNNER_TEMP/dependency-baseline/gradle/verification-metadata.xml"
+          test -s "$SOURCE"
+          git fetch origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME"
+          CURRENT_BRANCH_SHA="$(git rev-parse "refs/remotes/origin/$GITHUB_REF_NAME")"
+          if [[ "$CURRENT_BRANCH_SHA" != "$GITHUB_SHA" ]]; then
+            echo "Feature branch advanced after this workflow was dispatched; refusing a stale baseline commit."
+            exit 1
+          fi
+          git reset --hard "$CURRENT_BRANCH_SHA"
+          if [[ -f gradle/verification-metadata.xml ]]; then
+            python3 scripts/validate-dependency-baseline.py gradle/verification-metadata.xml \
+              --expected-sha256 6d0c1f37295c615c9621fda3b6ea3a32ab0da463c117766ba6b6fe06795a08f3 \
+              --expected-components 578 --expected-artifacts 960
+          else
+            install -D "$SOURCE" gradle/verification-metadata.xml
+          fi
+          git add -- gradle/verification-metadata.xml
+          if git diff --cached --quiet; then
+            echo "The exact reviewed dependency baseline is already committed."
+            echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          STAGED_PATHS="$(git diff --cached --name-only)"
+          if [[ "$STAGED_PATHS" != "gradle/verification-metadata.xml" ]]; then
+            echo "Refusing to commit unexpected paths: $STAGED_PATHS"
+            exit 1
+          fi
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: add reviewed dependency verification baseline"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  strict-quality:
+    name: Clean strict dependency verification
+    if: ${{ needs.dependency-baseline.result == 'success' }}
+    needs: dependency-baseline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout committed baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.dependency-baseline.outputs.baseline_commit_sha }}
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          cmdline-tools-version: 15859902
+          packages: "platform-tools build-tools;36.0.0"
+
+      - name: Install Android 17 API 37.1 stable platform
+        run: |
+          set -euo pipefail
+          sdkmanager --install "platforms;android-37.1" --channel=0
+          test -s "$ANDROID_SDK_ROOT/platforms/android-37.1/android.jar"
+
+      - name: Set up Gradle 9.7.0
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          gradle-version: "9.7.0"
+          cache-provider: basic
+          cache-read-only: true
+
+      - name: Bootstrap Gradle wrapper
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.7.0 --distribution-type bin --gradle-distribution-sha256-sum 84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
+          test -s gradle/wrapper/gradle-wrapper.properties
+          echo "7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
+
+      - name: Run full strict quality and release-runtime dependency gates
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --dependency-verification=strict \
+            testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug \
+            :app:processReleaseMainManifest bundleRelease --console=plain
+          ./gradlew --no-daemon --dependency-verification=strict \
+            :app:dependencies --configuration releaseRuntimeClasspath --console=plain
+
+      - name: Recheck debug APK 16 KB alignment
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 "$APK"
+          bash scripts/check-native-libraries-16kb.sh "$APK"
+
+      - name: Upload strict verification reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: berkah-pos-strict-quality-${{ github.run_number }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+            app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
           retention-days: 14
 
@@ -161,33 +677,48 @@ jobs:
           cmdline-tools-version: 15859902
           packages: "platform-tools build-tools;36.0.0"
 
-      - name: Install Android 17 SDK platform
+      - name: Install Android 17 API 37.1 stable platform
         run: |
           set -euo pipefail
-          sdkmanager --install "platforms;android-37.0" --channel=3
-          test -s "$ANDROID_SDK_ROOT/platforms/android-37.0/android.jar"
-          if [[ ! -e "$ANDROID_SDK_ROOT/platforms/android-37" ]]; then
-            ln -s android-37.0 "$ANDROID_SDK_ROOT/platforms/android-37"
-          fi
-          test -s "$ANDROID_SDK_ROOT/platforms/android-37/android.jar"
+          sdkmanager --install "platforms;android-37.1" --channel=0
+          test -s "$ANDROID_SDK_ROOT/platforms/android-37.1/android.jar"
 
-      - name: Set up Gradle 9.8.2
+      - name: Set up Gradle 9.7.0
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
-          gradle-version: "9.8.2"
+          gradle-version: "9.7.0"
           cache-provider: basic
           cache-read-only: true
 
       - name: Bootstrap Gradle wrapper
-        run: gradle --no-daemon wrapper --gradle-version 9.8.2 --distribution-type bin
+        run: |
+          set -euo pipefail
+          BOOTSTRAP_DIR="$RUNNER_TEMP/wrapper-bootstrap"
+          mkdir -p "$BOOTSTRAP_DIR"
+          : > "$BOOTSTRAP_DIR/settings.gradle"
+          : > "$BOOTSTRAP_DIR/build.gradle"
+          (
+            cd "$BOOTSTRAP_DIR"
+            gradle --no-daemon wrapper --gradle-version 9.7.0 --distribution-type bin \
+              --gradle-distribution-sha256-sum 84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae
+          )
+          install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
+          install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.jar" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.jar"
+          install -D "$BOOTSTRAP_DIR/gradle/wrapper/gradle-wrapper.properties" "$GITHUB_WORKSPACE/gradle/wrapper/gradle-wrapper.properties"
+          chmod +x gradlew
+          test -s gradle/wrapper/gradle-wrapper.jar
+          test -s gradlew
+          test -s gradlew.bat
+          echo "7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check --status
 
       - name: Require confirmed Play Console application ID
         env:
           BTP_APPLICATION_ID: ${{ vars.BTP_APPLICATION_ID }}
         run: |
           set -euo pipefail
-          test -n "$BTP_APPLICATION_ID" || {
-            echo "Release blocked: configure BTP_APPLICATION_ID only after confirming the permanent ID in Play Console."
+          test "$BTP_APPLICATION_ID" = "id.co.berkahtigaputeri.btp" || {
+            echo "Release blocked: set BTP_APPLICATION_ID to id.co.berkahtigaputeri.btp after confirming this package is available in Play Console."
             exit 1
           }
 
@@ -221,18 +752,61 @@ jobs:
           test -n "$ANDROID_UPLOAD_KEY_PASSWORD"
           ./gradlew --no-daemon --dependency-verification=strict bundleRelease
 
-      - name: Validate bundle and signature
+      - name: Validate bundle signature and upload certificate identity
+        env:
+          ANDROID_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
         run: |
           set -euo pipefail
+          export LC_ALL=C
           AAB="app/build/outputs/bundle/release/app-release.aab"
           test -s "$AAB"
-          curl --fail --silent --show-error --location \
+
+          BUNDLETOOL_SHA256="a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
             "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
             --output "$RUNNER_TEMP/bundletool.jar"
+          printf '%s  %s\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+
           java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
-          jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/signature-check.txt"
-          grep -q "jar verified." "$RUNNER_TEMP/signature-check.txt"
-          keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/upload-certificate.txt"
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
+          grep -q "PAGE_ALIGNMENT_16K" "$RUNNER_TEMP/bundle-config.txt" || {
+            echo "::error::Release AAB does not request 16 KB native-library ZIP alignment."
+            exit 1
+          }
+          bash scripts/check-native-libraries-16kb.sh "$AAB"
+
+          jarsigner -verify -verbose -certs "$AAB" > "$RUNNER_TEMP/jarsigner-verify.txt" 2>&1 || {
+            echo "::error::AAB JAR signature verification failed."
+            exit 1
+          }
+          grep -q "jar verified." "$RUNNER_TEMP/jarsigner-verify.txt" || {
+            echo "::error::jarsigner did not confirm a verified AAB signature."
+            exit 1
+          }
+
+          EXPECTED_CERT_SHA256="$(printf '%s' "${ANDROID_UPLOAD_CERT_SHA256:-}" | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')"
+          if [[ ! "$EXPECTED_CERT_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "::error::Set the android-release Environment variable ANDROID_UPLOAD_CERT_SHA256 to the authorized upload certificate SHA-256 fingerprint."
+            exit 1
+          fi
+
+          keytool -printcert -jarfile "$AAB" > "$RUNNER_TEMP/upload-certificate-details.txt"
+          mapfile -t ACTUAL_CERT_FINGERPRINTS < <(
+            awk '/SHA256:/ { fingerprint = $2; gsub(/:/, "", fingerprint); print tolower(fingerprint) }' \
+              "$RUNNER_TEMP/upload-certificate-details.txt"
+          )
+          if (( ${#ACTUAL_CERT_FINGERPRINTS[@]} != 1 )); then
+            echo "::error::Expected exactly one AAB signer certificate SHA-256 fingerprint."
+            exit 1
+          fi
+          ACTUAL_CERT_SHA256="${ACTUAL_CERT_FINGERPRINTS[0]}"
+          if [[ "$ACTUAL_CERT_SHA256" != "$EXPECTED_CERT_SHA256" ]]; then
+            echo "::error::AAB signer certificate does not match ANDROID_UPLOAD_CERT_SHA256."
+            exit 1
+          fi
+
+          printf 'jar_signature=verified\nupload_certificate_sha256=%s\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/signature-check.txt"
+          printf '%s\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/upload-certificate.txt"
           sha256sum "$AAB" > SHA256SUMS
 
       - name: Prepare release metadata

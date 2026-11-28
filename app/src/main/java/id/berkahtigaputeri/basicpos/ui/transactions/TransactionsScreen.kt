@@ -31,6 +31,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
 import id.berkahtigaputeri.basicpos.core.money.formatIdr
 import id.berkahtigaputeri.basicpos.domain.model.SaleReceipt
@@ -69,7 +75,11 @@ fun TransactionsScreen(
             )
 
             if (message != null) {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { liveRegion = LiveRegionMode.Polite }
+                ) {
                     Row(
                         modifier = Modifier.padding(10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -98,7 +108,11 @@ fun TransactionsScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.openReceipt(sale.id) }
+                                .testTag("transactions.row")
+                                .clickable(role = Role.Button) { viewModel.openReceipt(sale.id) }
+                                .semantics {
+                                    contentDescription = "Buka struk transaksi ${sale.transactionNumber}, total ${Rupiah.from(sale.totalRupiah).formatIdr()}"
+                                }
                         ) {
                             Column(
                                 modifier = Modifier.padding(14.dp),
@@ -134,7 +148,7 @@ fun TransactionsScreen(
     receipt?.let { saved ->
         AlertDialog(
             onDismissRequest = viewModel::closeReceipt,
-            title = { Text("Struk transaksi") },
+            title = { Text("Struk transaksi", modifier = Modifier.testTag("transactions.receipt.title")) },
             text = { ReceiptDetails(saved) },
             confirmButton = {
                 Button(onClick = {
@@ -163,7 +177,7 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(storeProfile?.storeName ?: "BERKAH POS", style = MaterialTheme.typography.titleMedium)
+        Text(storeProfile?.storeName ?: "Basic POS", style = MaterialTheme.typography.titleMedium)
         storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { Text("Pemilik: $it") }
         storeProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
         storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
@@ -171,7 +185,11 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
         Text(formatTransactionDate(receipt.sale.createdAtEpochMillis))
         Spacer(modifier = Modifier.height(4.dp))
         receipt.items.forEach { item ->
-            Text("${item.productName} × ${item.quantity}")
+            val itemTag = item.sku ?: item.productId?.toString() ?: "unknown"
+            Text(
+                "${item.productName} × ${item.quantity}",
+                modifier = Modifier.testTag("transactions.receipt.item.$itemTag")
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -184,7 +202,11 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
         ReceiptAmountRow("Subtotal", receipt.subtotalRupiah)
         ReceiptAmountRow("Diskon", receipt.discountRupiah)
         ReceiptAmountRow("Pajak", receipt.taxRupiah)
-        ReceiptAmountRow("Total", receipt.sale.totalRupiah)
+        ReceiptAmountRow(
+            "Total",
+            receipt.sale.totalRupiah,
+            modifier = Modifier.testTag("transactions.receipt.total")
+        )
         ReceiptAmountRow("Dibayar", receipt.sale.paidRupiah)
         ReceiptAmountRow("Kembalian", receipt.sale.changeRupiah)
         storeProfile?.receiptFooter?.takeIf(String::isNotBlank)?.let { Text(it) }
@@ -192,13 +214,20 @@ private fun ReceiptDetails(receipt: SaleReceipt) {
 }
 
 @Composable
-private fun ReceiptAmountRow(label: String, amount: Long) {
+private fun ReceiptAmountRow(
+    label: String,
+    amount: Long,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label)
-        Text(Rupiah.from(amount).formatIdr())
+        Text(
+            Rupiah.from(amount).formatIdr(),
+            modifier = modifier
+        )
     }
 }
 
@@ -208,7 +237,7 @@ private fun formatTransactionDate(epochMillis: Long): String =
 
 private fun buildReceiptText(receipt: SaleReceipt): String = buildString {
     val storeProfile = receipt.storeProfileSnapshot
-    appendLine(storeProfile?.storeName ?: "BERKAH POS")
+    appendLine(storeProfile?.storeName ?: "Basic POS")
     storeProfile?.ownerName?.takeIf(String::isNotBlank)?.let { appendLine("Pemilik: $it") }
     storeProfile?.address?.takeIf(String::isNotBlank)?.let { appendLine(it) }
     storeProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { appendLine(it) }
