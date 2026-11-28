@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -79,9 +80,11 @@ fun ProductsScreen(
                     editingProduct = null
                     showProductDialog = true
                 },
-                modifier = Modifier.semantics {
-                    contentDescription = "Tambah produk"
-                }
+                modifier = Modifier
+                    .testTag("products.add")
+                    .semantics {
+                        contentDescription = "Tambah produk"
+                    }
             ) {
                 Text("+", style = MaterialTheme.typography.headlineMedium)
             }
@@ -233,7 +236,7 @@ private fun ProductCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth().testTag("product.card.${product.sku ?: product.id}")) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -305,21 +308,21 @@ private fun ProductEditorDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("product.name"),
                     singleLine = true,
                     label = { Text("Nama produk") }
                 )
                 OutlinedTextField(
                     value = sku,
                     onValueChange = { sku = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("product.sku"),
                     singleLine = true,
                     label = { Text("SKU (opsional)") }
                 )
                 OutlinedTextField(
                     value = price,
                     onValueChange = { price = it.filter(Char::isDigit) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("product.price"),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = { Text("Harga jual (Rupiah)") }
@@ -327,7 +330,7 @@ private fun ProductEditorDialog(
                 OutlinedTextField(
                     value = stock,
                     onValueChange = { stock = it.filter(Char::isDigit) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("product.stock"),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = { Text("Stok") }
@@ -377,28 +380,31 @@ private fun ProductEditorDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
-                val parsedPrice = price.toLongOrNull()
-                val parsedStock = stock.toLongOrNull()
-                validationMessage = when {
-                    name.isBlank() -> "Nama produk wajib diisi."
-                    parsedPrice == null -> "Harga tidak valid."
-                    parsedStock == null -> "Stok tidak valid."
-                    else -> null
-                }
-                if (validationMessage == null) {
-                    onSave(
-                        Product(
-                            id = product?.id ?: 0,
-                            name = name,
-                            sku = sku,
-                            priceRupiah = parsedPrice!!,
-                            stockQuantity = parsedStock!!,
-                            categoryId = categoryId
+            Button(
+                modifier = Modifier.testTag("product.save"),
+                onClick = {
+                    val parsedPrice = price.toLongOrNull()
+                    val parsedStock = stock.toLongOrNull()
+                    validationMessage = when {
+                        name.isBlank() -> "Nama produk wajib diisi."
+                        parsedPrice == null -> "Harga tidak valid."
+                        parsedStock == null -> "Stok tidak valid."
+                        else -> null
+                    }
+                    if (validationMessage == null) {
+                        onSave(
+                            Product(
+                                id = product?.id ?: 0,
+                                name = name,
+                                sku = sku,
+                                priceRupiah = parsedPrice!!,
+                                stockQuantity = parsedStock!!,
+                                categoryId = categoryId
+                            )
                         )
-                    )
+                    }
                 }
-            }) { Text("Simpan") }
+            ) { Text("Simpan") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Batal") }

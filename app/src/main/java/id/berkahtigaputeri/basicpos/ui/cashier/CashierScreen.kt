@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -206,7 +207,7 @@ fun CashierScreen(
                 OutlinedTextField(
                     value = paidText,
                     onValueChange = { paidText = it.filter(Char::isDigit) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("cashier.paid"),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     enabled = !isSubmitting,
@@ -225,7 +226,7 @@ fun CashierScreen(
                             viewModel.checkout(discount!!, tax!!, paid)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("cashier.checkout"),
                     enabled = cart.isNotEmpty() &&
                         !isSubmitting &&
                         cartHasCurrentStock &&
@@ -271,15 +272,25 @@ fun CashierScreen(
     receipt?.let { saved ->
         AlertDialog(
             onDismissRequest = viewModel::clearReceipt,
-            title = { Text("Transaksi tersimpan") },
+            title = { Text("Transaksi tersimpan", modifier = Modifier.testTag("cashier.receipt.title")) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     val receiptProfile = saved.storeProfileSnapshot
                     Text(receiptProfile?.storeName ?: "Basic POS", style = MaterialTheme.typography.titleMedium)
                     receiptProfile?.address?.takeIf(String::isNotBlank)?.let { Text(it) }
                     receiptProfile?.phoneNumber?.takeIf(String::isNotBlank)?.let { Text(it) }
-                    Text(saved.sale.transactionNumber)
-                    Text("Total: ${Rupiah.from(saved.sale.totalRupiah).formatIdr()}")
+                    Text(saved.sale.transactionNumber, modifier = Modifier.testTag("cashier.receipt.transaction"))
+                    saved.items.forEach { item ->
+                        val itemTag = item.sku ?: item.productId?.toString() ?: "unknown"
+                        Text(
+                            text = "${item.productName} × ${item.quantity}",
+                            modifier = Modifier.testTag("cashier.receipt.item.$itemTag")
+                        )
+                    }
+                    Text(
+                        "Total: ${Rupiah.from(saved.sale.totalRupiah).formatIdr()}",
+                        modifier = Modifier.testTag("cashier.receipt.total")
+                    )
                     Text("Dibayar: ${Rupiah.from(saved.sale.paidRupiah).formatIdr()}")
                     Text("Kembalian: ${Rupiah.from(saved.sale.changeRupiah).formatIdr()}")
                     Text("${saved.items.size} jenis produk")
@@ -292,7 +303,7 @@ fun CashierScreen(
                     discountText = "0"
                     taxText = "0"
                     paidText = ""
-                }) { Text("Selesai") }
+                }, modifier = Modifier.testTag("cashier.receipt.done")) { Text("Selesai") }
             }
         )
     }
@@ -320,9 +331,11 @@ private fun CashierProductCard(
             }
             TextButton(
                 onClick = onAdd,
-                modifier = Modifier.semantics {
-                    contentDescription = "Tambah ${product.name} ke keranjang"
-                },
+                modifier = Modifier
+                    .testTag("cashier.add.${product.sku ?: product.id}")
+                    .semantics {
+                        contentDescription = "Tambah ${product.name} ke keranjang"
+                    },
                 enabled = product.stockQuantity > 0 && !isSubmitting
             ) { Text("Tambah") }
         }

@@ -61,7 +61,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "id.berkahtigaputeri.basicpos.BerkahPosTestRunner"
         buildConfigField("String", "SAAS_URL", saasUrl.asBuildConfigLiteral())
         buildConfigField("String", "SUPPORT_EMAIL", supportEmail.asBuildConfigLiteral())
     }
