@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.flow.first
@@ -43,7 +44,7 @@ class PosCashierHappyPathTest {
         composeRule.onNodeWithTag("product.name").performTextInput(productName)
         composeRule.onNodeWithTag("product.sku").performTextInput(sku)
         composeRule.onNodeWithTag("product.price").performTextInput("12500")
-        composeRule.onNodeWithTag("product.stock").performTextInput("3")
+        composeRule.onNodeWithTag("product.stock").performTextReplacement("3")
         composeRule.onNodeWithTag("product.save").performClick()
 
         composeRule.waitUntil(timeoutMillis = 10_000) {
