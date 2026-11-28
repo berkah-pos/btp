@@ -626,10 +626,10 @@ jobs:
       - name: Run full strict quality and release-runtime dependency gates
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon --dependency-verification=strict \\
-            testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug \\
+          ./gradlew --no-daemon --dependency-verification=strict \
+            testDebugUnitTest compileDebugAndroidTestKotlin lintDebug assembleDebug \
             :app:processReleaseMainManifest bundleRelease --console=plain
-          ./gradlew --no-daemon --dependency-verification=strict \\
+          ./gradlew --no-daemon --dependency-verification=strict \
             :app:dependencies --configuration releaseRuntimeClasspath --console=plain
 
       - name: Recheck debug APK 16 KB alignment
@@ -765,7 +765,7 @@ jobs:
           curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
             "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
             --output "$RUNNER_TEMP/bundletool.jar"
-          printf '%s  %s\\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
+          printf '%s  %s\n' "$BUNDLETOOL_SHA256" "$RUNNER_TEMP/bundletool.jar" | sha256sum --check
 
           java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle="$AAB"
           java -jar "$RUNNER_TEMP/bundletool.jar" dump config --bundle="$AAB" > "$RUNNER_TEMP/bundle-config.txt"
@@ -805,8 +805,8 @@ jobs:
             exit 1
           fi
 
-          printf 'jar_signature=verified\\nupload_certificate_sha256=%s\\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/signature-check.txt"
-          printf '%s\\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/upload-certificate.txt"
+          printf 'jar_signature=verified\nupload_certificate_sha256=%s\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/signature-check.txt"
+          printf '%s\n' "$ACTUAL_CERT_SHA256" > "$RUNNER_TEMP/upload-certificate.txt"
           sha256sum "$AAB" > SHA256SUMS
 
       - name: Prepare release metadata
