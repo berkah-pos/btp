@@ -220,11 +220,14 @@ private fun ReceiptAmountRow(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label)
-        Text(Rupiah.from(amount).formatIdr())
+        Text(
+            Rupiah.from(amount).formatIdr(),
+            modifier = modifier
+        )
     }
 }
 
