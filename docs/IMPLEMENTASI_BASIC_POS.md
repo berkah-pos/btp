@@ -147,17 +147,19 @@ File inti sudah berisi implementasi utuh; bukan skeleton yang menunggu ditulis u
 
 ## 6. Validasi yang teramati
 
-Android CI #125 (source head sebelum perubahan label terakhir): https://github.com/berkah-pos/btp/actions/runs/46083906927
+Android CI #125 (source head `1eda0369eedb3d88cff9ba7c3a077cebb24ce8c5`; commit ini menambahkan blueprint dokumentasi): https://github.com/berkah-pos/btp/actions/runs/46083906927
 
 - 35 unit tests: 0 failure, 0 error, 0 skipped.
 - Compile instrumented Kotlin, lint, debug APK, merged release manifest, dan runtime dependency inventory berhasil.
 - Unsigned release AAB dibangun, Bundletool validation berhasil, PAGE_ALIGNMENT_16K terdeteksi, dan pemeriksaan native ELF 16 KB lulus.
-- AAB SHA-256: `4875f099398bdfb7121ff211fe795cfa7214286f4539e07e8dbb3a044def6626`.
+- AAB SHA-256: `1d38a5c4814ebb861b0bf0b695726399c26708c14070248947fb40bb8c4ac336`.
 
 POS/Room instrumentation #75: https://github.com/berkah-pos/btp/actions/runs/46083906878
 
 - Lima tes API 36 emulator: 0 failure, 0 error, 0 skipped.
 - Mencakup migrasi Room v1 dan checkout termasuk rollback serta race pada stok terakhir.
+
+Dua test checkout tambahan ditambahkan pada commit `07c1d41`: rollback ketika insert item struk gagal setelah stok/header ditulis, dan preservasi snapshot struk setelah produk dihapus. Android CI #127 dan instrumentation #77 masih berjalan; kedua test baru belum dihitung sebagai hasil lulus.
 
 Android CI #125 dan POS/Room instrumentation #75 selesai sukses pada head `1eda0369eedb3d88cff9ba7c3a077cebb24ce8c5`. Commit tersebut menambahkan blueprint dokumentasi, bukan perubahan source aplikasi. Run #125 membuktikan 35 JVM tests lulus; Run #75 membuktikan lima instrumentation tests pada emulator API 36. AAB kandidat Run #125 tidak ditandatangani dan bukan binary produksi siap Play Console.
 
