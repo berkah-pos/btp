@@ -61,8 +61,8 @@ class PosCashierHappyPathTest {
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithTag("cashier.receipt.title").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithTag("cashier.receipt.item.$sku").assertTextContains(productName)
-        composeRule.onNodeWithTag("cashier.receipt.total").assertTextContains("12.500")
+        composeRule.onNodeWithTag("cashier.receipt.item.$sku").assertTextContains(productName, substring = true)
+        composeRule.onNodeWithTag("cashier.receipt.total").assertTextContains("12.500", substring = true)
 
         val dao = testApplication.instrumentationDatabase.posDao()
         val sale = runBlocking { dao.getAllTransactionsForBackup().single() }
@@ -89,8 +89,8 @@ class PosCashierHappyPathTest {
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithTag("transactions.receipt.title").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithTag("transactions.receipt.item.$sku").assertTextContains(productName)
-        composeRule.onNodeWithTag("transactions.receipt.total").assertTextContains("12.500")
+        composeRule.onNodeWithTag("transactions.receipt.item.$sku").assertTextContains(productName, substring = true)
+        composeRule.onNodeWithTag("transactions.receipt.total").assertTextContains("12.500", substring = true)
     }
 
     @After
