@@ -1,5 +1,6 @@
 package id.berkahtigaputeri.basicpos.data.repository
 
+import android.database.sqlite.SQLiteException
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -139,6 +140,72 @@ class PosRepositoryCheckoutTest {
         assertEquals(5L, dao.getProductById(first.id)?.stockQuantity)
         assertEquals(5L, dao.getProductById(second.id)?.stockQuantity)
         assertEquals(0L, dao.observeTransactionCount().first())
+    }
+
+    @Test
+    fun receiptItemInsertFailureRollsBackStockAndTransactionHeader() = runBlocking {
+        val dao = database.posDao()
+        val product = insertProduct("Produk rollback", "ROLLBACK-01", 2_500, 4)
+
+        // The header and stock decrement happen before receipt-item insertion. A trigger forces
+        // that final DAO call to fail so the Room transaction must roll back every prior write.
+        database.openHelper.writableDatabase.execSQL(
+            """
+            CREATE TRIGGER fail_transaction_item_insert
+            BEFORE INSERT ON transaction_items
+            BEGIN
+                SELECT RAISE(ABORT, 'simulated receipt item insertion failure');
+            END
+            """.trimIndent()
+        )
+
+        var failure: SQLiteException? = null
+        try {
+            repository.checkout(
+                CheckoutRequest(
+                    lines = listOf(CheckoutLine(productId = product.id, quantity = 2)),
+                    paidRupiah = 5_000
+                )
+            )
+        } catch (error: SQLiteException) {
+            failure = error
+        }
+
+        assertNotNull("Receipt-item insertion must fail.", failure)
+        assertEquals(4L, dao.getProductById(product.id)?.stockQuantity)
+        assertEquals(0L, dao.observeTransactionCount().first())
+        val itemCount = database.openHelper.readableDatabase.query(
+            "SELECT COUNT(*) FROM transaction_items"
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            cursor.getLong(0)
+        }
+        assertEquals(0L, itemCount)
+    }
+
+    @Test
+    fun deletingProductPreservesHistoricalReceiptItemSnapshot() = runBlocking {
+        val dao = database.posDao()
+        val product = insertProduct("Produk historis", "HIST-01", 3_000, 2)
+        val receipt = repository.checkout(
+            CheckoutRequest(
+                lines = listOf(CheckoutLine(productId = product.id, quantity = 2)),
+                paidRupiah = 6_000
+            )
+        )
+
+        repository.deleteProduct(product.id)
+
+        assertEquals(null, dao.getProductById(product.id))
+        val historicalReceipt = repository.getTransactionReceipt(receipt.sale.id)
+        assertNotNull(historicalReceipt)
+        val historicalItem = historicalReceipt!!.items.single()
+        assertEquals(product.id, historicalItem.productId)
+        assertEquals("Produk historis", historicalItem.productName)
+        assertEquals("HIST-01", historicalItem.sku)
+        assertEquals(3_000L, historicalItem.unitPriceRupiah)
+        assertEquals(2L, historicalItem.quantity)
+        assertEquals(6_000L, historicalItem.lineTotalRupiah)
     }
 
     @Test
