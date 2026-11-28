@@ -159,7 +159,7 @@ POS/Room instrumentation #75: https://github.com/berkah-pos/btp/actions/runs/460
 - Lima tes API 36 emulator: 0 failure, 0 error, 0 skipped.
 - Mencakup migrasi Room v1 dan checkout termasuk rollback serta race pada stok terakhir.
 
-Dua test checkout tambahan ditambahkan pada commit `07c1d41`: rollback ketika insert item struk gagal setelah stok/header ditulis, dan preservasi snapshot struk setelah produk dihapus. Android CI #127 dan instrumentation #77 masih berjalan; kedua test baru belum dihitung sebagai hasil lulus.
+Dua test checkout tambahan ditambahkan pada commit `07c1d41`: rollback ketika insert item struk gagal setelah stok/header ditulis, dan preservasi snapshot struk setelah produk dihapus. Keduanya hanya boleh dihitung lulus setelah PR-head Android CI dan POS/Room instrumentation menyelesaikan runner dan JUnit report menunjukkan nol failure/error/skip.
 
 Android CI #125 dan POS/Room instrumentation #75 selesai sukses pada head `1eda0369eedb3d88cff9ba7c3a077cebb24ce8c5`. Commit tersebut menambahkan blueprint dokumentasi, bukan perubahan source aplikasi. Run #125 membuktikan 35 JVM tests lulus; Run #75 membuktikan lima instrumentation tests pada emulator API 36. AAB kandidat Run #125 tidak ditandatangani dan bukan binary produksi siap Play Console.
 
