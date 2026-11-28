@@ -714,8 +714,8 @@ jobs:
           BTP_APPLICATION_ID: ${{ vars.BTP_APPLICATION_ID }}
         run: |
           set -euo pipefail
-          test "$BTP_APPLICATION_ID" = "id.co.berkahtigaputeri.basicpos" || {
-            echo "Release blocked: set BTP_APPLICATION_ID to id.co.berkahtigaputeri.basicpos after confirming this package is available in Play Console."
+          test "$BTP_APPLICATION_ID" = "id.co.berkahtigaputeri.btp" || {
+            echo "Release blocked: set BTP_APPLICATION_ID to id.co.berkahtigaputeri.btp after confirming this package is available in Play Console."
             exit 1
           }
 
