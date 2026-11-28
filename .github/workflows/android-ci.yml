@@ -220,12 +220,16 @@ jobs:
             exit 1
           }
           bash scripts/check-native-libraries-16kb.sh "$AAB"
+          sha256sum "$AAB" > app/build/outputs/bundle/release/SHA256SUMS
+          cat app/build/outputs/bundle/release/SHA256SUMS
 
       - name: Upload unsigned release AAB candidate
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: berkah-pos-aab-candidate-${{ github.run_number }}
-          path: app/build/outputs/bundle/release/app-release.aab
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/bundle/release/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
 
