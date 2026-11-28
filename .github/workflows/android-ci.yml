@@ -613,8 +613,7 @@ jobs:
           : > "$BOOTSTRAP_DIR/build.gradle"
           (
             cd "$BOOTSTRAP_DIR"
-            gradle --no-daemon wrapper --gradle-version 9.7.0 --distribution-type bin \\
-              --gradle-distribution-sha256-sum 84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae
+            gradle --no-daemon wrapper --gradle-version 9.7.0 --distribution-type bin --gradle-distribution-sha256-sum 84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae
           )
           install -D "$BOOTSTRAP_DIR/gradlew" "$GITHUB_WORKSPACE/gradlew"
           install -D "$BOOTSTRAP_DIR/gradlew.bat" "$GITHUB_WORKSPACE/gradlew.bat"
