@@ -92,7 +92,11 @@ fun PosNavigation() {
                         application.container.preferencesRepository
                     )
                 )
-                DashboardScreen(viewModel = dashboardViewModel)
+                DashboardScreen(
+                    viewModel = dashboardViewModel,
+                    onAddFirstProduct = { navController.navigate(PosRoute.PRODUCTS) },
+                    onOpenCashier = { navController.navigate(PosRoute.CASHIER) }
+                )
             }
             composable(PosRoute.PRODUCTS) {
                 val productsViewModel: ProductsViewModel = viewModel(

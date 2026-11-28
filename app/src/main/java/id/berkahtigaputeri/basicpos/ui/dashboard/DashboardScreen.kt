@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.berkahtigaputeri.basicpos.core.money.Rupiah
@@ -33,7 +35,9 @@ private fun formatDashboardTimestamp(epochMillis: Long): String =
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel
+    viewModel: DashboardViewModel,
+    onAddFirstProduct: () -> Unit,
+    onOpenCashier: () -> Unit
 ) {
     val summary by viewModel.summary.collectAsStateWithLifecycle()
 
@@ -107,6 +111,37 @@ fun DashboardScreen(
                                 label = "Stok rendah",
                                 value = summary!!.lowStockCount.toString()
                             )
+                        }
+                    }
+                }
+            }
+
+            item {
+                val currentSummary = summary
+                if (currentSummary != null && currentSummary.productCount == 0L) {
+                    SectionCard(title = "Mulai gunakan Basic POS") {
+                        Text(
+                            "Tambahkan produk pertama agar katalog dan kasir siap digunakan.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(
+                            onClick = onAddFirstProduct,
+                            modifier = Modifier.fillMaxWidth().testTag("dashboard.add-first-product")
+                        ) {
+                            Text("Tambah produk pertama")
+                        }
+                    }
+                } else if (currentSummary != null && currentSummary.recentTransactions.isEmpty()) {
+                    SectionCard(title = "Siap melayani transaksi") {
+                        Text(
+                            "Produk sudah tersedia. Buka kasir untuk mencatat penjualan pertama.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(
+                            onClick = onOpenCashier,
+                            modifier = Modifier.fillMaxWidth().testTag("dashboard.open-cashier")
+                        ) {
+                            Text("Buka kasir")
                         }
                     }
                 }

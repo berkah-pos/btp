@@ -39,7 +39,7 @@ class PosCashierHappyPathTest {
         val sku = "E2E-$suffix"
         testSku = sku
 
-        composeRule.onNodeWithTag("nav.products").performClick()
+        composeRule.onNodeWithTag("dashboard.add-first-product").assertIsEnabled().performClick()
         composeRule.onNodeWithTag("products.add").performClick()
         composeRule.onNodeWithTag("product.name").performTextInput(productName)
         composeRule.onNodeWithTag("product.sku").performTextInput(sku)
