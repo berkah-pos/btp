@@ -147,19 +147,19 @@ File inti sudah berisi implementasi utuh; bukan skeleton yang menunggu ditulis u
 
 ## 6. Validasi yang teramati
 
-Android CI #123 (source head sebelum perubahan label terakhir): https://github.com/berkah-pos/btp/actions/runs/46082462990
+Android CI #125 (source head sebelum perubahan label terakhir): https://github.com/berkah-pos/btp/actions/runs/46083906927
 
 - 35 unit tests: 0 failure, 0 error, 0 skipped.
 - Compile instrumented Kotlin, lint, debug APK, merged release manifest, dan runtime dependency inventory berhasil.
 - Unsigned release AAB dibangun, Bundletool validation berhasil, PAGE_ALIGNMENT_16K terdeteksi, dan pemeriksaan native ELF 16 KB lulus.
 - AAB SHA-256: `4875f099398bdfb7121ff211fe795cfa7214286f4539e07e8dbb3a044def6626`.
 
-POS/Room instrumentation #73: https://github.com/berkah-pos/btp/actions/runs/46082462969
+POS/Room instrumentation #75: https://github.com/berkah-pos/btp/actions/runs/46083906878
 
 - Lima tes API 36 emulator: 0 failure, 0 error, 0 skipped.
 - Mencakup migrasi Room v1 dan checkout termasuk rollback serta race pada stok terakhir.
 
-Perubahan label Basic POS dibuat setelah run #123. Android CI #124 dan instrumentation #74 sedang dijalankan untuk memverifikasi revisi tersebut. Artefak AAB #123 adalah unsigned; bukan binary produksi siap Play Console.
+Android CI #125 dan POS/Room instrumentation #75 selesai sukses pada head `1eda0369eedb3d88cff9ba7c3a077cebb24ce8c5`. Commit tersebut menambahkan blueprint dokumentasi, bukan perubahan source aplikasi. Run #125 membuktikan 35 JVM tests lulus; Run #75 membuktikan lima instrumentation tests pada emulator API 36. AAB kandidat Run #125 tidak ditandatangani dan bukan binary produksi siap Play Console.
 
 ## 7. Batch pekerjaan lanjutan
 
@@ -190,7 +190,7 @@ Perubahan label Basic POS dibuat setelah run #123. Android CI #124 dan instrumen
 - Developer Organization account dan identitas organisasi belum diverifikasi.
 - D-U-N-S serta dokumen badan usaha/perwakilan belum diverifikasi.
 - Privacy Policy publik, alamat resmi, email privasi/dukungan, dan URL SaaS belum tersedia.
-- Build #123 mencatat `BTP_SAAS_URL` dan `BTP_SUPPORT_EMAIL` kosong, jadi tautan SaaS/email tidak aktif.
+- Build #125 mencatat `BTP_SAAS_URL` dan `BTP_SUPPORT_EMAIL` kosong, jadi tautan SaaS/email tidak aktif.
 - Upload keystore belum disiapkan; AAB masih unsigned.
 - Screenshot perangkat fisik dan Pre-launch Report belum tersedia.
 
